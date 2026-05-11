@@ -1051,7 +1051,41 @@ def clean_ui_and_send_menu(chat_id, user_id, text=None, markup=None):
                 bot.delete_message(chat_id, user_last_message[user_id])
             except:
                 pass
-        
+
+        # Show sequence of messages with deletion
+        def show_sequence():
+            try:
+                # Message 1: HLO SIR....
+                msg1 = bot.send_message(chat_id, "HLO SIR....", parse_mode="HTML")
+                time.sleep(0.2)
+                try:
+                    bot.delete_message(chat_id, msg1.message_id)
+                except:
+                    pass
+
+                # Message 2: PING PONG ....
+                msg2 = bot.send_message(chat_id, "PING PONG ....", parse_mode="HTML")
+                time.sleep(0.2)
+                try:
+                    bot.delete_message(chat_id, msg2.message_id)
+                except:
+                    pass
+
+                # Message 3: STARTING ....
+                msg3 = bot.send_message(chat_id, "STARTING ....", parse_mode="HTML")
+                time.sleep(0.2)
+                try:
+                    bot.delete_message(chat_id, msg3.message_id)
+                except:
+                    pass
+            except Exception as e:
+                logger.error(f"Error in sequence: {e}")
+
+        # Run sequence in background thread
+        thread = threading.Thread(target=show_sequence, daemon=True)
+        thread.start()
+        thread.join()
+
         # Main menu caption with expandable blockquotes
         caption = (
             "🥂 <b>Welcome to ˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ ꭙ 𝐎ᴛᴘ 𝐒ᴇʟʟᴇʀ [ 𝐁ᴏᴛ ] ❤️‍🔥 By Darklord$🇮🇳</b> 🥂\n"
@@ -1071,7 +1105,7 @@ def clean_ui_and_send_menu(chat_id, user_id, text=None, markup=None):
             "</blockquote>\n"
             "🚀 <b>Enjoy Fast Account Buying Experience!</b>"
         )
-        
+
         if markup is None:
             markup = InlineKeyboardMarkup(row_width=2)
             # Row 1: 2 buttons
@@ -1095,7 +1129,7 @@ def clean_ui_and_send_menu(chat_id, user_id, text=None, markup=None):
             # Row 5: 1 button (only for admin)
             if is_admin(user_id):
                 markup.add(InlineKeyboardButton("👑 Admin Panel", callback_data="admin_panel"))
-        
+
         # Send new message (TEXT ONLY - NO PHOTO)
         sent_msg = bot.send_message(
             chat_id,
