@@ -43,24 +43,24 @@ from pyrogram.errors import (
 # CONFIG
 # ---------------------------------------------------------------------
 
-BOT_TOKEN = os.getenv('BOT_TOKEN', '8588199256:AAGUjtP_MvXCUGctOoBfMX1-eG2nV3ATCwY')
-ADMIN_ID = int(os.getenv('ADMIN_ID', '8441236350'))
-MONGO_URL = os.getenv('MONGO_URL', 'mongodb+srv://bsdk:betichod@cluster0.fgj1r9z.mongodb.net/?retryWrites=true&w=majority')
-API_ID = int(os.getenv('API_ID', '36326629'))
-API_HASH = os.getenv('API_HASH', '823e6e8c081fe363e6d739b39dc19e07')
+BOT_TOKEN = os.getenv('BOT_TOKEN', '8379057094:AAHtUB42NUzbjqk9RKuOvuODPyhtqiCJFYo')
+ADMIN_ID = int(os.getenv('ADMIN_ID', '8358951104'))
+MONGO_URL = os.getenv('MONGO_URL', 'mongodb+srv://dhruvkumarray3_db_user:Sc1nt6kCkoEuTzW3@cluster0.rgwrfli.mongodb.net/?appName=Cluster0')
+API_ID = int(os.getenv('API_ID', '34242066'))
+API_HASH = os.getenv('API_HASH', '707c322fc645117058c0f2a421122ff7')
 
 # UPI PAYMENT CONFIG
-UPI_ID = os.getenv('UPI_ID', 'shubh412@fam')
-QR_IMAGE_URL = os.getenv('QR_IMAGE_URL', 'https://files.catbox.moe/0mkr56.jpeg')
+UPI_ID = os.getenv('UPI_ID', 'rishabhkumarray@fam')
+QR_IMAGE_URL = os.getenv('QR_IMAGE_URL', 'https://files.catbox.moe/y33e87.jpg')
 
 # MUST JOIN CHANNELS - TWO CHANNELS
-MUST_JOIN_CHANNEL_1 = "@GMS_COMEBACK_SOON1"
-MUST_JOIN_CHANNEL_2 = "@ID_GMS_SELLER_bot"
+MUST_JOIN_CHANNEL_1 = "@II_LEGEND_OTP_SELLER_UPDATES_II"
+MUST_JOIN_CHANNEL_2 = "@Mystric_seller"
 # LOG CHANNEL
-LOG_CHANNEL_ID = "-1003802534246"
+LOG_CHANNEL_ID = "-1003659930873"
 
 # Referral commission percentage
-REFERRAL_COMMISSION = 1.5
+REFERRAL_COMMISSION = 1.7
 
 # Global API Credentials for Pyrogram Login
 GLOBAL_API_ID = 36326629
@@ -1054,7 +1054,7 @@ def clean_ui_and_send_menu(chat_id, user_id, text=None, markup=None):
         
         # Main menu caption with expandable blockquotes
         caption = (
-            "🥂 <b>Welcome To Otp Bot By Adi</b> 🥂\n"
+            "🥂 <b>Welcome to ˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ ꭙ 𝐎ᴛᴘ 𝐒ᴇʟʟᴇʀ [ 𝐁ᴏᴛ ] ❤️‍🔥 By Darklord$🇮🇳</b> 🥂\n"
             "<blockquote expandable>\n"
             "- Automatic OTPs 📍\n"
             "- Easy to Use 🥂🥂\n"
@@ -1066,7 +1066,7 @@ def clean_ui_and_send_menu(chat_id, user_id, text=None, markup=None):
             "1️⃣ Recharge\n"
             "2️⃣ Select Country\n"
             "3️⃣ Buy Account\n"
-            "4️⃣ Get Number & Login through Telegram / Telegram X / Tarbotel\n"
+            "4️⃣ Get Number & Login through Telegram / Telegram X / Turbotel\n"
             "5️⃣ Receive OTP & You're Done ✅\n"
             "</blockquote>\n"
             "🚀 <b>Enjoy Fast Account Buying Experience!</b>"
@@ -1578,7 +1578,7 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
                 start(call.message)
                 return
             
-            msg_text = "🛠️ Support: @k4un_hu_mai"
+            msg_text = "🛠️ Support: @rchiex"
             markup = InlineKeyboardMarkup()
             markup.add(InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu"))
             
@@ -1803,7 +1803,7 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
             edit_or_resend(
                 call.message.chat.id,
                 call.message.message_id,
-                "💳 Enter recharge amount for UPI (minimum ₹1):",
+                "💳 Enter recharge amount for UPI (minimum ₹3):",
                 markup=InlineKeyboardMarkup().add(
                     InlineKeyboardButton("❌ Cancel", callback_data="back_to_menu")
                 )
@@ -1826,7 +1826,7 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
             edit_or_resend(
                 call.message.chat.id,
                 call.message.message_id,
-                "💳 Enter recharge amount in INR for Crypto (minimum ₹1):",
+                "💳 Enter recharge amount in INR for Crypto (minimum ₹10):",
                 markup=InlineKeyboardMarkup().add(
                     InlineKeyboardButton("❌ Cancel", callback_data="back_to_menu")
                 )
@@ -4024,7 +4024,7 @@ def ask_ban_user(message):
                 user_id_to_ban,
                 "🚫 **Your Account Has Been Banned**\n\n"
                 "You have been banned from using this bot.\n"
-                "Contact admin @DHRUV_PAPAHERE if you believe this is a mistake."
+                "Contact admin @rchiex if you believe this is a mistake."
             )
         except:
             pass
@@ -4486,7 +4486,7 @@ def show_country_details(user_id, country_name, chat_id, message_id, callback_id
 
 🔍 Reliable | Affordable | Good Quality
 
-⚠️ Use Telegram X only to login.
+⚠️ Use Turbotel and plus messenger only to login.
 🚫 Not responsible for freeze / ban.</blockquote>"""
         
         markup = InlineKeyboardMarkup(row_width=2)
@@ -4859,14 +4859,14 @@ def telegram_webhook():
 
 @flask_app.route("/", methods=["GET"])
 def health():
-    return "GMS Bot is running via webhook ✅", 200
+    return "˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ ꭙ 𝐎ᴛᴘ 𝐒ᴇʟʟᴇʀ [ 𝐁ᴏᴛ ] ❤️‍🔥 is running via webhook ✅", 200
 
 # ---------------------------------------------------------------------
 # RUN BOT
 # ---------------------------------------------------------------------
 
 if __name__ == "__main__":
-    logger.info(f"🤖 GMS OTP Bot Starting (Webhook Mode)...")
+    logger.info(f"🤖 ˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ ꭙ 𝐎ᴛᴘ 𝐒ᴇʟʟᴇʀ [ 𝐁ᴏᴛ ] ❤️‍🔥 Starting (Webhook Mode)...")
     logger.info(f"Admin ID: {ADMIN_ID}")
     logger.info(f"Bot Token: {BOT_TOKEN[:10]}...")
     logger.info(f"Must Join Channel 1: {MUST_JOIN_CHANNEL_1}")
