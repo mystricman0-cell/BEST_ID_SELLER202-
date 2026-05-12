@@ -48,6 +48,7 @@ ADMIN_ID = int(os.getenv('ADMIN_ID', '8358951104'))
 MONGO_URL = os.getenv('MONGO_URL', 'mongodb+srv://dhruvkumarray3_db_user:Sc1nt6kCkoEuTzW3@cluster0.rgwrfli.mongodb.net/?appName=Cluster0')
 API_ID = int(os.getenv('API_ID', '34242066'))
 API_HASH = os.getenv('API_HASH', '707c322fc645117058c0f2a421122ff7')
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 
 # UPI PAYMENT CONFIG
 UPI_ID = os.getenv('UPI_ID', 'rishabhkumarray@fam')
@@ -74,6 +75,23 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 bot = telebot.TeleBot(BOT_TOKEN)
+
+# Gemini AI Setup
+try:
+    import google.generativeai as genai
+    if GEMINI_API_KEY:
+        genai.configure(api_key=GEMINI_API_KEY)
+        gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+        logger.info("✅ Gemini AI initialized")
+    else:
+        gemini_model = None
+        logger.warning("⚠️ GEMINI_API_KEY not set, AI chat disabled")
+except Exception as _ge:
+    gemini_model = None
+    logger.error(f"❌ Gemini init failed: {_ge}")
+
+# Gemini chat history per user
+gemini_chat_sessions = {}
 
 # MongoDB Setup
 try:
@@ -1055,27 +1073,23 @@ def clean_ui_and_send_menu(chat_id, user_id, text=None, markup=None):
         # Show sequence of messages with deletion
         def show_sequence():
             try:
-                # Message 1: HLO SIR....
-                msg1 = bot.send_message(chat_id, "HLO SIR....", parse_mode="HTML")
-                time.sleep(0.2)
+                        # Premium start animation frames
+                frames = [
+                    "🔴 <b>[ L E G E N D A R Y ]</b> 🔴\n<i>Initializing...</i>",
+                    "🟡 <b>[ L E G E N D A R Y ]</b> 🟡\n<i>Loading systems...</i>",
+                    "🟢 <b>[ L E G E N D A R Y ]</b> 🟢\n<i>Almost ready...</i>",
+                    "🔵 <b>⚡ SYSTEM ONLINE ⚡</b> 🔵\n<i>Welcome aboard!</i>",
+                ]
+                anim_msg = bot.send_message(chat_id, frames[0], parse_mode="HTML")
+                for frame in frames[1:]:
+                    time.sleep(0.35)
+                    try:
+                        bot.edit_message_text(frame, chat_id, anim_msg.message_id, parse_mode="HTML")
+                    except:
+                        pass
+                time.sleep(0.3)
                 try:
-                    bot.delete_message(chat_id, msg1.message_id)
-                except:
-                    pass
-
-                # Message 2: PING PONG ....
-                msg2 = bot.send_message(chat_id, "PING PONG ....", parse_mode="HTML")
-                time.sleep(0.2)
-                try:
-                    bot.delete_message(chat_id, msg2.message_id)
-                except:
-                    pass
-
-                # Message 3: STARTING ....
-                msg3 = bot.send_message(chat_id, "STARTING ....", parse_mode="HTML")
-                time.sleep(0.2)
-                try:
-                    bot.delete_message(chat_id, msg3.message_id)
+                    bot.delete_message(chat_id, anim_msg.message_id)
                 except:
                     pass
             except Exception as e:
@@ -1088,45 +1102,49 @@ def clean_ui_and_send_menu(chat_id, user_id, text=None, markup=None):
 
         # Main menu caption with expandable blockquotes
         caption = (
-            "🥂 <b>Welcome to ˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ ꭙ 𝐎ᴛᴘ 𝐒ᴇʟʟᴇʀ [ 𝐁ᴏᴛ ] ❤️‍🔥 By Darklord$🇮🇳</b> 🥂\n"
+            "🔥 <b>˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ ꭙ 𝐎ᴛᴘ 𝐒ᴇʟʟᴇʀ [ 𝐁ᴏᴛ ] ❤️‍🔥 By Darklord$🇮🇳</b> 🔥\n\n"
+            "🔴🔵🟢 <b>Premium Account Selling Service</b> 🟢🔵🔴\n\n"
             "<blockquote expandable>\n"
-            "- Automatic OTPs 📍\n"
-            "- Easy to Use 🥂🥂\n"
-            "- 24/7 Support 👨‍🔧\n"
-            "- Instant Payment Approvals 🧾\n"
+            "🟢 Automatic OTPs — Instant Delivery\n"
+            "🔵 Easy to Use — Simple Interface\n"
+            "🔴 24/7 Support — Always Online\n"
+            "🟡 Instant Payment Approvals\n"
+            "⚡ Server 1 & Server 2 Available\n"
             "</blockquote>\n"
             "<blockquote expandable>\n"
-            "🚀 <b>How to use Bot :</b>\n"
-            "1️⃣ Recharge\n"
-            "2️⃣ Select Country\n"
-            "3️⃣ Buy Account\n"
-            "4️⃣ Get Number & Login through Telegram / Telegram X / Turbotel\n"
-            "5️⃣ Receive OTP & You're Done ✅\n"
+            "🚀 <b>How to use Bot:</b>\n"
+            "1️⃣ 💳 Recharge your wallet\n"
+            "2️⃣ 🌍 Select Country\n"
+            "3️⃣ 🖥️ Choose Server (1 or 2)\n"
+            "4️⃣ 🛒 Buy Account\n"
+            "5️⃣ 📱 Login via Turbotel / Telegram X\n"
+            "6️⃣ ✅ Receive OTP — Done!\n"
             "</blockquote>\n"
-            "🚀 <b>Enjoy Fast Account Buying Experience!</b>"
+            "⚡ <b>Enjoy Ultra-Fast Account Buying!</b>"
         )
 
         if markup is None:
             markup = InlineKeyboardMarkup(row_width=2)
-            # Row 1: 2 buttons
+            # Row 1: Buy + Balance
             markup.add(
                 InlineKeyboardButton("🛒 Buy Account", callback_data="buy_account"),
                 InlineKeyboardButton("💰 Balance", callback_data="balance")
             )
-            # Row 2: 1 button
+            # Row 2: Recharge
             markup.add(
                 InlineKeyboardButton("💳 Recharge", callback_data="recharge")
             )
-            # Row 3: 2 buttons
+            # Row 3: Refer + Redeem
             markup.add(
                 InlineKeyboardButton("👥 Refer Friends", callback_data="refer_friends"),
                 InlineKeyboardButton("🎁 Redeem", callback_data="redeem_coupon")
             )
-            # Row 4: 1 button
+            # Row 4: AI Chat + Support
             markup.add(
+                InlineKeyboardButton("🤖 AI Chat", callback_data="ai_chat"),
                 InlineKeyboardButton("🛠️ Support", callback_data="support")
             )
-            # Row 5: 1 button (only for admin)
+            # Row 5: Admin Panel (only for admin)
             if is_admin(user_id):
                 markup.add(InlineKeyboardButton("👑 Admin Panel", callback_data="admin_panel"))
 
@@ -2165,7 +2183,151 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
                 bot.answer_callback_query(call.id, result, show_alert=True)
             else:
                 bot.answer_callback_query(call.id, "❌ Unauthorized", show_alert=True)
-        
+
+        # ── AI Chat ──────────────────────────────────────────────────
+        elif data == "ai_chat":
+            try:
+                bot.delete_message(call.message.chat.id, call.message.message_id)
+            except:
+                pass
+            markup = InlineKeyboardMarkup()
+            markup.add(InlineKeyboardButton("❌ Exit AI Chat", callback_data="exit_ai_chat"))
+            sent = bot.send_message(
+                call.message.chat.id,
+                "🤖 <b>AI Assistant Active!</b>\n\n"
+                "🔵 Ask me anything — support, OTPs, how to use bot, etc.\n"
+                "🟢 Type your question below:\n\n"
+                "<i>Send ❌ Exit AI Chat to go back to menu.</i>",
+                parse_mode="HTML",
+                reply_markup=markup
+            )
+            user_stage[user_id] = "ai_chat"
+            user_last_message[user_id] = sent.message_id
+
+        elif data == "exit_ai_chat":
+            user_stage.pop(user_id, None)
+            gemini_chat_sessions.pop(user_id, None)
+            try:
+                bot.delete_message(call.message.chat.id, call.message.message_id)
+            except:
+                pass
+            clean_ui_and_send_menu(call.message.chat.id, user_id)
+
+        # ── Server 1 / Server 2 purchase ─────────────────────────────
+        elif data.startswith("srv1_") or data.startswith("srv2_"):
+            server_num = 1 if data.startswith("srv1_") else 2
+            country_name = data[5:]
+            bot.answer_callback_query(call.id, f"🖥️ Server {server_num} selected...")
+            # Find account from that server
+            query = {"country": country_name, "status": "active", "used": False}
+            if server_num == 2:
+                query["server"] = 2
+            else:
+                query["$or"] = [{"server": {"$exists": False}}, {"server": 1}, {"server": {"$ne": 2}}]
+                query.pop("$or", None)
+                query["server"] = {"$ne": 2}
+            account = accounts_col.find_one(query)
+            if not account:
+                bot.answer_callback_query(call.id, f"❌ No accounts on Server {server_num} right now!", show_alert=True)
+                return
+            process_purchase(user_id, str(account["_id"]), call.message.chat.id, call.message.message_id, call.id)
+
+        # ── Manage Admins Panel ───────────────────────────────────────
+        elif data == "manage_admins_panel":
+            if is_admin(user_id):
+                bot.answer_callback_query(call.id, "👥 Admin Management")
+                show_manage_admins_panel(call.message.chat.id, call.message.message_id)
+            else:
+                bot.answer_callback_query(call.id, "❌ Unauthorized", show_alert=True)
+
+        elif data == "admin_add_new":
+            if is_super_admin(user_id):
+                bot.answer_callback_query(call.id, "")
+                admin_add_state[user_id] = {"step": "waiting_user_id"}
+                markup = InlineKeyboardMarkup()
+                markup.add(InlineKeyboardButton("❌ Cancel", callback_data="manage_admins_panel"))
+                try:
+                    bot.edit_message_text(
+                        "👤 <b>Add New Admin</b>\n\nEnter the User ID of the person to make admin:",
+                        call.message.chat.id, call.message.message_id,
+                        parse_mode="HTML", reply_markup=markup
+                    )
+                except:
+                    bot.send_message(call.message.chat.id, "👤 Enter User ID to make admin:", reply_markup=markup)
+            else:
+                bot.answer_callback_query(call.id, "❌ Only main admin can add admins!", show_alert=True)
+
+        elif data == "admin_remove_existing":
+            if is_super_admin(user_id):
+                bot.answer_callback_query(call.id, "")
+                admins = get_all_admins()
+                non_super = [a for a in admins if not a.get("is_super_admin", False)]
+                if not non_super:
+                    bot.answer_callback_query(call.id, "No sub-admins to remove.", show_alert=True)
+                    return
+                markup = InlineKeyboardMarkup(row_width=1)
+                for adm in non_super:
+                    markup.add(InlineKeyboardButton(
+                        f"❌ Remove {adm['user_id']} — {adm.get('name','?')}",
+                        callback_data=f"confirm_remove_admin_{adm['user_id']}"
+                    ))
+                markup.add(InlineKeyboardButton("⬅️ Back", callback_data="manage_admins_panel"))
+                try:
+                    bot.edit_message_text(
+                        "🗑 <b>Remove Admin</b>\n\nSelect admin to remove:",
+                        call.message.chat.id, call.message.message_id,
+                        parse_mode="HTML", reply_markup=markup
+                    )
+                except:
+                    pass
+            else:
+                bot.answer_callback_query(call.id, "❌ Only main admin!", show_alert=True)
+
+        elif data.startswith("confirm_remove_admin_"):
+            if is_super_admin(user_id):
+                target_id = int(data.split("_")[-1])
+                success, msg_text = remove_admin(target_id, user_id)
+                bot.answer_callback_query(call.id, msg_text, show_alert=True)
+                try:
+                    bot.send_message(target_id, "⚠️ <b>Your admin access has been removed.</b>", parse_mode="HTML")
+                except:
+                    pass
+                show_manage_admins_panel(call.message.chat.id, call.message.message_id)
+            else:
+                bot.answer_callback_query(call.id, "❌ Unauthorized", show_alert=True)
+
+        # ── Pending Recharges List ────────────────────────────────────
+        elif data == "pending_recharges_list":
+            if is_admin(user_id):
+                bot.answer_callback_query(call.id, "💳 Pending Recharges")
+                pending = list(recharges_col.find({"status": "pending"}).sort("created_at", -1).limit(10))
+                if not pending:
+                    bot.send_message(call.message.chat.id, "✅ No pending recharges right now!")
+                    return
+                for r in pending:
+                    req_id = r.get("req_id", str(r["_id"]))
+                    txt = (
+                        f"💳 <b>Pending Recharge</b>\n\n"
+                        f"👤 User: <code>{r['user_id']}</code>\n"
+                        f"💰 Amount: {format_currency(r['amount'])}\n"
+                        f"🔢 UTR: {r.get('utr','N/A')}\n"
+                        f"🆔 Req ID: <code>{req_id}</code>"
+                    )
+                    markup = InlineKeyboardMarkup(row_width=2)
+                    markup.add(
+                        InlineKeyboardButton("✅ Approve", callback_data=f"approve_rech|{req_id}"),
+                        InlineKeyboardButton("❌ Reject", callback_data=f"cancel_rech|{req_id}")
+                    )
+                    try:
+                        if r.get("screenshot"):
+                            bot.send_photo(call.message.chat.id, r["screenshot"], caption=txt, parse_mode="HTML", reply_markup=markup)
+                        else:
+                            bot.send_message(call.message.chat.id, txt, parse_mode="HTML", reply_markup=markup)
+                    except:
+                        pass
+            else:
+                bot.answer_callback_query(call.id, "❌ Unauthorized", show_alert=True)
+
         else:
             bot.answer_callback_query(call.id, "❌ Unknown action", show_alert=True)
     
@@ -3884,6 +4046,14 @@ def show_admin_panel(chat_id):
         InlineKeyboardButton("🌍 Manage Countries", callback_data="manage_countries"),
         InlineKeyboardButton("🎟 Coupon Management", callback_data="admin_coupon_menu")
     )
+    markup.add(
+        InlineKeyboardButton("👥 Manage Admins", callback_data="manage_admins_panel")
+    )
+    
+    # Pending recharges count
+    pending_recharges = recharges_col.count_documents({"status": "pending"})
+    if pending_recharges > 0:
+        markup.add(InlineKeyboardButton(f"💳 Pending Recharges ({pending_recharges})", callback_data="pending_recharges_list"))
     
     # Show admin list for main admin
     if is_super_admin(user_id):
@@ -4523,24 +4693,21 @@ def show_country_details(user_id, country_name, chat_id, message_id, callback_id
 ⚠️ Use Turbotel and plus messenger only to login.
 🚫 Not responsible for freeze / ban.</blockquote>"""
         
+        # Count per server
+        server1_count = accounts_col.count_documents({"country": country_name, "status": "active", "used": False, "server": {"$ne": 2}})
+        server2_count = accounts_col.count_documents({"country": country_name, "status": "active", "used": False, "server": 2})
+
         markup = InlineKeyboardMarkup(row_width=2)
-        
-        if accounts_count > 0:
-            accounts = list(accounts_col.find({
-                "country": country_name,
-                "status": "active",
-                "used": False
-            }))
-            markup.add(InlineKeyboardButton(
-                "🛒 Buy Account",
-                callback_data=f"buy_{accounts[0]['_id']}" if accounts else "out_of_stock"
-            ))
-        else:
-            markup.add(InlineKeyboardButton(
-                "🛒 Buy Account",
-                callback_data="out_of_stock"
-            ))
-        
+        markup.add(
+            InlineKeyboardButton(
+                f"🖥️ Server 1 {'✅' if server1_count > 0 else '❌'} ({server1_count})",
+                callback_data=f"srv1_{country_name}" if server1_count > 0 else "out_of_stock"
+            ),
+            InlineKeyboardButton(
+                f"🖥️ Server 2 {'✅' if server2_count > 0 else '❌'} ({server2_count})",
+                callback_data=f"srv2_{country_name}" if server2_count > 0 else "out_of_stock"
+            )
+        )
         markup.add(InlineKeyboardButton("⬅️ Back", callback_data="back_to_countries"))
         
         edit_or_resend(
@@ -4865,11 +5032,113 @@ def chat_handler(msg):
             del admin_deduct_state[user_id]
             return
     
+    # ── AI Chat mode ──────────────────────────────────────────────────
+    if user_stage.get(user_id) == "ai_chat" and msg.text:
+        handle_gemini_chat(msg)
+        return
+
     if msg.chat.type == "private":
         bot.send_message(
             user_id,
             "⚠️ Please use /start or buttons from the menu."
         )
+
+# ---------------------------------------------------------------------
+# GEMINI AI CHATBOT HANDLER
+# ---------------------------------------------------------------------
+
+def handle_gemini_chat(msg):
+    user_id = msg.from_user.id
+    text = msg.text.strip()
+
+    if not gemini_model:
+        bot.send_message(
+            msg.chat.id,
+            "❌ AI Chat is currently unavailable. Contact admin.",
+        )
+        return
+
+    # Typing action
+    try:
+        bot.send_chat_action(msg.chat.id, "typing")
+    except:
+        pass
+
+    try:
+        # Maintain per-user chat session for context
+        if user_id not in gemini_chat_sessions:
+            gemini_chat_sessions[user_id] = gemini_model.start_chat(history=[])
+
+        chat = gemini_chat_sessions[user_id]
+
+        # System context prepended only first time
+        system_prefix = (
+            "You are a helpful assistant for a Telegram account selling & OTP service bot called "
+            "'Legendary OTP Seller'. Help users with: how to buy accounts, recharge wallet, get OTP, "
+            "use Server 1 or Server 2, referral system, and general support. "
+            "Be concise, friendly, and reply in the same language the user writes in. "
+            "User message: "
+        )
+        prompt = system_prefix + text if len(chat.history) == 0 else text
+
+        response = chat.send_message(prompt)
+        reply = response.text.strip()
+
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("❌ Exit AI Chat", callback_data="exit_ai_chat"))
+
+        bot.send_message(
+            msg.chat.id,
+            f"🤖 <b>AI Assistant:</b>\n\n{reply}",
+            parse_mode="HTML",
+            reply_markup=markup
+        )
+    except Exception as e:
+        logger.error(f"Gemini chat error: {e}")
+        bot.send_message(
+            msg.chat.id,
+            "❌ AI response failed. Please try again.\n\nUse /start to go back to menu.",
+        )
+
+# ---------------------------------------------------------------------
+# MANAGE ADMINS PANEL FUNCTION
+# ---------------------------------------------------------------------
+
+def show_manage_admins_panel(chat_id, message_id=None):
+    if not is_admin(chat_id):
+        bot.send_message(chat_id, "❌ Unauthorized")
+        return
+
+    admins = get_all_admins()
+    total = len(admins)
+    max_admins = 6
+
+    text = (
+        "👥 <b>Manage Admins</b>\n\n"
+        f"📊 Total Admins: <b>{total}/{max_admins}</b>\n\n"
+        "<b>Current Admin List:</b>\n"
+    )
+    for adm in admins:
+        crown = "👑" if adm.get("is_super_admin") else "👤"
+        name = adm.get("name", "Unknown")
+        uid = adm["user_id"]
+        text += f"{crown} <code>{uid}</code> — {name}\n"
+
+    markup = InlineKeyboardMarkup(row_width=2)
+    if is_super_admin(chat_id):
+        markup.add(
+            InlineKeyboardButton("➕ Add Admin", callback_data="admin_add_new"),
+            InlineKeyboardButton("🗑 Remove Admin", callback_data="admin_remove_existing")
+        )
+    markup.add(InlineKeyboardButton("⬅️ Back to Admin", callback_data="admin_panel"))
+
+    try:
+        if message_id:
+            bot.edit_message_text(text, chat_id, message_id, parse_mode="HTML", reply_markup=markup)
+        else:
+            bot.send_message(chat_id, text, parse_mode="HTML", reply_markup=markup)
+    except:
+        bot.send_message(chat_id, text, parse_mode="HTML", reply_markup=markup)
 
 # ---------------------------------------------------------------------
 # FLASK WEBHOOK SERVER — exclusive control, no polling conflicts
