@@ -1074,41 +1074,35 @@ def clean_ui_and_send_menu(chat_id, user_id, text=None, markup=None):
         def show_sequence():
             try:
                         # Premium start animation
-                frames = [
-                    (
-                        "╔══════════════════════╗\n"
-                        "  👋  𝙃𝙀𝙇𝙇𝙊 𝙎𝙄𝙍...  👋\n"
-                        "╚══════════════════════╝"
-                    ),
-                    (
-                        "🏓  <b>𝙋𝙄𝙉𝙂  ─────  𝙋𝙊𝙉𝙂</b>  🏓\n\n"
-                        "<i>Connecting to servers...</i>"
-                    ),
-                    (
-                        "⚡ <b>𝙎𝙏𝘼𝙍𝙏𝙄𝙉𝙂</b> ⚡\n\n"
-                        "▓▓▓▓▓▓░░░░  60%"
-                    ),
-                    (
-                        "⚡ <b>𝙎𝙏𝘼𝙍𝙏𝙄𝙉𝙂</b> ⚡\n\n"
-                        "▓▓▓▓▓▓▓▓▓░  90%"
-                    ),
-                    (
-                        "🚀 <b>𝙊𝙋𝙀𝙉𝙄𝙉𝙂 𝙈𝘼𝙄𝙉 𝙈𝙀𝙉𝙐</b> 🚀\n\n"
-                        "▓▓▓▓▓▓▓▓▓▓  ✅ 100%"
-                    ),
-                ]
-                anim_msg = bot.send_message(chat_id, frames[0], parse_mode="HTML")
-                for frame in frames[1:]:
-                    time.sleep(0.4)
-                    try:
-                        bot.edit_message_text(frame, chat_id, anim_msg.message_id, parse_mode="HTML")
-                    except:
-                        pass
+                anim_msg = bot.send_message(chat_id, "✨ HLO SIR....", parse_mode="HTML")
+                time.sleep(0.3)
+                try:
+                    bot.edit_message_text(
+                        "🏓 <b>PING  PONG ....</b>",
+                        chat_id, anim_msg.message_id, parse_mode="HTML"
+                    )
+                except: pass
+                time.sleep(0.3)
+                try:
+                    bot.edit_message_text(
+                        "⚡ <b>STARTING ....</b>\n<i>Loading your dashboard...</i>",
+                        chat_id, anim_msg.message_id, parse_mode="HTML"
+                    )
+                except: pass
+                time.sleep(0.35)
+                try:
+                    bot.edit_message_text(
+                        "🚀 <b>OPENING MAIN MENU</b> 🚀\n\n"
+                        "╔══════════════════╗\n"
+                        "  𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘 𝐗 𝐎𝐓𝐏  \n"
+                        "╚══════════════════╝",
+                        chat_id, anim_msg.message_id, parse_mode="HTML"
+                    )
+                except: pass
                 time.sleep(0.3)
                 try:
                     bot.delete_message(chat_id, anim_msg.message_id)
-                except:
-                    pass
+                except: pass
             except Exception as e:
                 logger.error(f"Error in sequence: {e}")
 
@@ -1837,18 +1831,25 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
                 missing_channels = get_missing_channels(user_id)
                 missing_list = "\n".join([f"• {ch}" for ch in missing_channels])
                 bot.answer_callback_query(
-                    call.id, 
-                    f"❌ Please join:\n{missing_list}", 
+                    call.id,
+                    f"❌ Please join:\n{missing_list}",
                     show_alert=True
                 )
                 start(call.message)
                 return
-            
+            bot.answer_callback_query(call.id, "")
+            show_countries(call.message.chat.id, page=0, message_id=call.message.message_id)
+
+        elif data.startswith("countries_pg_"):
+            if not has_user_joined_channels(user_id):
+                bot.answer_callback_query(call.id, "❌ Join required channels first!", show_alert=True)
+                return
             try:
-                bot.delete_message(call.message.chat.id, call.message.message_id)
+                page = int(data.split("_")[-1])
             except:
-                pass
-            show_countries(call.message.chat.id)
+                page = 0
+            bot.answer_callback_query(call.id, "")
+            show_countries(call.message.chat.id, page=page, message_id=call.message.message_id)
         
         elif data == "back_to_menu":
             clean_ui_and_send_menu(call.message.chat.id, user_id)
@@ -4650,40 +4651,69 @@ def process_user_message(msg, target_user_id):
 # COUNTRY SELECTION FUNCTIONS
 # ---------------------------------------------------------------------
 
-def show_countries(chat_id):
+COUNTRIES_PER_PAGE = 7
+
+def show_countries(chat_id, page=0, message_id=None):
     if not has_user_joined_channels(chat_id):
         start(bot.send_message(chat_id, "/start"))
         return
     
     countries = get_all_countries()
     if not countries:
-        text = "🌍 **Select Country**\n\n❌ No countries available right now. Please check back later."
+        text = "🌍 <b>Select Country</b>\n\n❌ No countries available right now. Please check back later."
         markup = InlineKeyboardMarkup()
         markup.add(InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu"))
-        
-        sent_msg = bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
+        sent_msg = bot.send_message(chat_id, text, reply_markup=markup, parse_mode="HTML")
         user_last_message[chat_id] = sent_msg.message_id
         return
-    
-    text = "🌍 **Select Country**\n\nChoose your country:"
+
+    total = len(countries)
+    total_pages = max(1, (total + COUNTRIES_PER_PAGE - 1) // COUNTRIES_PER_PAGE)
+    page = max(0, min(page, total_pages - 1))
+
+    start_idx = page * COUNTRIES_PER_PAGE
+    end_idx   = start_idx + COUNTRIES_PER_PAGE
+    page_countries = countries[start_idx:end_idx]
+
+    text = (
+        f"🌍 <b>Select Country</b>\n"
+        f"<i>Page {page + 1} of {total_pages}  •  {total} countries total</i>\n\n"
+        f"Choose your country below 👇"
+    )
     markup = InlineKeyboardMarkup(row_width=2)
-    
+
     row = []
-    for i, country in enumerate(countries):
+    for country in page_countries:
+        stock = accounts_col.count_documents({"country": country['name'], "status": "active", "used": False})
+        dot = "🟢" if stock > 0 else "🔴"
         row.append(InlineKeyboardButton(
-            country['name'],
+            f"{dot} {country['name']}",
             callback_data=f"country_raw_{country['name']}"
         ))
         if len(row) == 2:
             markup.add(*row)
             row = []
-    
     if row:
         markup.add(*row)
-    
-    markup.add(InlineKeyboardButton("⬅️ Back", callback_data="back_to_menu"))
-    
-    sent_msg = bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
+
+    # Navigation row
+    nav_buttons = []
+    if page > 0:
+        nav_buttons.append(InlineKeyboardButton("⬅️ Prev", callback_data=f"countries_pg_{page - 1}"))
+    if page < total_pages - 1:
+        nav_buttons.append(InlineKeyboardButton("➡️ Next", callback_data=f"countries_pg_{page + 1}"))
+    if nav_buttons:
+        markup.add(*nav_buttons)
+
+    markup.add(InlineKeyboardButton("🔙 Back to Menu", callback_data="back_to_menu"))
+
+    if message_id:
+        try:
+            bot.edit_message_text(text, chat_id, message_id, parse_mode="HTML", reply_markup=markup)
+            return
+        except:
+            pass
+    sent_msg = bot.send_message(chat_id, text, reply_markup=markup, parse_mode="HTML")
     user_last_message[chat_id] = sent_msg.message_id
 
 def show_country_details(user_id, country_name, chat_id, message_id, callback_id):
