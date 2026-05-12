@@ -107,21 +107,22 @@ class TelegramLogger:
         Returns:
             bool: Success status
         """
-        # Format phone number (show first digits and mask rest)
+        # Format phone number (show first 2 digits and mask rest)
         formatted_phone = ""
         if phone:
             try:
                 # Remove any non-digit characters
                 digits = ''.join(filter(str.isdigit, phone))
-                if len(digits) >= 10:
-                    # Show first 3 digits and mask rest
-                    formatted_phone = digits[:3] + "****" + digits[-2:]
+                if len(digits) >= 4:
+                    # Show first 2 digits, mask middle, show last 1 digit
+                    hidden = "*" * (len(digits) - 3)
+                    formatted_phone = digits[:2] + hidden + digits[-1:]
                 elif len(digits) > 0:
-                    formatted_phone = digits[:3] + "****"
+                    formatted_phone = digits[:2] + "***"
                 else:
                     formatted_phone = "N/A"
             except:
-                formatted_phone = phone[:3] + "****" if len(phone) > 3 else "N/A"
+                formatted_phone = phone[:2] + "****" if len(phone) > 2 else "N/A"
         
         # Format user ID (show first digits and mask rest)
         formatted_user = ""
@@ -164,17 +165,18 @@ class TelegramLogger:
         Returns:
             bool: Success status
         """
-        # Format phone number
+        # Format phone number (show first 2 digits and mask rest)
         formatted_phone = ""
         if phone:
             try:
                 digits = ''.join(filter(str.isdigit, phone))
-                if len(digits) >= 10:
-                    formatted_phone = digits[:3] + "****" + digits[-2:]
+                if len(digits) >= 4:
+                    hidden = "*" * (len(digits) - 3)
+                    formatted_phone = digits[:2] + hidden + digits[-1:]
                 else:
-                    formatted_phone = digits[:3] + "****"
+                    formatted_phone = digits[:2] + "***"
             except:
-                formatted_phone = phone[:3] + "****" if len(phone) > 3 else "N/A"
+                formatted_phone = phone[:2] + "****" if len(phone) > 2 else "N/A"
         
         # Format user ID
         formatted_user = ""

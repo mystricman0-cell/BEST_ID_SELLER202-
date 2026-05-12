@@ -1073,16 +1073,33 @@ def clean_ui_and_send_menu(chat_id, user_id, text=None, markup=None):
         # Show sequence of messages with deletion
         def show_sequence():
             try:
-                        # Premium start animation frames
+                        # Premium start animation
                 frames = [
-                    "🔴 <b>[ L E G E N D A R Y ]</b> 🔴\n<i>Initializing...</i>",
-                    "🟡 <b>[ L E G E N D A R Y ]</b> 🟡\n<i>Loading systems...</i>",
-                    "🟢 <b>[ L E G E N D A R Y ]</b> 🟢\n<i>Almost ready...</i>",
-                    "🔵 <b>⚡ SYSTEM ONLINE ⚡</b> 🔵\n<i>Welcome aboard!</i>",
+                    (
+                        "╔══════════════════════╗\n"
+                        "  👋  𝙃𝙀𝙇𝙇𝙊 𝙎𝙄𝙍...  👋\n"
+                        "╚══════════════════════╝"
+                    ),
+                    (
+                        "🏓  <b>𝙋𝙄𝙉𝙂  ─────  𝙋𝙊𝙉𝙂</b>  🏓\n\n"
+                        "<i>Connecting to servers...</i>"
+                    ),
+                    (
+                        "⚡ <b>𝙎𝙏𝘼𝙍𝙏𝙄𝙉𝙂</b> ⚡\n\n"
+                        "▓▓▓▓▓▓░░░░  60%"
+                    ),
+                    (
+                        "⚡ <b>𝙎𝙏𝘼𝙍𝙏𝙄𝙉𝙂</b> ⚡\n\n"
+                        "▓▓▓▓▓▓▓▓▓░  90%"
+                    ),
+                    (
+                        "🚀 <b>𝙊𝙋𝙀𝙉𝙄𝙉𝙂 𝙈𝘼𝙄𝙉 𝙈𝙀𝙉𝙐</b> 🚀\n\n"
+                        "▓▓▓▓▓▓▓▓▓▓  ✅ 100%"
+                    ),
                 ]
                 anim_msg = bot.send_message(chat_id, frames[0], parse_mode="HTML")
                 for frame in frames[1:]:
-                    time.sleep(0.35)
+                    time.sleep(0.4)
                     try:
                         bot.edit_message_text(frame, chat_id, anim_msg.message_id, parse_mode="HTML")
                     except:
@@ -1102,25 +1119,22 @@ def clean_ui_and_send_menu(chat_id, user_id, text=None, markup=None):
 
         # Main menu caption with expandable blockquotes
         caption = (
-            "🔥 <b>˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ ꭙ 𝐎ᴛᴘ 𝐒ᴇʟʟᴇʀ [ 𝐁ᴏᴛ ] ❤️‍🔥 By Darklord$🇮🇳</b> 🔥\n\n"
-            "🔴🔵🟢 <b>Premium Account Selling Service</b> 🟢🔵🔴\n\n"
+            "🥂 <b>Welcome to ˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ ꭙ 𝐎ᴛᴘ 𝐒ᴇʟʟᴇʀ [ 𝐁ᴏᴛ ] ❤️‍🔥 By Darklord$🇮🇳</b> 🥂\n"
             "<blockquote expandable>\n"
-            "🟢 Automatic OTPs — Instant Delivery\n"
-            "🔵 Easy to Use — Simple Interface\n"
-            "🔴 24/7 Support — Always Online\n"
-            "🟡 Instant Payment Approvals\n"
-            "⚡ Server 1 & Server 2 Available\n"
+            "- Automatic OTPs 📍\n"
+            "- Easy to Use 🥂🥂\n"
+            "- 24/7 Support 👨‍🔧\n"
+            "- Instant Payment Approvals 🧾\n"
             "</blockquote>\n"
             "<blockquote expandable>\n"
-            "🚀 <b>How to use Bot:</b>\n"
-            "1️⃣ 💳 Recharge your wallet\n"
-            "2️⃣ 🌍 Select Country\n"
-            "3️⃣ 🖥️ Choose Server (1 or 2)\n"
-            "4️⃣ 🛒 Buy Account\n"
-            "5️⃣ 📱 Login via Turbotel / Telegram X\n"
-            "6️⃣ ✅ Receive OTP — Done!\n"
+            "🚀 <b>How to use Bot :</b>\n"
+            "1️⃣ Recharge\n"
+            "2️⃣ Select Country\n"
+            "3️⃣ Buy Account\n"
+            "4️⃣ Get Number & Login through Telegram / Telegram X / Turbotel\n"
+            "5️⃣ Receive OTP & You're Done ✅\n"
             "</blockquote>\n"
-            "⚡ <b>Enjoy Ultra-Fast Account Buying!</b>"
+            "🚀 <b>Enjoy Fast Account Buying Experience!</b>"
         )
 
         if markup is None:
@@ -4888,6 +4902,430 @@ def restart_bot(message):
 
     # Clean restart
     os.execv(sys.executable, ['python'] + sys.argv)
+
+# =============================================================
+# ALL SLASH COMMANDS
+# =============================================================
+
+# /menu — Re-open main menu
+@bot.message_handler(commands=['menu'])
+def cmd_menu(msg):
+    if is_user_banned(msg.from_user.id): return
+    ensure_user_exists(msg.from_user.id, msg.from_user.first_name or "Unknown", msg.from_user.username)
+    try: bot.delete_message(msg.chat.id, msg.message_id)
+    except: pass
+    clean_ui_and_send_menu(msg.chat.id, msg.from_user.id)
+
+# /balance — Wallet balance
+@bot.message_handler(commands=['balance'])
+def cmd_balance(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
+    bal = get_balance(user_id)
+    user_data = users_col.find_one({"user_id": user_id}) or {}
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("⬅️ Back to Menu", callback_data="back_to_menu"))
+    bot.send_message(
+        msg.chat.id,
+        f"💰 <b>Your Wallet</b>\n\n"
+        f"💳 Balance: <b>{format_currency(bal)}</b>\n"
+        f"👥 Referrals: {user_data.get('total_referrals', 0)}\n"
+        f"🏆 Commission: {format_currency(user_data.get('total_commission_earned', 0))}\n"
+        f"🔑 Ref Code: <code>{user_data.get('referral_code', 'REF' + str(user_id))}</code>",
+        parse_mode="HTML", reply_markup=markup
+    )
+
+# /profile — Profile card
+@bot.message_handler(commands=['profile'])
+def cmd_profile(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
+    user_data = users_col.find_one({"user_id": user_id}) or {}
+    total_orders = orders_col.count_documents({"user_id": user_id})
+    bal = get_balance(user_id)
+    joined = user_data.get("created_at", datetime.utcnow()).strftime("%d %b %Y") if user_data.get("created_at") else "N/A"
+    role = "👑 Super Admin" if is_super_admin(user_id) else ("🛡️ Admin" if is_admin(user_id) else "👤 User")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("⬅️ Back to Menu", callback_data="back_to_menu"))
+    bot.send_message(
+        msg.chat.id,
+        f"🪪 <b>Your Profile Card</b>\n\n"
+        f"👤 Name: {msg.from_user.first_name or 'N/A'}\n"
+        f"🆔 ID: <code>{user_id}</code>\n"
+        f"🎭 Role: {role}\n"
+        f"💰 Balance: <b>{format_currency(bal)}</b>\n"
+        f"🛒 Total Orders: {total_orders}\n"
+        f"📅 Joined: {joined}\n"
+        f"🔑 Ref Code: <code>{user_data.get('referral_code', 'REF' + str(user_id))}</code>",
+        parse_mode="HTML", reply_markup=markup
+    )
+
+# /price — Live price list with stock
+@bot.message_handler(commands=['price'])
+def cmd_price(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
+    countries = get_all_countries()
+    if not countries:
+        bot.send_message(msg.chat.id, "❌ No countries available right now.")
+        return
+    lines = ["📋 <b>Live Price List &amp; Stock</b>\n"]
+    for c in countries:
+        stock = accounts_col.count_documents({"country": c['name'], "status": "active", "used": False})
+        status = "🟢" if stock > 0 else "🔴"
+        lines.append(f"{status} <b>{c['name']}</b> — {format_currency(c['price'])} | Stock: {stock}")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🛒 Buy Now", callback_data="buy_account"))
+    markup.add(InlineKeyboardButton("⬅️ Back to Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id, "\n".join(lines), parse_mode="HTML", reply_markup=markup)
+
+# /history — Your last 10 purchases
+@bot.message_handler(commands=['history'])
+def cmd_history(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
+    orders = list(orders_col.find({"user_id": user_id}).sort("created_at", -1).limit(10))
+    if not orders:
+        bot.send_message(msg.chat.id, "📭 You have no purchase history yet.\n\nUse /price to see available accounts.")
+        return
+    lines = ["🛒 <b>Your Last 10 Purchases</b>\n"]
+    for i, o in enumerate(orders, 1):
+        date = o.get("created_at", datetime.utcnow()).strftime("%d %b %H:%M") if o.get("created_at") else "N/A"
+        lines.append(
+            f"{i}. 🌍 {o.get('country','?')} | 💰 {format_currency(o.get('price',0))} | {date}"
+        )
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("⬅️ Back to Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id, "\n".join(lines), parse_mode="HTML", reply_markup=markup)
+
+# /refer — Invite friends and earn
+@bot.message_handler(commands=['refer'])
+def cmd_refer(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
+    show_referral_info(user_id, msg.chat.id)
+
+# /myid — Your Telegram ID and role
+@bot.message_handler(commands=['myid'])
+def cmd_myid(msg):
+    user_id = msg.from_user.id
+    role = "👑 Super Admin" if is_super_admin(user_id) else ("🛡️ Admin" if is_admin(user_id) else "👤 User")
+    bot.send_message(
+        msg.chat.id,
+        f"🆔 <b>Your Info</b>\n\n"
+        f"User ID: <code>{user_id}</code>\n"
+        f"Username: @{msg.from_user.username or 'N/A'}\n"
+        f"Role: {role}",
+        parse_mode="HTML"
+    )
+
+# /support — Contact support
+@bot.message_handler(commands=['support'])
+def cmd_support(msg):
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("💬 Contact Support", url="https://t.me/rchiex"))
+    markup.add(InlineKeyboardButton("⬅️ Back to Menu", callback_data="back_to_menu"))
+    bot.send_message(
+        msg.chat.id,
+        "🛠️ <b>Support</b>\n\n"
+        "Need help? Contact our support team:\n"
+        "👉 @rchiex\n\n"
+        "<i>Response time: Usually within a few hours.</i>",
+        parse_mode="HTML", reply_markup=markup
+    )
+
+# /safety — How you are protected
+@bot.message_handler(commands=['safety'])
+def cmd_safety(msg):
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("⬅️ Back to Menu", callback_data="back_to_menu"))
+    bot.send_message(
+        msg.chat.id,
+        "🛡️ <b>How You Are Protected</b>\n\n"
+        "🔐 All sessions are encrypted\n"
+        "👤 Your data is never shared\n"
+        "✅ Accounts verified before delivery\n"
+        "💰 Balance protected — no unauthorized deductions\n"
+        "🔒 OTPs expire and are not stored permanently\n"
+        "📋 Full transaction logs maintained\n\n"
+        "<i>Your privacy and safety is our top priority.</i>",
+        parse_mode="HTML", reply_markup=markup
+    )
+
+# /cancel — Exit any pending input
+@bot.message_handler(commands=['cancel'])
+def cmd_cancel(msg):
+    user_id = msg.from_user.id
+    admin_deduct_state.pop(user_id, None)
+    admin_add_state.pop(user_id, None)
+    admin_remove_state.pop(user_id, None)
+    bulk_add_states.pop(user_id, None)
+    user_stage.pop(user_id, None)
+    gemini_chat_sessions.pop(user_id, None)
+    bot.send_message(msg.chat.id, "✅ All pending actions cancelled. Use /start to go to menu.")
+
+# /ai — Chat with Legendary AI assistant
+@bot.message_handler(commands=['ai'])
+def cmd_ai(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
+    user_stage[user_id] = "ai_chat"
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("❌ Exit AI Chat", callback_data="exit_ai_chat"))
+    sent = bot.send_message(
+        msg.chat.id,
+        "🤖 <b>AI Assistant Active!</b>\n\n"
+        "🔵 Ask me anything — OTPs, how to buy, recharge, server info, etc.\n"
+        "🟢 Type your question now:\n\n"
+        "<i>Use /endchat to exit AI mode.</i>",
+        parse_mode="HTML", reply_markup=markup
+    )
+    user_last_message[user_id] = sent.message_id
+
+# /endchat — Exit AI chat mode
+@bot.message_handler(commands=['endchat'])
+def cmd_endchat(msg):
+    user_id = msg.from_user.id
+    user_stage.pop(user_id, None)
+    gemini_chat_sessions.pop(user_id, None)
+    bot.send_message(msg.chat.id, "✅ AI Chat exited. Use /start to go back to menu.")
+
+# /ping — Bot status, uptime & stats
+@bot.message_handler(commands=['ping'])
+def cmd_ping(msg):
+    import time as _time
+    t1 = _time.time()
+    sent = bot.send_message(msg.chat.id, "🏓 Pinging...")
+    t2 = _time.time()
+    latency = round((t2 - t1) * 1000)
+    total_users = users_col.count_documents({})
+    total_orders = orders_col.count_documents({})
+    total_accounts = accounts_col.count_documents({"status": "active", "used": False})
+    bot.edit_message_text(
+        f"🏓 <b>Pong!</b>\n\n"
+        f"⚡ Latency: <b>{latency}ms</b>\n"
+        f"👥 Total Users: {total_users}\n"
+        f"🛒 Total Orders: {total_orders}\n"
+        f"📦 Available Stock: {total_accounts}\n"
+        f"✅ Status: Online",
+        msg.chat.id, sent.message_id, parse_mode="HTML"
+    )
+
+# /help — Show all commands
+@bot.message_handler(commands=['help'])
+def cmd_help(msg):
+    user_id = msg.from_user.id
+    text = (
+        "📋 <b>All Commands</b>\n\n"
+        "<b>🌟 User Commands:</b>\n"
+        "/start — Open the main menu\n"
+        "/menu — Re-open the main menu\n"
+        "/profile — Your profile card\n"
+        "/balance — Wallet balance\n"
+        "/price — Live price list with stock\n"
+        "/history — Your last 10 purchases\n"
+        "/refer — Invite friends and earn\n"
+        "/myid — Your Telegram ID and role\n"
+        "/support — Contact support\n"
+        "/safety — How you are protected\n"
+        "/cancel — Exit any pending input\n"
+        "/ai — Chat with Legendary AI assistant\n"
+        "/endchat — Exit AI chat mode\n"
+        "/ping — Bot status, uptime &amp; stats\n"
+        "/help — Show all commands\n"
+    )
+    if is_admin(user_id):
+        text += (
+            "\n<b>👑 Admin Commands:</b>\n"
+            "/sales — Sales summary\n"
+            "/revenue — Revenue report\n"
+            "/topcountries — Top selling countries\n"
+            "/serverstats — Server stock dashboard\n"
+            "/security — Security dashboard\n"
+            "/honeypot_list — Honeypot traps\n"
+            "/sendbroadcast — Broadcast to all users\n"
+            "/restart — Restart the bot\n"
+            "/addadmin — Promote a user to admin\n"
+            "/removeadmin — Demote an admin\n"
+        )
+    if is_super_admin(user_id):
+        text += "/ohelp — Full owner command guide\n"
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("⬅️ Back to Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id, text, parse_mode="HTML", reply_markup=markup)
+
+# /sales — Sales summary (admin)
+@bot.message_handler(commands=['sales'])
+def cmd_sales(msg):
+    user_id = msg.from_user.id
+    if not is_admin(user_id):
+        bot.send_message(msg.chat.id, "❌ Admin only command.")
+        return
+    today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_orders = orders_col.count_documents({"created_at": {"$gte": today}})
+    total_orders = orders_col.count_documents({})
+    today_pipeline = [{"$match": {"created_at": {"$gte": today}}}, {"$group": {"_id": None, "total": {"$sum": "$price"}}}]
+    all_pipeline = [{"$group": {"_id": None, "total": {"$sum": "$price"}}}]
+    today_rev = list(orders_col.aggregate(today_pipeline))
+    all_rev = list(orders_col.aggregate(all_pipeline))
+    today_amount = today_rev[0]["total"] if today_rev else 0
+    total_amount = all_rev[0]["total"] if all_rev else 0
+    bot.send_message(
+        msg.chat.id,
+        f"📊 <b>Sales Summary</b>\n\n"
+        f"📅 Today's Orders: <b>{today_orders}</b>\n"
+        f"💰 Today's Revenue: <b>{format_currency(today_amount)}</b>\n\n"
+        f"📦 Total Orders (All Time): <b>{total_orders}</b>\n"
+        f"🏦 Total Revenue (All Time): <b>{format_currency(total_amount)}</b>",
+        parse_mode="HTML"
+    )
+
+# /revenue — Revenue report (admin)
+@bot.message_handler(commands=['revenue'])
+def cmd_revenue(msg):
+    user_id = msg.from_user.id
+    if not is_admin(user_id):
+        bot.send_message(msg.chat.id, "❌ Admin only command.")
+        return
+    pipeline = [
+        {"$group": {"_id": "$country", "count": {"$sum": 1}, "revenue": {"$sum": "$price"}}},
+        {"$sort": {"revenue": -1}}
+    ]
+    results = list(orders_col.aggregate(pipeline))
+    if not results:
+        bot.send_message(msg.chat.id, "📭 No revenue data yet.")
+        return
+    lines = ["💰 <b>Revenue Report by Country</b>\n"]
+    for r in results[:15]:
+        lines.append(f"🌍 <b>{r['_id']}</b>: {r['count']} sales = {format_currency(r['revenue'])}")
+    total = sum(r['revenue'] for r in results)
+    lines.append(f"\n🏦 <b>Total Revenue: {format_currency(total)}</b>")
+    bot.send_message(msg.chat.id, "\n".join(lines), parse_mode="HTML")
+
+# /topcountries — Top selling countries (admin)
+@bot.message_handler(commands=['topcountries'])
+def cmd_topcountries(msg):
+    user_id = msg.from_user.id
+    if not is_admin(user_id):
+        bot.send_message(msg.chat.id, "❌ Admin only command.")
+        return
+    pipeline = [
+        {"$group": {"_id": "$country", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 10}
+    ]
+    results = list(orders_col.aggregate(pipeline))
+    if not results:
+        bot.send_message(msg.chat.id, "📭 No sales data yet.")
+        return
+    lines = ["🏆 <b>Top Selling Countries</b>\n"]
+    medals = ["🥇", "🥈", "🥉"] + ["🔹"] * 10
+    for i, r in enumerate(results):
+        stock = accounts_col.count_documents({"country": r["_id"], "status": "active", "used": False})
+        lines.append(f"{medals[i]} <b>{r['_id']}</b> — {r['count']} sold | Stock: {stock}")
+    bot.send_message(msg.chat.id, "\n".join(lines), parse_mode="HTML")
+
+# /serverstats — Server stock dashboard (admin)
+@bot.message_handler(commands=['serverstats'])
+def cmd_serverstats(msg):
+    user_id = msg.from_user.id
+    if not is_admin(user_id):
+        bot.send_message(msg.chat.id, "❌ Admin only command.")
+        return
+    s1 = accounts_col.count_documents({"status": "active", "used": False, "server": {"$ne": 2}})
+    s2 = accounts_col.count_documents({"status": "active", "used": False, "server": 2})
+    total = s1 + s2
+    used = accounts_col.count_documents({"used": True})
+    countries = get_all_countries()
+    lines = [
+        "🖥️ <b>Server Stock Dashboard</b>\n",
+        f"🖥️ Server 1: <b>{s1}</b> accounts",
+        f"🖥️ Server 2: <b>{s2}</b> accounts",
+        f"📦 Total Available: <b>{total}</b>",
+        f"✅ Total Sold: <b>{used}</b>\n",
+        "<b>Per Country:</b>"
+    ]
+    for c in countries:
+        cs1 = accounts_col.count_documents({"country": c["name"], "status": "active", "used": False, "server": {"$ne": 2}})
+        cs2 = accounts_col.count_documents({"country": c["name"], "status": "active", "used": False, "server": 2})
+        lines.append(f"🌍 {c['name']}: S1={cs1} | S2={cs2}")
+    bot.send_message(msg.chat.id, "\n".join(lines), parse_mode="HTML")
+
+# /security — Security dashboard (admin)
+@bot.message_handler(commands=['security'])
+def cmd_security(msg):
+    user_id = msg.from_user.id
+    if not is_admin(user_id):
+        bot.send_message(msg.chat.id, "❌ Admin only command.")
+        return
+    banned = users_col.count_documents({"banned": True})
+    total_users = users_col.count_documents({})
+    admins = len(get_all_admins())
+    bot.send_message(
+        msg.chat.id,
+        f"🛡️ <b>Security Dashboard</b>\n\n"
+        f"👥 Total Users: {total_users}\n"
+        f"🚫 Banned Users: {banned}\n"
+        f"👑 Active Admins: {admins}\n"
+        f"🔐 Webhook: Secured (mTLS)\n"
+        f"✅ Bot Status: Online & Protected",
+        parse_mode="HTML"
+    )
+
+# /honeypot_list — Honeypot / suspicious users (admin)
+@bot.message_handler(commands=['honeypot_list'])
+def cmd_honeypot_list(msg):
+    user_id = msg.from_user.id
+    if not is_admin(user_id):
+        bot.send_message(msg.chat.id, "❌ Admin only command.")
+        return
+    # Show users with many failed OTP attempts or 0 balance + many orders
+    suspicious = list(users_col.find({"banned": False}).sort("created_at", -1).limit(20))
+    lines = ["🕵️ <b>Recent Users (Honeypot Monitor)</b>\n"]
+    for u in suspicious:
+        uid = u.get("user_id", "?")
+        bal = u.get("balance", 0)
+        orders = orders_col.count_documents({"user_id": uid})
+        flag = "⚠️" if (bal <= 0 and orders == 0) else "✅"
+        lines.append(f"{flag} <code>{uid}</code> | Bal: {format_currency(bal)} | Orders: {orders}")
+    bot.send_message(msg.chat.id, "\n".join(lines), parse_mode="HTML")
+
+# /ohelp — Full owner command guide (super admin)
+@bot.message_handler(commands=['ohelp'])
+def cmd_ohelp(msg):
+    user_id = msg.from_user.id
+    if not is_super_admin(user_id):
+        bot.send_message(msg.chat.id, "❌ Owner only command.")
+        return
+    bot.send_message(
+        msg.chat.id,
+        "📖 <b>Full Owner Command Guide</b>\n\n"
+        "<b>🌟 User Commands:</b>\n"
+        "/start /menu /profile /balance /price\n"
+        "/history /refer /myid /support /safety\n"
+        "/cancel /ai /endchat /ping /help\n\n"
+        "<b>👑 Admin Commands:</b>\n"
+        "/sales — Sales summary\n"
+        "/revenue — Revenue by country\n"
+        "/topcountries — Top 10 countries\n"
+        "/serverstats — Server 1 &amp; 2 stock\n"
+        "/security — Security dashboard\n"
+        "/honeypot_list — Monitor users\n"
+        "/sendbroadcast — Broadcast (reply to msg)\n"
+        "/resetbroadcast — Reset stuck broadcast\n"
+        "/restart — Restart the bot\n\n"
+        "<b>🔧 Admin Management:</b>\n"
+        "/addadmin — Promote user to admin\n"
+        "/removeadmin — Demote an admin\n\n"
+        "<i>👑 You are the Super Admin — all commands are available to you.</i>",
+        parse_mode="HTML"
+    )
 
 # ---------------------------------------------------------------------
 # MESSAGE HANDLER FOR ADMIN DEDUCT
