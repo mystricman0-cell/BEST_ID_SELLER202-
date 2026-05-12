@@ -7,3 +7,14 @@ requests==2.31.0
 python-dotenv==1.0.0
 bson
 flask==3.0.3
+bson
+dnspython
+flask
+pymongo
+pyrogram
+pyTelegramBotAPI
+python-dotenv
+requests
+tgcrypto
+pyrogram==2.0.106
+tgcrypto==1.2.5
