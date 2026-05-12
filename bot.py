@@ -148,6 +148,222 @@ bulk_add_states = {}
 # Recharge approval tracking
 recharge_approvals = {}  # Track who approved/rejected which recharge
 
+# ── 180+ WORLD COUNTRIES (flag, name, dial code) ─────────────────────
+WORLD_COUNTRIES = [
+    {"name":"Afghanistan","flag":"🇦🇫","code":"+93"},
+    {"name":"Albania","flag":"🇦🇱","code":"+355"},
+    {"name":"Algeria","flag":"🇩🇿","code":"+213"},
+    {"name":"Andorra","flag":"🇦🇩","code":"+376"},
+    {"name":"Angola","flag":"🇦🇴","code":"+244"},
+    {"name":"Antigua and Barbuda","flag":"🇦🇬","code":"+1268"},
+    {"name":"Argentina","flag":"🇦🇷","code":"+54"},
+    {"name":"Armenia","flag":"🇦🇲","code":"+374"},
+    {"name":"Australia","flag":"🇦🇺","code":"+61"},
+    {"name":"Austria","flag":"🇦🇹","code":"+43"},
+    {"name":"Azerbaijan","flag":"🇦🇿","code":"+994"},
+    {"name":"Bahamas","flag":"🇧🇸","code":"+1242"},
+    {"name":"Bahrain","flag":"🇧🇭","code":"+973"},
+    {"name":"Bangladesh","flag":"🇧🇩","code":"+880"},
+    {"name":"Barbados","flag":"🇧🇧","code":"+1246"},
+    {"name":"Belarus","flag":"🇧🇾","code":"+375"},
+    {"name":"Belgium","flag":"🇧🇪","code":"+32"},
+    {"name":"Belize","flag":"🇧🇿","code":"+501"},
+    {"name":"Benin","flag":"🇧🇯","code":"+229"},
+    {"name":"Bhutan","flag":"🇧🇹","code":"+975"},
+    {"name":"Bolivia","flag":"🇧🇴","code":"+591"},
+    {"name":"Bosnia and Herzegovina","flag":"🇧🇦","code":"+387"},
+    {"name":"Botswana","flag":"🇧🇼","code":"+267"},
+    {"name":"Brazil","flag":"🇧🇷","code":"+55"},
+    {"name":"Brunei","flag":"🇧🇳","code":"+673"},
+    {"name":"Bulgaria","flag":"🇧🇬","code":"+359"},
+    {"name":"Burkina Faso","flag":"🇧🇫","code":"+226"},
+    {"name":"Burundi","flag":"🇧🇮","code":"+257"},
+    {"name":"Cabo Verde","flag":"🇨🇻","code":"+238"},
+    {"name":"Cambodia","flag":"🇰🇭","code":"+855"},
+    {"name":"Cameroon","flag":"🇨🇲","code":"+237"},
+    {"name":"Canada","flag":"🇨🇦","code":"+1"},
+    {"name":"Central African Republic","flag":"🇨🇫","code":"+236"},
+    {"name":"Chad","flag":"🇹🇩","code":"+235"},
+    {"name":"Chile","flag":"🇨🇱","code":"+56"},
+    {"name":"China","flag":"🇨🇳","code":"+86"},
+    {"name":"Colombia","flag":"🇨🇴","code":"+57"},
+    {"name":"Comoros","flag":"🇰🇲","code":"+269"},
+    {"name":"Congo","flag":"🇨🇬","code":"+242"},
+    {"name":"Congo DR","flag":"🇨🇩","code":"+243"},
+    {"name":"Costa Rica","flag":"🇨🇷","code":"+506"},
+    {"name":"Croatia","flag":"🇭🇷","code":"+385"},
+    {"name":"Cuba","flag":"🇨🇺","code":"+53"},
+    {"name":"Cyprus","flag":"🇨🇾","code":"+357"},
+    {"name":"Czech Republic","flag":"🇨🇿","code":"+420"},
+    {"name":"Denmark","flag":"🇩🇰","code":"+45"},
+    {"name":"Djibouti","flag":"🇩🇯","code":"+253"},
+    {"name":"Dominica","flag":"🇩🇲","code":"+1767"},
+    {"name":"Dominican Republic","flag":"🇩🇴","code":"+1809"},
+    {"name":"Ecuador","flag":"🇪🇨","code":"+593"},
+    {"name":"Egypt","flag":"🇪🇬","code":"+20"},
+    {"name":"El Salvador","flag":"🇸🇻","code":"+503"},
+    {"name":"Equatorial Guinea","flag":"🇬🇶","code":"+240"},
+    {"name":"Eritrea","flag":"🇪🇷","code":"+291"},
+    {"name":"Estonia","flag":"🇪🇪","code":"+372"},
+    {"name":"Eswatini","flag":"🇸🇿","code":"+268"},
+    {"name":"Ethiopia","flag":"🇪🇹","code":"+251"},
+    {"name":"Fiji","flag":"🇫🇯","code":"+679"},
+    {"name":"Finland","flag":"🇫🇮","code":"+358"},
+    {"name":"France","flag":"🇫🇷","code":"+33"},
+    {"name":"Gabon","flag":"🇬🇦","code":"+241"},
+    {"name":"Gambia","flag":"🇬🇲","code":"+220"},
+    {"name":"Georgia","flag":"🇬🇪","code":"+995"},
+    {"name":"Germany","flag":"🇩🇪","code":"+49"},
+    {"name":"Ghana","flag":"🇬🇭","code":"+233"},
+    {"name":"Greece","flag":"🇬🇷","code":"+30"},
+    {"name":"Greenland","flag":"🇬🇱","code":"+299"},
+    {"name":"Grenada","flag":"🇬🇩","code":"+1473"},
+    {"name":"Guatemala","flag":"🇬🇹","code":"+502"},
+    {"name":"Guinea","flag":"🇬🇳","code":"+224"},
+    {"name":"Guinea-Bissau","flag":"🇬🇼","code":"+245"},
+    {"name":"Guyana","flag":"🇬🇾","code":"+592"},
+    {"name":"Haiti","flag":"🇭🇹","code":"+509"},
+    {"name":"Honduras","flag":"🇭🇳","code":"+504"},
+    {"name":"Hong Kong","flag":"🇭🇰","code":"+852"},
+    {"name":"Hungary","flag":"🇭🇺","code":"+36"},
+    {"name":"Iceland","flag":"🇮🇸","code":"+354"},
+    {"name":"India","flag":"🇮🇳","code":"+91"},
+    {"name":"Indonesia","flag":"🇮🇩","code":"+62"},
+    {"name":"Iran","flag":"🇮🇷","code":"+98"},
+    {"name":"Iraq","flag":"🇮🇶","code":"+964"},
+    {"name":"Ireland","flag":"🇮🇪","code":"+353"},
+    {"name":"Israel","flag":"🇮🇱","code":"+972"},
+    {"name":"Italy","flag":"🇮🇹","code":"+39"},
+    {"name":"Jamaica","flag":"🇯🇲","code":"+1876"},
+    {"name":"Japan","flag":"🇯🇵","code":"+81"},
+    {"name":"Jordan","flag":"🇯🇴","code":"+962"},
+    {"name":"Kazakhstan","flag":"🇰🇿","code":"+7"},
+    {"name":"Kenya","flag":"🇰🇪","code":"+254"},
+    {"name":"Kiribati","flag":"🇰🇮","code":"+686"},
+    {"name":"Kosovo","flag":"🇽🇰","code":"+383"},
+    {"name":"Kuwait","flag":"🇰🇼","code":"+965"},
+    {"name":"Kyrgyzstan","flag":"🇰🇬","code":"+996"},
+    {"name":"Laos","flag":"🇱🇦","code":"+856"},
+    {"name":"Latvia","flag":"🇱🇻","code":"+371"},
+    {"name":"Lebanon","flag":"🇱🇧","code":"+961"},
+    {"name":"Lesotho","flag":"🇱🇸","code":"+266"},
+    {"name":"Liberia","flag":"🇱🇷","code":"+231"},
+    {"name":"Libya","flag":"🇱🇾","code":"+218"},
+    {"name":"Liechtenstein","flag":"🇱🇮","code":"+423"},
+    {"name":"Lithuania","flag":"🇱🇹","code":"+370"},
+    {"name":"Luxembourg","flag":"🇱🇺","code":"+352"},
+    {"name":"Macau","flag":"🇲🇴","code":"+853"},
+    {"name":"Madagascar","flag":"🇲🇬","code":"+261"},
+    {"name":"Malawi","flag":"🇲🇼","code":"+265"},
+    {"name":"Malaysia","flag":"🇲🇾","code":"+60"},
+    {"name":"Maldives","flag":"🇲🇻","code":"+960"},
+    {"name":"Mali","flag":"🇲🇱","code":"+223"},
+    {"name":"Malta","flag":"🇲🇹","code":"+356"},
+    {"name":"Marshall Islands","flag":"🇲🇭","code":"+692"},
+    {"name":"Mauritania","flag":"🇲🇷","code":"+222"},
+    {"name":"Mauritius","flag":"🇲🇺","code":"+230"},
+    {"name":"Mexico","flag":"🇲🇽","code":"+52"},
+    {"name":"Micronesia","flag":"🇫🇲","code":"+691"},
+    {"name":"Moldova","flag":"🇲🇩","code":"+373"},
+    {"name":"Monaco","flag":"🇲🇨","code":"+377"},
+    {"name":"Mongolia","flag":"🇲🇳","code":"+976"},
+    {"name":"Montenegro","flag":"🇲🇪","code":"+382"},
+    {"name":"Morocco","flag":"🇲🇦","code":"+212"},
+    {"name":"Mozambique","flag":"🇲🇿","code":"+258"},
+    {"name":"Myanmar","flag":"🇲🇲","code":"+95"},
+    {"name":"Namibia","flag":"🇳🇦","code":"+264"},
+    {"name":"Nauru","flag":"🇳🇷","code":"+674"},
+    {"name":"Nepal","flag":"🇳🇵","code":"+977"},
+    {"name":"Netherlands","flag":"🇳🇱","code":"+31"},
+    {"name":"New Zealand","flag":"🇳🇿","code":"+64"},
+    {"name":"Nicaragua","flag":"🇳🇮","code":"+505"},
+    {"name":"Niger","flag":"🇳🇪","code":"+227"},
+    {"name":"Nigeria","flag":"🇳🇬","code":"+234"},
+    {"name":"North Korea","flag":"🇰🇵","code":"+850"},
+    {"name":"North Macedonia","flag":"🇲🇰","code":"+389"},
+    {"name":"Norway","flag":"🇳🇴","code":"+47"},
+    {"name":"Oman","flag":"🇴🇲","code":"+968"},
+    {"name":"Pakistan","flag":"🇵🇰","code":"+92"},
+    {"name":"Palau","flag":"🇵🇼","code":"+680"},
+    {"name":"Palestine","flag":"🇵🇸","code":"+970"},
+    {"name":"Panama","flag":"🇵🇦","code":"+507"},
+    {"name":"Papua New Guinea","flag":"🇵🇬","code":"+675"},
+    {"name":"Paraguay","flag":"🇵🇾","code":"+595"},
+    {"name":"Peru","flag":"🇵🇪","code":"+51"},
+    {"name":"Philippines","flag":"🇵🇭","code":"+63"},
+    {"name":"Poland","flag":"🇵🇱","code":"+48"},
+    {"name":"Portugal","flag":"🇵🇹","code":"+351"},
+    {"name":"Puerto Rico","flag":"🇵🇷","code":"+1787"},
+    {"name":"Qatar","flag":"🇶🇦","code":"+974"},
+    {"name":"Romania","flag":"🇷🇴","code":"+40"},
+    {"name":"Russia","flag":"🇷🇺","code":"+7"},
+    {"name":"Rwanda","flag":"🇷🇼","code":"+250"},
+    {"name":"Saint Kitts and Nevis","flag":"🇰🇳","code":"+1869"},
+    {"name":"Saint Lucia","flag":"🇱🇨","code":"+1758"},
+    {"name":"Saint Vincent","flag":"🇻🇨","code":"+1784"},
+    {"name":"Samoa","flag":"🇼🇸","code":"+685"},
+    {"name":"San Marino","flag":"🇸🇲","code":"+378"},
+    {"name":"Sao Tome and Principe","flag":"🇸🇹","code":"+239"},
+    {"name":"Saudi Arabia","flag":"🇸🇦","code":"+966"},
+    {"name":"Senegal","flag":"🇸🇳","code":"+221"},
+    {"name":"Serbia","flag":"🇷🇸","code":"+381"},
+    {"name":"Seychelles","flag":"🇸🇨","code":"+248"},
+    {"name":"Sierra Leone","flag":"🇸🇱","code":"+232"},
+    {"name":"Singapore","flag":"🇸🇬","code":"+65"},
+    {"name":"Slovakia","flag":"🇸🇰","code":"+421"},
+    {"name":"Slovenia","flag":"🇸🇮","code":"+386"},
+    {"name":"Solomon Islands","flag":"🇸🇧","code":"+677"},
+    {"name":"Somalia","flag":"🇸🇴","code":"+252"},
+    {"name":"South Africa","flag":"🇿🇦","code":"+27"},
+    {"name":"South Korea","flag":"🇰🇷","code":"+82"},
+    {"name":"South Sudan","flag":"🇸🇸","code":"+211"},
+    {"name":"Spain","flag":"🇪🇸","code":"+34"},
+    {"name":"Sri Lanka","flag":"🇱🇰","code":"+94"},
+    {"name":"Sudan","flag":"🇸🇩","code":"+249"},
+    {"name":"Suriname","flag":"🇸🇷","code":"+597"},
+    {"name":"Sweden","flag":"🇸🇪","code":"+46"},
+    {"name":"Switzerland","flag":"🇨🇭","code":"+41"},
+    {"name":"Syria","flag":"🇸🇾","code":"+963"},
+    {"name":"Taiwan","flag":"🇹🇼","code":"+886"},
+    {"name":"Tajikistan","flag":"🇹🇯","code":"+992"},
+    {"name":"Tanzania","flag":"🇹🇿","code":"+255"},
+    {"name":"Thailand","flag":"🇹🇭","code":"+66"},
+    {"name":"Timor-Leste","flag":"🇹🇱","code":"+670"},
+    {"name":"Togo","flag":"🇹🇬","code":"+228"},
+    {"name":"Tonga","flag":"🇹🇴","code":"+676"},
+    {"name":"Trinidad and Tobago","flag":"🇹🇹","code":"+1868"},
+    {"name":"Tunisia","flag":"🇹🇳","code":"+216"},
+    {"name":"Turkey","flag":"🇹🇷","code":"+90"},
+    {"name":"Turkmenistan","flag":"🇹🇲","code":"+993"},
+    {"name":"Tuvalu","flag":"🇹🇻","code":"+688"},
+    {"name":"Uganda","flag":"🇺🇬","code":"+256"},
+    {"name":"Ukraine","flag":"🇺🇦","code":"+380"},
+    {"name":"United Arab Emirates","flag":"🇦🇪","code":"+971"},
+    {"name":"United Kingdom","flag":"🇬🇧","code":"+44"},
+    {"name":"United States","flag":"🇺🇸","code":"+1"},
+    {"name":"Uruguay","flag":"🇺🇾","code":"+598"},
+    {"name":"Uzbekistan","flag":"🇺🇿","code":"+998"},
+    {"name":"Vanuatu","flag":"🇻🇺","code":"+678"},
+    {"name":"Vatican","flag":"🇻🇦","code":"+379"},
+    {"name":"Venezuela","flag":"🇻🇪","code":"+58"},
+    {"name":"Vietnam","flag":"🇻🇳","code":"+84"},
+    {"name":"Yemen","flag":"🇾🇪","code":"+967"},
+    {"name":"Zambia","flag":"🇿🇲","code":"+260"},
+    {"name":"Zimbabwe","flag":"🇿🇼","code":"+263"},
+]
+
+WORLD_COUNTRIES_MAP = {c["name"].lower(): c for c in WORLD_COUNTRIES}
+
+def get_country_flag(name):
+    """Return flag emoji for a country name, fallback to 🌍"""
+    return WORLD_COUNTRIES_MAP.get((name or "").lower(), {}).get("flag", "🌍")
+
+def get_country_code(name):
+    """Return dial code for a country name"""
+    return WORLD_COUNTRIES_MAP.get((name or "").lower(), {}).get("code", "")
+
+WC_PER_PAGE = 10  # Countries per page in world picker
+
 # Import account management
 try:
     from account import AccountManager
@@ -2209,8 +2425,60 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
         
         elif data == "add_country":
             if is_admin(user_id):
-                bot.answer_callback_query(call.id, "Processing...")
-                msg = bot.send_message(call.message.chat.id, "🌍 Enter country name to add:")
+                bot.answer_callback_query(call.id, "🌍 Select Country")
+                show_world_country_picker(call.message.chat.id, call.message.message_id, page=0)
+            else:
+                bot.answer_callback_query(call.id, "❌ Unauthorized", show_alert=True)
+
+        elif data.startswith("wc_pg_"):
+            if is_admin(user_id):
+                try:
+                    page = int(data.split("_")[-1])
+                except:
+                    page = 0
+                bot.answer_callback_query(call.id)
+                show_world_country_picker(call.message.chat.id, call.message.message_id, page=page)
+            else:
+                bot.answer_callback_query(call.id, "❌ Unauthorized", show_alert=True)
+
+        elif data.startswith("wc_sel_"):
+            if is_admin(user_id):
+                country_name = data[7:]
+                bot.answer_callback_query(call.id, f"Selected: {country_name}")
+                flag = get_country_flag(country_name)
+                dial = get_country_code(country_name)
+                user_states[user_id] = {"step": "ask_country_price", "country_name": country_name}
+                try:
+                    bot.edit_message_text(
+                        f"🌍 <b>Adding Country</b>\n\n"
+                        f"{flag} <b>{country_name}</b> {dial}\n\n"
+                        f"💰 Enter price for this country (e.g. 150):",
+                        call.message.chat.id, call.message.message_id,
+                        parse_mode="HTML",
+                        reply_markup=InlineKeyboardMarkup().add(
+                            InlineKeyboardButton("⬅️ Back", callback_data="add_country")
+                        )
+                    )
+                except:
+                    pass
+            else:
+                bot.answer_callback_query(call.id, "❌ Unauthorized", show_alert=True)
+
+        elif data == "wc_custom":
+            if is_admin(user_id):
+                bot.answer_callback_query(call.id)
+                try:
+                    bot.edit_message_text(
+                        "✏️ <b>Custom Country Name</b>\n\nType the country name:",
+                        call.message.chat.id, call.message.message_id,
+                        parse_mode="HTML",
+                        reply_markup=InlineKeyboardMarkup().add(
+                            InlineKeyboardButton("⬅️ Back", callback_data="add_country")
+                        )
+                    )
+                except:
+                    pass
+                msg = bot.send_message(call.message.chat.id, "🌍 Enter custom country name:")
                 bot.register_next_step_handler(msg, ask_country_name)
             else:
                 bot.answer_callback_query(call.id, "❌ Unauthorized", show_alert=True)
@@ -2429,12 +2697,14 @@ def handle_bulk_numbers_input(msg):
     valid_numbers = []
     invalid_numbers = []
     
-    for line in lines[:50]:
+    for line in lines[:100]:
         cleaned = line.strip()
-        if cleaned.startswith('+') and len(cleaned) >= 7:
-            valid_numbers.append(cleaned)
-        elif re.match(r'^\d{7,15}$', cleaned):
-            valid_numbers.append('+' + cleaned)
+        # Remove spaces/dashes from number
+        cleaned_digits = re.sub(r'[\s\-\(\)]', '', cleaned)
+        if cleaned_digits.startswith('+') and re.match(r'^\+\d{6,15}$', cleaned_digits):
+            valid_numbers.append(cleaned_digits)
+        elif re.match(r'^\d{6,15}$', cleaned_digits):
+            valid_numbers.append('+' + cleaned_digits)
         else:
             invalid_numbers.append(cleaned)
     
@@ -4186,6 +4456,53 @@ def ask_country_price(message):
     except ValueError:
         bot.send_message(message.chat.id, "❌ Invalid price. Please enter a number:")
 
+def show_world_country_picker(chat_id, message_id=None, page=0):
+    """Paginated 180+ world country picker for admin Add Country flow"""
+    total = len(WORLD_COUNTRIES)
+    total_pages = max(1, (total + WC_PER_PAGE - 1) // WC_PER_PAGE)
+    page = max(0, min(page, total_pages - 1))
+    start_idx = page * WC_PER_PAGE
+    end_idx = start_idx + WC_PER_PAGE
+    page_countries = WORLD_COUNTRIES[start_idx:end_idx]
+
+    text = (
+        f"🌍 <b>Select Country to Add</b>\n"
+        f"<i>Page {page+1}/{total_pages}  •  {total} countries supported</i>\n\n"
+        f"Choose from the list below or enter a custom name:"
+    )
+    markup = InlineKeyboardMarkup(row_width=2)
+    row = []
+    for c in page_countries:
+        # Check if already in DB
+        exists = countries_col.find_one({"name": {"$regex": f"^{re.escape(c['name'])}$", "$options": "i"}, "status": "active"})
+        label = f"{c['flag']} {c['name']}" + (" ✅" if exists else "")
+        row.append(InlineKeyboardButton(label, callback_data=f"wc_sel_{c['name']}"))
+        if len(row) == 2:
+            markup.add(*row)
+            row = []
+    if row:
+        markup.add(*row)
+
+    nav = []
+    if page > 0:
+        nav.append(InlineKeyboardButton("⬅️ Prev", callback_data=f"wc_pg_{page-1}"))
+    if page < total_pages - 1:
+        nav.append(InlineKeyboardButton("➡️ Next", callback_data=f"wc_pg_{page+1}"))
+    if nav:
+        markup.add(*nav)
+
+    markup.add(InlineKeyboardButton("✏️ Custom Country Name", callback_data="wc_custom"))
+    markup.add(InlineKeyboardButton("⬅️ Back to Manage", callback_data="manage_countries"))
+
+    if message_id:
+        try:
+            bot.edit_message_text(text, chat_id, message_id, parse_mode="HTML", reply_markup=markup)
+            return
+        except:
+            pass
+    sent = bot.send_message(chat_id, text, parse_mode="HTML", reply_markup=markup)
+    user_last_message[chat_id] = sent.message_id
+
 def show_country_removal(chat_id):
     if not is_admin(chat_id):
         bot.send_message(chat_id, "❌ Unauthorized access")
@@ -4661,8 +4978,9 @@ def show_countries(chat_id, page=0, message_id=None):
     for country in page_countries:
         stock = accounts_col.count_documents({"country": country['name'], "status": "active", "used": False})
         dot = "🟢" if stock > 0 else "🔴"
+        flag = get_country_flag(country['name'])
         row.append(InlineKeyboardButton(
-            f"{dot} {country['name']}",
+            f"{dot} {flag} {country['name']}",
             callback_data=f"country_raw_{country['name']}"
         ))
         if len(row) == 2:
@@ -4701,9 +5019,11 @@ def show_country_details(user_id, country_name, chat_id, message_id, callback_id
         accounts_count = get_available_accounts_count(country_name)
         
         # WITH EXPANDABLE BLOCKQUOTE - UI STYLE
+        flag = get_country_flag(country_name)
+        dial = get_country_code(country_name)
         text = f"""⚡ <b>Telegram Account Info</b>
 
-<blockquote>🌍 Country : {country_name}
+<blockquote>{flag} Country : {country_name} {dial}
 💸 Price : {format_currency(country['price'])}
 📦 Available : {accounts_count}
 
