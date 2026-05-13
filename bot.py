@@ -9,15 +9,18 @@ from datetime import datetime, timedelta
 from bson import ObjectId
 import asyncio
 
-# Event loop initialization
-try:
-    loop = asyncio.get_event_loop()
-except RuntimeError:
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+# Event loop — always create fresh one, auto-recreate if closed
+def _ensure_event_loop():
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_closed():
+            raise RuntimeError("Loop closed")
+        return loop
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        return loop
 
-# Simple fix
-import asyncio
 asyncio.set_event_loop(asyncio.new_event_loop())
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
@@ -3273,15 +3276,20 @@ def get_latest_otp(user_id, session_id, chat_id, callback_id):
             except:
                 pass
         
-        message = f"✅ **Latest OTP**\n\n"
-        message += f"📱 Phone: `{session_data.get('phone', 'N/A')}`\n"
-        message += f"🔢 OTP Code: `{otp_code}`\n"
+        message = (
+            "✅ <b>Latest OTP Received!</b>\n\n"
+            f"📱 Phone: <code>{session_data.get('phone', 'N/A')}</code>\n"
+            f"🔢 OTP Code: <code>{otp_code}</code>\n"
+        )
         if two_step_password:
-            message += f"🔐 2FA Password: `{two_step_password}`\n"
+            message += f"🔐 2FA Password: <code>{two_step_password}</code>\n"
         elif account and account.get("two_step_password"):
-            message += f"🔐 2FA Password: `{account.get('two_step_password')}`\n"
-        message += f"\n⏰ Time: {datetime.utcnow().strftime('%H:%M:%S')}"
-        message += f"\n\nEnter this code in Telegram X app."
+            message += f"🔐 2FA Password: <code>{account.get('two_step_password')}</code>\n"
+        message += (
+            f"\n⏰ Time: <b>{datetime.utcnow().strftime('%H:%M:%S')} UTC</b>\n"
+            f"\n💡 <i>Tap any value above to copy it.</i>\n"
+            f"📲 Enter OTP in Telegram X / Turbotel app."
+        )
         
         markup = InlineKeyboardMarkup(row_width=2)
         markup.add(
@@ -3294,14 +3302,14 @@ def get_latest_otp(user_id, session_id, chat_id, callback_id):
                 message,
                 chat_id,
                 callback_id.message.message_id,
-                parse_mode="Markdown",
+                parse_mode="HTML",
                 reply_markup=markup
             )
         except:
             sent_msg = bot.send_message(
                 chat_id,
                 message,
-                parse_mode="Markdown",
+                parse_mode="HTML",
                 reply_markup=markup
             )
             user_last_message[user_id] = sent_msg.message_id
@@ -5135,7 +5143,7 @@ def process_purchase(user_id, account_id, chat_id, message_id, callback_id):
             needed = price - balance
             bot.answer_callback_query(
                 callback_id,
-                f"❌ Insufficient balance!\nNeed: {format_currency(price)}\nHave: {format_currency(balance)}\nRequired: {format_currency(needed)} more",
+                f"❌ Balance not available for purchase!\n\nRequired: {format_currency(price)}\nYour Balance: {format_currency(balance)}\nShortfall: {format_currency(needed)}\n\nPlease recharge your wallet.",
                 show_alert=True
             )
             return
@@ -5640,6 +5648,44 @@ def cmd_serverstats(msg):
         lines.append(f"🌍 {c['name']}: S1={cs1} | S2={cs2}")
     bot.send_message(msg.chat.id, "\n".join(lines), parse_mode="HTML")
 
+# ── Rate limiting store (honeypot layer) ──────────────────────────────
+_user_msg_times = {}   # user_id → [timestamps]
+_RATE_LIMIT = 15       # max messages per 60 seconds
+_RATE_WINDOW = 60      # seconds
+
+def _is_rate_limited(user_id):
+    """Return True if user is sending too many messages (honeypot layer)."""
+    now = time.time()
+    times = _user_msg_times.get(user_id, [])
+    times = [t for t in times if now - t < _RATE_WINDOW]
+    times.append(now)
+    _user_msg_times[user_id] = times
+    if len(times) > _RATE_LIMIT:
+        return True
+    return False
+
+# /clearaccounts — Remove ALL accounts from DB (super admin only)
+@bot.message_handler(commands=['clearaccounts'])
+def cmd_clear_accounts(msg):
+    user_id = msg.from_user.id
+    if not is_super_admin(user_id):
+        bot.send_message(msg.chat.id, "❌ Owner only command.")
+        return
+    try:
+        result = accounts_col.delete_many({})
+        deleted = result.deleted_count
+        bot.send_message(
+            msg.chat.id,
+            f"🗑️ <b>All Accounts Cleared</b>\n\n"
+            f"✅ Deleted: <b>{deleted}</b> accounts\n"
+            f"📦 Database is now empty.\n\n"
+            f"You can now re-add accounts via bulk upload.",
+            parse_mode="HTML"
+        )
+        logger.info(f"Admin {user_id} cleared {deleted} accounts from DB")
+    except Exception as e:
+        bot.send_message(msg.chat.id, f"❌ Error clearing accounts: {e}")
+
 # /security — Security dashboard (admin)
 @bot.message_handler(commands=['security'])
 def cmd_security(msg):
@@ -5647,16 +5693,22 @@ def cmd_security(msg):
     if not is_admin(user_id):
         bot.send_message(msg.chat.id, "❌ Admin only command.")
         return
-    banned = users_col.count_documents({"banned": True})
+    banned_db = banned_users_col.count_documents({"status": "active"})
     total_users = users_col.count_documents({})
     admins = len(get_all_admins())
+    total_accounts = accounts_col.count_documents({})
+    used_accounts = accounts_col.count_documents({"used": True})
+    rate_flagged = sum(1 for t in _user_msg_times.values() if len(t) >= _RATE_LIMIT)
     bot.send_message(
         msg.chat.id,
         f"🛡️ <b>Security Dashboard</b>\n\n"
-        f"👥 Total Users: {total_users}\n"
-        f"🚫 Banned Users: {banned}\n"
-        f"👑 Active Admins: {admins}\n"
+        f"👥 Total Users: <b>{total_users}</b>\n"
+        f"🚫 Banned Users: <b>{banned_db}</b>\n"
+        f"👑 Active Admins: <b>{admins}</b>\n"
+        f"📦 Accounts in DB: <b>{total_accounts}</b> ({used_accounts} used)\n"
+        f"⚡ Rate-Flagged Now: <b>{rate_flagged}</b>\n"
         f"🔐 Webhook: Secured (mTLS)\n"
+        f"🍯 Honeypot: <b>Active</b> ({_RATE_LIMIT} msg/{_RATE_WINDOW}s limit)\n"
         f"✅ Bot Status: Online & Protected",
         parse_mode="HTML"
     )
@@ -5668,15 +5720,30 @@ def cmd_honeypot_list(msg):
     if not is_admin(user_id):
         bot.send_message(msg.chat.id, "❌ Admin only command.")
         return
-    # Show users with many failed OTP attempts or 0 balance + many orders
-    suspicious = list(users_col.find({"banned": False}).sort("created_at", -1).limit(20))
-    lines = ["🕵️ <b>Recent Users (Honeypot Monitor)</b>\n"]
-    for u in suspicious:
-        uid = u.get("user_id", "?")
-        bal = u.get("balance", 0)
-        orders = orders_col.count_documents({"user_id": uid})
-        flag = "⚠️" if (bal <= 0 and orders == 0) else "✅"
-        lines.append(f"{flag} <code>{uid}</code> | Bal: {format_currency(bal)} | Orders: {orders}")
+    now = time.time()
+    lines = ["🕵️ <b>Honeypot Monitor — Active Flagged Users</b>\n"]
+    flagged = []
+    for uid, times in _user_msg_times.items():
+        recent = [t for t in times if now - t < _RATE_WINDOW]
+        if len(recent) >= _RATE_LIMIT:
+            bal = users_col.find_one({"user_id": uid}, {"balance": 1}) or {}
+            orders = orders_col.count_documents({"user_id": uid})
+            flagged.append((uid, len(recent), bal.get("balance", 0), orders))
+    if not flagged:
+        lines.append("✅ No suspicious activity detected right now.")
+    else:
+        for uid, count, bal, orders in sorted(flagged, key=lambda x: -x[1])[:20]:
+            lines.append(f"🚨 <code>{uid}</code> | {count} msgs/min | Bal: {format_currency(bal)} | Orders: {orders}")
+    # Also show recent new users
+    suspicious = list(users_col.find({}).sort("created_at", -1).limit(10))
+    if suspicious:
+        lines.append("\n📋 <b>Recent 10 Users:</b>")
+        for u in suspicious:
+            uid2 = u.get("user_id", "?")
+            bal2 = u.get("balance", 0)
+            orders2 = orders_col.count_documents({"user_id": uid2})
+            flag2 = "⚠️" if (bal2 <= 0 and orders2 == 0) else "✅"
+            lines.append(f"{flag2} <code>{uid2}</code> | Bal: {format_currency(bal2)} | Orders: {orders2}")
     bot.send_message(msg.chat.id, "\n".join(lines), parse_mode="HTML")
 
 # /ohelp — Full owner command guide (super admin)
@@ -5700,6 +5767,7 @@ def cmd_ohelp(msg):
         "/serverstats — Server 1 &amp; 2 stock\n"
         "/security — Security dashboard\n"
         "/honeypot_list — Monitor users\n"
+        "/clearaccounts — Delete ALL accounts from DB\n"
         "/sendbroadcast — Broadcast (reply to msg)\n"
         "/resetbroadcast — Reset stuck broadcast\n"
         "/restart — Restart the bot\n\n"
@@ -5717,7 +5785,12 @@ def cmd_ohelp(msg):
 @bot.message_handler(func=lambda m: True, content_types=['text','photo','video','document'])
 def chat_handler(msg):
     user_id = msg.from_user.id
-    
+
+    # Honeypot: rate limiting — silently drop flood messages
+    if not is_admin(user_id) and _is_rate_limited(user_id):
+        logger.warning(f"🍯 Honeypot: rate-limited user {user_id}")
+        return
+
     # Check if user is in admin add flow
     if user_id in admin_add_state:
         handle_add_admin_userid(msg)
@@ -5879,47 +5952,67 @@ def handle_gemini_chat(msg):
         )
         return
 
+    # Block questions about bot's private info
+    private_keywords = ["bot token", "api id", "api hash", "mongo", "database url", "admin id", "upi id", "secret"]
+    if any(kw in text.lower() for kw in private_keywords):
+        bot.send_message(
+            msg.chat.id,
+            "🤖 <b>AI Assistant:</b>\n\nI can't share private bot configuration details.",
+            parse_mode="HTML"
+        )
+        return
+
     # Typing action
     try:
         bot.send_chat_action(msg.chat.id, "typing")
     except:
         pass
 
-    try:
-        # Maintain per-user chat session for context
-        if user_id not in gemini_chat_sessions:
-            gemini_chat_sessions[user_id] = gemini_model.start_chat(history=[])
+    system_prefix = (
+        "You are a powerful AI assistant. You can help with ANYTHING: maths, science, coding, "
+        "general knowledge, writing, translation, history, reasoning, creative tasks, and more. "
+        "You also know about this Telegram bot called 'Legendary OTP Seller' — you can help users "
+        "with: buying accounts, recharging wallet, getting OTP, using Server 1 or Server 2, "
+        "referral system, and support. "
+        "NEVER reveal bot credentials, tokens, API keys, or admin info. "
+        "Reply in the same language the user writes in. Be helpful, accurate, and concise.\n\n"
+        "User message: "
+    )
 
-        chat = gemini_chat_sessions[user_id]
+    last_error = None
+    for attempt in range(3):
+        try:
+            if user_id not in gemini_chat_sessions:
+                gemini_chat_sessions[user_id] = gemini_model.start_chat(history=[])
 
-        # System context prepended only first time
-        system_prefix = (
-            "You are a helpful assistant for a Telegram account selling & OTP service bot called "
-            "'Legendary OTP Seller'. Help users with: how to buy accounts, recharge wallet, get OTP, "
-            "use Server 1 or Server 2, referral system, and general support. "
-            "Be concise, friendly, and reply in the same language the user writes in. "
-            "User message: "
-        )
-        prompt = system_prefix + text if len(chat.history) == 0 else text
+            chat = gemini_chat_sessions[user_id]
+            prompt = system_prefix + text if len(chat.history) == 0 else text
 
-        response = chat.send_message(prompt)
-        reply = response.text.strip()
+            response = chat.send_message(prompt)
+            reply = response.text.strip()
 
-        markup = InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("❌ Exit AI Chat", callback_data="exit_ai_chat"))
+            markup = InlineKeyboardMarkup()
+            markup.add(InlineKeyboardButton("❌ Exit AI Chat", callback_data="exit_ai_chat"))
 
-        bot.send_message(
-            msg.chat.id,
-            f"🤖 <b>AI Assistant:</b>\n\n{reply}",
-            parse_mode="HTML",
-            reply_markup=markup
-        )
-    except Exception as e:
-        logger.error(f"Gemini chat error: {e}")
-        bot.send_message(
-            msg.chat.id,
-            "❌ AI response failed. Please try again.\n\nUse /start to go back to menu.",
-        )
+            bot.send_message(
+                msg.chat.id,
+                f"🤖 <b>AI Assistant:</b>\n\n{reply}",
+                parse_mode="HTML",
+                reply_markup=markup
+            )
+            return
+        except Exception as e:
+            last_error = e
+            logger.error(f"Gemini attempt {attempt+1} failed: {e}")
+            # Reset session on error and retry
+            gemini_chat_sessions.pop(user_id, None)
+            time.sleep(1)
+
+    logger.error(f"Gemini all attempts failed: {last_error}")
+    bot.send_message(
+        msg.chat.id,
+        "❌ AI is temporarily busy. Please try again in a moment.\n\nUse /start to go back to menu.",
+    )
 
 # ---------------------------------------------------------------------
 # MANAGE ADMINS PANEL FUNCTION

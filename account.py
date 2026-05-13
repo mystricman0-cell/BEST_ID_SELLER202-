@@ -22,9 +22,9 @@ logger = logging.getLogger(__name__)
 _global_event_loop = None
 
 def get_event_loop():
-    """Get or create a global event loop"""
+    """Get or create a global event loop — auto-recreates if closed"""
     global _global_event_loop
-    if _global_event_loop is None:
+    if _global_event_loop is None or _global_event_loop.is_closed():
         _global_event_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(_global_event_loop)
     return _global_event_loop
