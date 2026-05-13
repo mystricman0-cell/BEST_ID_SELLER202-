@@ -48,7 +48,7 @@ ADMIN_ID = int(os.getenv('ADMIN_ID', '8358951104'))
 MONGO_URL = os.getenv('MONGO_URL', 'mongodb+srv://dhruvkumarray3_db_user:Sc1nt6kCkoEuTzW3@cluster0.rgwrfli.mongodb.net/?appName=Cluster0')
 API_ID = int(os.getenv('API_ID', '34242066'))
 API_HASH = os.getenv('API_HASH', '707c322fc645117058c0f2a421122ff7')
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyCXMgXfYVoDzGQYGYKnr8JIVteXvaMmIBo')
 
 # UPI PAYMENT CONFIG
 UPI_ID = os.getenv('UPI_ID', 'rishabhkumarray@fam')
@@ -63,9 +63,16 @@ LOG_CHANNEL_ID = "-1003659930873"
 # Referral commission percentage
 REFERRAL_COMMISSION = 1.7
 
-# Global API Credentials for Pyrogram Login
+# Global API Credentials for Pyrogram Login (Server 1)
 GLOBAL_API_ID = 36326629
 GLOBAL_API_HASH = "823e6e8c081fe363e6d739b39dc19e07"
+
+# Server 2 API Credentials
+SERVER2_API_ID = 37751241
+SERVER2_API_HASH = "2e90f273e745d4c080fdfab24fa98494"
+
+# Successfully Purchase Group Link
+PURCHASE_SUCCESS_LINK = "https://t.me/+QXhmkIm6m0YzMDI0"
 
 # ---------------------------------------------------------------------
 # INIT
@@ -79,13 +86,9 @@ bot = telebot.TeleBot(BOT_TOKEN)
 # Gemini AI Setup
 try:
     import google.generativeai as genai
-    if GEMINI_API_KEY:
-        genai.configure(api_key=GEMINI_API_KEY)
-        gemini_model = genai.GenerativeModel('gemini-1.5-flash')
-        logger.info("✅ Gemini AI initialized")
-    else:
-        gemini_model = None
-        logger.warning("⚠️ GEMINI_API_KEY not set, AI chat disabled")
+    genai.configure(api_key=GEMINI_API_KEY)
+    gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+    logger.info("✅ Gemini AI initialized")
 except Exception as _ge:
     gemini_model = None
     logger.error(f"❌ Gemini init failed: {_ge}")
@@ -1333,28 +1336,28 @@ def clean_ui_and_send_menu(chat_id, user_id, text=None, markup=None):
         # Show sequence of messages with deletion
         def show_sequence():
             try:
-                        # Premium start animation
-                anim_msg = bot.send_message(chat_id, "✨ HLO SIR....", parse_mode="HTML")
+                # Premium start animation
+                anim_msg = bot.send_message(chat_id, "⚡ <b>Connecting...</b>", parse_mode="HTML")
                 time.sleep(0.3)
                 try:
                     bot.edit_message_text(
-                        "🏓 <b>PING  PONG ....</b>",
+                        "🔐 <b>Authenticating...</b>",
                         chat_id, anim_msg.message_id, parse_mode="HTML"
                     )
                 except: pass
                 time.sleep(0.3)
                 try:
                     bot.edit_message_text(
-                        "⚡ <b>STARTING ....</b>\n<i>Loading your dashboard...</i>",
+                        "💎 <b>Loading Premium Dashboard...</b>",
                         chat_id, anim_msg.message_id, parse_mode="HTML"
                     )
                 except: pass
                 time.sleep(0.35)
                 try:
                     bot.edit_message_text(
-                        "🚀 <b>OPENING MAIN MENU</b> 🚀\n\n"
+                        "✅ <b>Welcome Back!</b>\n\n"
                         "╔══════════════════╗\n"
-                        "  𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘 𝐗 𝐎𝐓𝐏  \n"
+                        "   𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘 ꭙ 𝐎𝐓𝐏   \n"
                         "╚══════════════════╝",
                         chat_id, anim_msg.message_id, parse_mode="HTML"
                     )
@@ -1373,22 +1376,25 @@ def clean_ui_and_send_menu(chat_id, user_id, text=None, markup=None):
 
         # Main menu caption with expandable blockquotes
         caption = (
-            "🥂 <b>Welcome to ˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ ꭙ 𝐎ᴛᴘ 𝐒ᴇʟʟᴇʀ [ 𝐁ᴏᴛ ] ❤️‍🔥 By Darklord$🇮🇳</b> 🥂\n"
-            "<blockquote expandable>\n"
-            "- Automatic OTPs 📍\n"
-            "- Easy to Use 🥂🥂\n"
-            "- 24/7 Support 👨‍🔧\n"
-            "- Instant Payment Approvals 🧾\n"
-            "</blockquote>\n"
-            "<blockquote expandable>\n"
-            "🚀 <b>How to use Bot :</b>\n"
-            "1️⃣ Recharge\n"
+            "╔═══════════════════════╗\n"
+            "  💎 <b>˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ ꭙ 𝐎ᴛᴘ 𝐒ᴇʟʟᴇʀ ❤️‍🔥</b>\n"
+            "╚═══════════════════════╝\n\n"
+            "<blockquote expandable>"
+            "✅ Instant OTP Delivery\n"
+            "🌍 180+ Countries Available\n"
+            "⚡ 24/7 Active Support\n"
+            "🔒 100% Safe & Verified\n"
+            "💸 Lowest Prices Guaranteed"
+            "</blockquote>\n\n"
+            "<blockquote expandable>"
+            "📖 <b>How To Use:</b>\n"
+            "1️⃣ Recharge Wallet\n"
             "2️⃣ Select Country\n"
             "3️⃣ Buy Account\n"
-            "4️⃣ Get Number & Login through Telegram / Telegram X / Turbotel\n"
-            "5️⃣ Receive OTP & You're Done ✅\n"
-            "</blockquote>\n"
-            "🚀 <b>Enjoy Fast Account Buying Experience!</b>"
+            "4️⃣ Get OTP Instantly\n"
+            "5️⃣ Done ✅"
+            "</blockquote>\n\n"
+            "🚀 <i>Fast • Reliable • Premium</i>"
         )
 
         if markup is None:
@@ -1396,11 +1402,11 @@ def clean_ui_and_send_menu(chat_id, user_id, text=None, markup=None):
             # Row 1: Buy + Balance
             markup.add(
                 InlineKeyboardButton("🛒 Buy Account", callback_data="buy_account"),
-                InlineKeyboardButton("💰 Balance", callback_data="balance")
+                InlineKeyboardButton("💰 My Balance", callback_data="balance")
             )
-            # Row 2: Recharge
+            # Row 2: Recharge (full width)
             markup.add(
-                InlineKeyboardButton("💳 Recharge", callback_data="recharge")
+                InlineKeyboardButton("💳 ➕ Recharge Wallet", callback_data="recharge")
             )
             # Row 3: Refer + Redeem
             markup.add(
@@ -5202,26 +5208,34 @@ def process_purchase(user_id, account_id, chat_id, message_id, callback_id):
         thread = threading.Thread(target=start_simple_monitoring, daemon=True)
         thread.start()
         
-        account_details = f"""✅ **Purchase Successful!** 
+        account_details = (
+            "╔══════════════════════╗\n"
+            "  ✅  𝐏𝐔𝐑𝐂𝐇𝐀𝐒𝐄 𝐒𝐔𝐂𝐂𝐄𝐒𝐒𝐅𝐔𝐋  ✅\n"
+            "╚══════════════════════╝\n\n"
+            f"🌍 **Country:** {account['country']}\n"
+            f"💸 **Price Paid:** {format_currency(price)}\n"
+            f"📱 **Phone Number:** `{account.get('phone', 'N/A')}`\n"
+        )
 
-🌍 Country: {account['country']}
-💸 Price: {format_currency(price)}
-📱 Phone Number: {account.get('phone', 'N/A')}"""
-        
         if account.get('two_step_password'):
-            account_details += f"\n🔒 2FA Password: `{account.get('two_step_password', 'N/A')}`"
-        
-        account_details += f"\n\n📲 **Instructions:**\n"
-        account_details += f"1. Open Telegram X app\n"
-        account_details += f"2. Enter phone number: `{account.get('phone', 'N/A')}`\n"
-        account_details += f"3. Click 'Next'\n"
-        account_details += f"4. **Click 'Get OTP' button below when you need OTP**\n\n"
-        account_details += f"⏳ OTP available for 30 minutes"
-        
-        get_otp_markup = InlineKeyboardMarkup()
-        get_otp_markup.add(InlineKeyboardButton("🔢 Get OTP", callback_data=f"get_otp_{session_id}"))
-        
-        account_details += f"\n💰 Remaining Balance: {format_currency(get_balance(user_id))}"
+            account_details += f"🔒 **2FA Password:** `{account.get('two_step_password', 'N/A')}`\n"
+
+        account_details += (
+            f"\n━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"📲 **How to Login:**\n"
+            f"1️⃣ Open **Telegram X** or **Turbotel**\n"
+            f"2️⃣ Enter number: `{account.get('phone', 'N/A')}`\n"
+            f"3️⃣ Click **Next**\n"
+            f"4️⃣ Press **🔢 Get OTP** button below\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"⏳ OTP valid for **30 minutes**\n"
+            f"💰 Remaining Balance: **{format_currency(get_balance(user_id))}**"
+        )
+
+        get_otp_markup = InlineKeyboardMarkup(row_width=1)
+        get_otp_markup.add(InlineKeyboardButton("🔢 Get OTP Now", callback_data=f"get_otp_{session_id}"))
+        get_otp_markup.add(InlineKeyboardButton("🎉 Join Success Group", url=PURCHASE_SUCCESS_LINK))
+        get_otp_markup.add(InlineKeyboardButton("🏠 Back to Menu", callback_data="back_to_menu"))
         
         sent_msg = edit_or_resend(
             chat_id,
@@ -5975,6 +5989,34 @@ def health():
     return "˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ ꭙ 𝐎ᴛᴘ 𝐒ᴇʟʟᴇʀ [ 𝐁ᴏᴛ ] ❤️‍🔥 is running via webhook ✅", 200
 
 # ---------------------------------------------------------------------
+# HEARTBEAT SYSTEM — keeps bot alive 24x7 on Railway
+# ---------------------------------------------------------------------
+
+def heartbeat_worker():
+    """Pings own health endpoint every 4 minutes to prevent Railway from sleeping."""
+    import urllib.request
+    time.sleep(30)  # wait for server to start
+    railway_url = os.getenv("RAILWAY_PUBLIC_DOMAIN", "")
+    replit_url = os.getenv("REPLIT_DEV_DOMAIN", "")
+    base_url = None
+    if railway_url:
+        base_url = f"https://{railway_url}"
+    elif replit_url:
+        base_url = f"https://{replit_url}"
+
+    if not base_url:
+        logger.warning("⚠️ Heartbeat: No public domain found, skipping.")
+        return
+
+    while True:
+        try:
+            urllib.request.urlopen(f"{base_url}/", timeout=10)
+            logger.info("💓 Heartbeat OK")
+        except Exception as e:
+            logger.warning(f"💔 Heartbeat failed: {e}")
+        time.sleep(240)  # every 4 minutes
+
+# ---------------------------------------------------------------------
 # RUN BOT
 # ---------------------------------------------------------------------
 
@@ -6003,9 +6045,17 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error(f"❌ Failed to create admin indexes: {e}")
 
-    # Set webhook — clears any other polling/webhook session automatically
-    if REPLIT_DOMAIN:
-        WEBHOOK_URL = f"https://{REPLIT_DOMAIN}{WEBHOOK_PATH}"
+    # Start heartbeat thread — keeps bot alive 24x7
+    hb_thread = threading.Thread(target=heartbeat_worker, daemon=True)
+    hb_thread.start()
+    logger.info("💓 Heartbeat system started")
+
+    # Set webhook — supports both Railway and Replit
+    RAILWAY_DOMAIN = os.getenv("RAILWAY_PUBLIC_DOMAIN", "")
+    public_domain = RAILWAY_DOMAIN or REPLIT_DOMAIN
+
+    if public_domain:
+        WEBHOOK_URL = f"https://{public_domain}{WEBHOOK_PATH}"
         try:
             bot.remove_webhook()
             time.sleep(1)
@@ -6014,14 +6064,17 @@ if __name__ == "__main__":
         except Exception as e:
             logger.error(f"❌ Failed to set webhook: {e}")
     else:
-        logger.warning("⚠️ REPLIT_DEV_DOMAIN not set, falling back to polling")
-        while True:
-            try:
-                bot.infinity_polling(timeout=60, long_polling_timeout=60, skip_pending=True)
-            except Exception as e:
-                logger.error(f"Polling error: {e}")
-                time.sleep(15)
+        logger.warning("⚠️ No public domain found, falling back to polling")
+        def polling_thread():
+            while True:
+                try:
+                    bot.infinity_polling(timeout=60, long_polling_timeout=60, skip_pending=True)
+                except Exception as e:
+                    logger.error(f"Polling error: {e}")
+                    time.sleep(15)
+        pt = threading.Thread(target=polling_thread, daemon=True)
+        pt.start()
 
-    logger.info(f"🚀 Starting Flask webhook server on port {WEBHOOK_PORT}...")
+    logger.info(f"🚀 Starting Flask server on port {WEBHOOK_PORT}...")
     flask_app.run(host="0.0.0.0", port=WEBHOOK_PORT, debug=False)
 
