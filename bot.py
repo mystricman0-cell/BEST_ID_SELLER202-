@@ -43,16 +43,16 @@ from pyrogram.errors import (
 # CONFIG
 # ---------------------------------------------------------------------
 
-BOT_TOKEN = os.getenv('BOT_TOKEN', '')
-ADMIN_ID = int(os.getenv('ADMIN_ID', '0'))
-MONGO_URL = os.getenv('MONGO_URL', '')
-API_ID = int(os.getenv('API_ID', '0'))
-API_HASH = os.getenv('API_HASH', '')
+BOT_TOKEN = os.getenv('BOT_TOKEN', '8379057094:AAHtUB42NUzbjqk9RKuOvuODPyhtqiCJFYo')
+ADMIN_ID = int(os.getenv('ADMIN_ID', '8358951104'))
+MONGO_URL = os.getenv('MONGO_URL', 'mongodb+srv://dhruvkumarray3_db_user:Sc1nt6kCkoEuTzW3@cluster0.rgwrfli.mongodb.net/?appName=Cluster0')
+API_ID = int(os.getenv('API_ID', '34242066'))
+API_HASH = os.getenv('API_HASH', '707c322fc645117058c0f2a421122ff7')
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 
 # UPI PAYMENT CONFIG
-UPI_ID = os.getenv('UPI_ID', '')
-QR_IMAGE_URL = os.getenv('QR_IMAGE_URL', '')
+UPI_ID = os.getenv('UPI_ID', 'rishabhkumarray@fam')
+QR_IMAGE_URL = os.getenv('QR_IMAGE_URL', 'https://files.catbox.moe/y33e87.jpg')
 
 # MUST JOIN CHANNELS - TWO CHANNELS
 MUST_JOIN_CHANNEL_1 = "@II_LEGEND_OTP_SELLER_UPDATES_II"
@@ -64,8 +64,8 @@ LOG_CHANNEL_ID = "-1003659930873"
 REFERRAL_COMMISSION = 1.7
 
 # Global API Credentials for Pyrogram Login
-GLOBAL_API_ID = int(os.getenv('GLOBAL_API_ID', '0'))
-GLOBAL_API_HASH = os.getenv('GLOBAL_API_HASH', '')
+GLOBAL_API_ID = 36326629
+GLOBAL_API_HASH = "823e6e8c081fe363e6d739b39dc19e07"
 
 # ---------------------------------------------------------------------
 # INIT
