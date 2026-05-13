@@ -1337,27 +1337,27 @@ def clean_ui_and_send_menu(chat_id, user_id, text=None, markup=None):
         def show_sequence():
             try:
                 # Premium start animation
-                anim_msg = bot.send_message(chat_id, "⚡ <b>Connecting...</b>", parse_mode="HTML")
+                anim_msg = bot.send_message(chat_id, "✨ HLO SIR....", parse_mode="HTML")
                 time.sleep(0.3)
                 try:
                     bot.edit_message_text(
-                        "🔐 <b>Authenticating...</b>",
+                        "🏓 <b>PING  PONG ....</b>",
                         chat_id, anim_msg.message_id, parse_mode="HTML"
                     )
                 except: pass
                 time.sleep(0.3)
                 try:
                     bot.edit_message_text(
-                        "💎 <b>Loading Premium Dashboard...</b>",
+                        "⚡ <b>STARTING ....</b>\n<i>Loading your dashboard...</i>",
                         chat_id, anim_msg.message_id, parse_mode="HTML"
                     )
                 except: pass
                 time.sleep(0.35)
                 try:
                     bot.edit_message_text(
-                        "✅ <b>Welcome Back!</b>\n\n"
+                        "🚀 <b>OPENING MAIN MENU</b> 🚀\n\n"
                         "╔══════════════════╗\n"
-                        "   𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘 ꭙ 𝐎𝐓𝐏   \n"
+                        "  𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘 𝐗 𝐎𝐓𝐏  \n"
                         "╚══════════════════╝",
                         chat_id, anim_msg.message_id, parse_mode="HTML"
                     )
@@ -1376,25 +1376,22 @@ def clean_ui_and_send_menu(chat_id, user_id, text=None, markup=None):
 
         # Main menu caption with expandable blockquotes
         caption = (
-            "╔═══════════════════════╗\n"
-            "  💎 <b>˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ ꭙ 𝐎ᴛᴘ 𝐒ᴇʟʟᴇʀ ❤️‍🔥</b>\n"
-            "╚═══════════════════════╝\n\n"
-            "<blockquote expandable>"
-            "✅ Instant OTP Delivery\n"
-            "🌍 180+ Countries Available\n"
-            "⚡ 24/7 Active Support\n"
-            "🔒 100% Safe & Verified\n"
-            "💸 Lowest Prices Guaranteed"
-            "</blockquote>\n\n"
-            "<blockquote expandable>"
-            "📖 <b>How To Use:</b>\n"
-            "1️⃣ Recharge Wallet\n"
+            "🥂 <b>Welcome to ˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ ꭙ 𝐎ᴛᴘ 𝐒ᴇʟʟᴇʀ [ 𝐁ᴏᴛ ] ❤️‍🔥 By Darklord$🇮🇳</b> 🥂\n"
+            "<blockquote expandable>\n"
+            "- Automatic OTPs 📍\n"
+            "- Easy to Use 🥂🥂\n"
+            "- 24/7 Support 👨‍🔧\n"
+            "- Instant Payment Approvals 🧾\n"
+            "</blockquote>\n"
+            "<blockquote expandable>\n"
+            "🚀 <b>How to use Bot :</b>\n"
+            "1️⃣ Recharge\n"
             "2️⃣ Select Country\n"
             "3️⃣ Buy Account\n"
-            "4️⃣ Get OTP Instantly\n"
-            "5️⃣ Done ✅"
-            "</blockquote>\n\n"
-            "🚀 <i>Fast • Reliable • Premium</i>"
+            "4️⃣ Get Number & Login through Telegram / Telegram X / Turbotel\n"
+            "5️⃣ Receive OTP & You're Done ✅\n"
+            "</blockquote>\n"
+            "🚀 <b>Enjoy Fast Account Buying Experience!</b>"
         )
 
         if markup is None:
@@ -1402,11 +1399,11 @@ def clean_ui_and_send_menu(chat_id, user_id, text=None, markup=None):
             # Row 1: Buy + Balance
             markup.add(
                 InlineKeyboardButton("🛒 Buy Account", callback_data="buy_account"),
-                InlineKeyboardButton("💰 My Balance", callback_data="balance")
+                InlineKeyboardButton("💰 Balance", callback_data="balance")
             )
-            # Row 2: Recharge (full width)
+            # Row 2: Recharge
             markup.add(
-                InlineKeyboardButton("💳 ➕ Recharge Wallet", callback_data="recharge")
+                InlineKeyboardButton("💳 Recharge", callback_data="recharge")
             )
             # Row 3: Refer + Redeem
             markup.add(
