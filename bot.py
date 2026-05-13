@@ -1206,25 +1206,33 @@ def process_recharge_approval(admin_id, req_id, action):
                 "timestamp": datetime.utcnow()
             }
 
-            # Notify user — approved
+            # Notify user — approved ✅
             try:
                 new_balance = get_balance(user_target)
                 bot.send_message(
                     user_target,
+                    f"╔══════════════════╗\n"
+                    f"  𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘 𝐗 𝐎𝐓𝐏\n"
+                    f"╚══════════════════╝\n\n"
                     f"✅ <b>Recharge Approved!</b>\n\n"
                     f"💰 Amount Added: <b>₹{amount:,.0f}</b>\n"
                     f"💳 New Balance: <b>{format_currency(new_balance)}</b>\n"
-                    f"🆔 Request ID: <code>{req_id}</code>\n\n"
-                    f"Thank you for recharging! 🎉",
+                    f"👤 Approved By: <b>{admin_name}</b>\n"
+                    f"🆔 Request ID: <code>{req_id}</code>\n"
+                    f"⏰ Time: {datetime.utcnow().strftime('%d %b %Y, %H:%M')} UTC\n\n"
+                    f"Thank you for recharging! 🎉\n"
+                    f"Use /menu to buy accounts.",
                     parse_mode="HTML"
                 )
             except Exception:
                 pass
 
-            return True, f"✅ Recharge approved by {admin_name}", {
+            return True, f"✅ Approved ₹{amount:,.0f} for user {user_target}", {
                 "admin_name": admin_name,
                 "admin_id": admin_id,
-                "action": "approved"
+                "action": "approved",
+                "user_id": user_target,
+                "amount": amount
             }
 
         else:  # cancel/reject
@@ -1246,24 +1254,31 @@ def process_recharge_approval(admin_id, req_id, action):
                 "timestamp": datetime.utcnow()
             }
 
-            # Notify user — rejected
+            # Notify user — rejected ❌
             try:
                 bot.send_message(
                     user_target,
+                    f"╔══════════════════╗\n"
+                    f"  𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘 𝐗 𝐎𝐓𝐏\n"
+                    f"╚══════════════════╝\n\n"
                     f"❌ <b>Recharge Rejected</b>\n\n"
-                    f"💰 Amount: ₹{amount:,.0f}\n"
-                    f"🆔 Request ID: <code>{req_id}</code>\n\n"
-                    f"Your payment could not be verified. Please contact support:\n"
+                    f"💰 Amount: <b>₹{amount:,.0f}</b>\n"
+                    f"👤 Rejected By: <b>{admin_name}</b>\n"
+                    f"🆔 Request ID: <code>{req_id}</code>\n"
+                    f"⏰ Time: {datetime.utcnow().strftime('%d %b %Y, %H:%M')} UTC\n\n"
+                    f"❓ Payment not verified. Please contact support:\n"
                     f"👉 @rchiex",
                     parse_mode="HTML"
                 )
             except Exception:
                 pass
 
-            return True, f"❌ Recharge rejected by {admin_name}", {
+            return True, f"❌ Rejected ₹{amount:,.0f} for user {user_target}", {
                 "admin_name": admin_name,
                 "admin_id": admin_id,
-                "action": "rejected"
+                "action": "rejected",
+                "user_id": user_target,
+                "amount": amount
             }
             
     except Exception as e:
@@ -2179,26 +2194,54 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
                 
                 if success:
                     bot.answer_callback_query(call.id, message, show_alert=True)
-                    
-                    # Delete the original admin message
+
+                    # Delete the original recharge request message
                     try:
                         bot.delete_message(call.message.chat.id, call.message.message_id)
                     except:
                         pass
-                    
-                    # Send new message showing which admin approved/rejected
-                    admin_action_msg = f"✅ **Recharge Request Processed**\n\n"
-                    admin_action_msg += f"📋 Request ID: `{req_id}`\n"
-                    admin_action_msg += f"👤 Processed by: {admin_info['admin_name']}\n"
-                    admin_action_msg += f"🆔 Admin ID: `{admin_info['admin_id']}`\n"
-                    admin_action_msg += f"📌 Action: **{admin_info['action'].upper()}**\n"
-                    admin_action_msg += f"⏰ Time: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}"
-                    
+
+                    action_done = admin_info['action']  # "approved" or "rejected"
+                    emoji = "✅" if action_done == "approved" else "❌"
+                    target_uid = admin_info.get("user_id", "?")
+                    amt = admin_info.get("amount", 0)
+
+                    # Admin confirmation message
+                    admin_action_msg = (
+                        f"╔══════════════════╗\n"
+                        f"  𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘 𝐗 𝐎𝐓𝐏\n"
+                        f"╚══════════════════╝\n\n"
+                        f"{emoji} <b>Recharge {action_done.upper()}</b>\n\n"
+                        f"👤 User ID: <code>{target_uid}</code>\n"
+                        f"💰 Amount: <b>₹{amt:,.0f}</b>\n"
+                        f"🛡 Processed by: <b>{admin_info['admin_name']}</b>\n"
+                        f"🆔 Admin ID: <code>{admin_info['admin_id']}</code>\n"
+                        f"📋 Req ID: <code>{req_id}</code>\n"
+                        f"⏰ {datetime.utcnow().strftime('%d %b %Y, %H:%M')} UTC"
+                    )
                     bot.send_message(
                         call.message.chat.id,
                         admin_action_msg,
-                        parse_mode="Markdown"
+                        parse_mode="HTML"
                     )
+
+                    # Also notify all other admins about who processed it
+                    try:
+                        all_admins = get_all_admins()
+                        for adm in all_admins:
+                            if adm["user_id"] != admin_id:
+                                try:
+                                    bot.send_message(
+                                        adm["user_id"],
+                                        f"{emoji} <b>Recharge {action_done.upper()}</b> by <b>{admin_info['admin_name']}</b>\n"
+                                        f"👤 User: <code>{target_uid}</code>  💰 ₹{amt:,.0f}\n"
+                                        f"📋 Req: <code>{req_id}</code>",
+                                        parse_mode="HTML"
+                                    )
+                                except:
+                                    pass
+                    except:
+                        pass
                 else:
                     bot.answer_callback_query(call.id, f"❌ {message}", show_alert=True)
             else:
@@ -2527,32 +2570,33 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
                 pass
             clean_ui_and_send_menu(call.message.chat.id, user_id)
 
-        # ── Server 1 / Server 2 purchase ─────────────────────────────
-        elif data.startswith("srv1_") or data.startswith("srv2_"):
-            server_num = 1 if data.startswith("srv1_") else 2
-            country_name = data[5:]
-            bot.answer_callback_query(call.id, f"🖥️ Server {server_num} selected...")
-            # Find account from that server
-            query = {"country": country_name, "status": "active", "used": False}
-            if server_num == 2:
-                query["server"] = 2
-            else:
-                query["$or"] = [{"server": {"$exists": False}}, {"server": 1}, {"server": {"$ne": 2}}]
-                query.pop("$or", None)
-                query["server"] = {"$ne": 2}
-            account = accounts_col.find_one(query)
+        # ── Direct Buy Now ────────────────────────────────────────────
+        elif data.startswith("buy_now_"):
+            country_name = data[8:]
+            bot.answer_callback_query(call.id, "⏳ Processing...")
+            account = accounts_col.find_one({"country": country_name, "status": "active", "used": False})
             if not account:
-                bot.answer_callback_query(call.id, f"❌ No accounts on Server {server_num} right now!", show_alert=True)
+                bot.answer_callback_query(call.id, "❌ Out of Stock! No accounts available right now.", show_alert=True)
                 return
             process_purchase(user_id, str(account["_id"]), call.message.chat.id, call.message.message_id, call.id)
 
-        # ── Manage Admins Panel ───────────────────────────────────────
+        # ── Legacy srv1/srv2 kept for backwards compat ────────────────
+        elif data.startswith("srv1_") or data.startswith("srv2_"):
+            country_name = data[5:]
+            bot.answer_callback_query(call.id, "⏳ Processing...")
+            account = accounts_col.find_one({"country": country_name, "status": "active", "used": False})
+            if not account:
+                bot.answer_callback_query(call.id, "❌ No accounts available right now!", show_alert=True)
+                return
+            process_purchase(user_id, str(account["_id"]), call.message.chat.id, call.message.message_id, call.id)
+
+        # ── Manage Admins Panel — OWNER ONLY ─────────────────────────
         elif data == "manage_admins_panel":
-            if is_admin(user_id):
+            if is_super_admin(user_id):
                 bot.answer_callback_query(call.id, "👥 Admin Management")
                 show_manage_admins_panel(call.message.chat.id, call.message.message_id)
             else:
-                bot.answer_callback_query(call.id, "❌ Unauthorized", show_alert=True)
+                bot.answer_callback_query(call.id, "❌ Only the owner can manage admins!", show_alert=True)
 
         elif data == "admin_add_new":
             if is_super_admin(user_id):
@@ -4362,9 +4406,10 @@ def show_admin_panel(chat_id):
         InlineKeyboardButton("🌍 Manage Countries", callback_data="manage_countries"),
         InlineKeyboardButton("🎟 Coupon Management", callback_data="admin_coupon_menu")
     )
-    markup.add(
-        InlineKeyboardButton("👥 Manage Admins", callback_data="manage_admins_panel")
-    )
+    if is_super_admin(user_id):
+        markup.add(
+            InlineKeyboardButton("👥 Manage Admins 👑", callback_data="manage_admins_panel")
+        )
     
     # Pending recharges count
     pending_recharges = recharges_col.count_documents({"status": "pending"})
@@ -4976,11 +5021,9 @@ def show_countries(chat_id, page=0, message_id=None):
 
     row = []
     for country in page_countries:
-        stock = accounts_col.count_documents({"country": country['name'], "status": "active", "used": False})
-        dot = "🟢" if stock > 0 else "🔴"
         flag = get_country_flag(country['name'])
         row.append(InlineKeyboardButton(
-            f"{dot} {flag} {country['name']}",
+            f"{flag} {country['name']}",
             callback_data=f"country_raw_{country['name']}"
         ))
         if len(row) == 2:
@@ -5032,21 +5075,14 @@ def show_country_details(user_id, country_name, chat_id, message_id, callback_id
 ⚠️ Use Turbotel and plus messenger only to login.
 🚫 Not responsible for freeze / ban.</blockquote>"""
         
-        # Count per server
-        server1_count = accounts_col.count_documents({"country": country_name, "status": "active", "used": False, "server": {"$ne": 2}})
-        server2_count = accounts_col.count_documents({"country": country_name, "status": "active", "used": False, "server": 2})
-
-        markup = InlineKeyboardMarkup(row_width=2)
-        markup.add(
-            InlineKeyboardButton(
-                f"🖥️ Server 1 {'✅' if server1_count > 0 else '❌'} ({server1_count})",
-                callback_data=f"srv1_{country_name}" if server1_count > 0 else "out_of_stock"
-            ),
-            InlineKeyboardButton(
-                f"🖥️ Server 2 {'✅' if server2_count > 0 else '❌'} ({server2_count})",
-                callback_data=f"srv2_{country_name}" if server2_count > 0 else "out_of_stock"
-            )
-        )
+        markup = InlineKeyboardMarkup(row_width=1)
+        if accounts_count > 0:
+            markup.add(InlineKeyboardButton(
+                f"🛒 Buy Now — {accounts_count} Available",
+                callback_data=f"buy_now_{country_name}"
+            ))
+        else:
+            markup.add(InlineKeyboardButton("❌ Out of Stock", callback_data="out_of_stock"))
         markup.add(InlineKeyboardButton("⬅️ Back", callback_data="back_to_countries"))
         
         edit_or_resend(
@@ -5879,8 +5915,8 @@ def handle_gemini_chat(msg):
 # ---------------------------------------------------------------------
 
 def show_manage_admins_panel(chat_id, message_id=None):
-    if not is_admin(chat_id):
-        bot.send_message(chat_id, "❌ Unauthorized")
+    if not is_super_admin(chat_id):
+        bot.send_message(chat_id, "❌ Only the owner can manage admins!")
         return
 
     admins = get_all_admins()
