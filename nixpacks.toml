@@ -1,0 +1,12 @@
+[phases.setup]
+nixPkgs = ["python310"]
+
+[phases.install]
+cmds = [
+  "pip install --upgrade pip",
+  "pip uninstall -y bson || true",
+  "pip install -r requirements.txt"
+]
+
+[start]
+cmd = "python bot.py"
