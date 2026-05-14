@@ -1940,6 +1940,7 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
             bulk_add_states[user_id] = {
                 "mode": "bulk",
                 "country": country_name,
+                "account_age": login_states.get(user_id, {}).get("account_age", "Fresh"),
                 "phone_numbers": [],
                 "current_index": 0,
                 "total_numbers": 0,
@@ -2287,6 +2288,33 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
         
         elif data.startswith("login_country_"):
             handle_login_country_selection(call)
+
+        elif data.startswith("acc_age_"):
+            if not is_admin(user_id):
+                bot.answer_callback_query(call.id, "❌ Unauthorized", show_alert=True)
+                return
+            if user_id not in login_states:
+                bot.answer_callback_query(call.id, "❌ Session expired. Click Add Account again.", show_alert=True)
+                return
+            age_key = data.replace("acc_age_", "")
+            account_age = age_key.replace("_", " ")
+            login_states[user_id]["account_age"] = account_age
+            country_name = login_states[user_id].get("country", "Unknown")
+            markup = InlineKeyboardMarkup(row_width=2)
+            markup.add(
+                InlineKeyboardButton("➕ Single Account", callback_data=f"single_account_{country_name}"),
+                InlineKeyboardButton("📦 Bulk Accounts", callback_data=f"bulk_account_{country_name}")
+            )
+            markup.add(InlineKeyboardButton("❌ Cancel", callback_data="cancel_login"))
+            edit_or_resend(
+                call.message.chat.id,
+                call.message.message_id,
+                f"🌍 <b>Country:</b> {country_name}\n"
+                f"🗓️ <b>Age:</b> {account_age}\n\n"
+                f"📱 <b>Select account adding mode:</b>",
+                markup=markup,
+                parse_mode="HTML"
+            )
         
         elif data == "cancel_login":
             handle_cancel_login(call)
@@ -2580,8 +2608,15 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
         elif data.startswith("buy_now_"):
             country_name = data[8:]
             bot.answer_callback_query(call.id, "⏳ Processing...")
+            # Try strict query first, then fallback without status filter
             account = accounts_col.find_one({"country": country_name, "status": "active", "used": False})
             if not account:
+                account = accounts_col.find_one({"country": country_name, "used": False})
+            if not account:
+                # Case-insensitive fallback
+                account = accounts_col.find_one({"country": {"$regex": f"^{re.escape(country_name)}$", "$options": "i"}, "used": False})
+            if not account:
+                logger.warning(f"No account found for country='{country_name}'. Total in DB for this country: {accounts_col.count_documents({'country': country_name})}")
                 bot.answer_callback_query(call.id, "❌ Out of Stock! No accounts available right now.", show_alert=True)
                 return
             process_purchase(user_id, str(account["_id"]), call.message.chat.id, call.message.message_id, call.id)
@@ -3064,7 +3099,8 @@ def save_bulk_account(user_id, password=None):
             user_id,
             state["current_manager"],
             accounts_col,
-            password
+            password,
+            state.get("account_age", "Fresh")
         )
         
         if success:
@@ -3143,22 +3179,30 @@ def handle_login_country_selection(call):
         return
     
     country_name = call.data.replace("login_country_", "")
-    
     login_states[user_id]["country"] = country_name
-    
+
+    # Show account age selection first
     markup = InlineKeyboardMarkup(row_width=2)
-    markup.add(
-        InlineKeyboardButton("➕ Single Account", callback_data=f"single_account_{country_name}"),
-        InlineKeyboardButton("📦 Bulk Accounts", callback_data=f"bulk_account_{country_name}")
-    )
+    age_options = [
+        ("🆕 Fresh", "Fresh"),
+        ("📅 2 yr old", "2_yr_old"),
+        ("📅 3 yr old", "3_yr_old"),
+        ("📅 4 yr old", "4_yr_old"),
+        ("📅 5 yr old", "5_yr_old"),
+        ("📅 6 yr old", "6_yr_old"),
+        ("📅 7 yr old", "7_yr_old"),
+    ]
+    for label, key in age_options:
+        markup.add(InlineKeyboardButton(label, callback_data=f"acc_age_{key}"))
     markup.add(InlineKeyboardButton("❌ Cancel", callback_data="cancel_login"))
-    
+
     edit_or_resend(
         call.message.chat.id,
         call.message.message_id,
-        f"🌍 Country: {country_name}\n\n"
-        "📱 Select account adding mode:",
-        markup=markup
+        f"🌍 <b>Country:</b> {country_name}\n\n"
+        f"🗓️ <b>Select Account Age:</b>",
+        markup=markup,
+        parse_mode="HTML"
     )
 
 def handle_cancel_login(call):

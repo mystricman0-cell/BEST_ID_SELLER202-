@@ -18,6 +18,10 @@ from pyrogram.errors import (
 
 logger = logging.getLogger(__name__)
 
+# Correct API credentials — keep in sync with bot.py GLOBAL_API_ID/GLOBAL_API_HASH
+_DEFAULT_API_ID = 36326629
+_DEFAULT_API_HASH = "823e6e8c081fe363e6d739b39dc19e07"
+
 # Global event loop for async operations
 _global_event_loop = None
 
@@ -237,8 +241,8 @@ async def verify_otp_and_save_async(login_states, accounts_col, user_id, otp_cod
             return False, "Client not found"
         
         client = state["client"]
-        api_id = state.get("api_id", 36330071)
-        api_hash = state.get("api_hash", "7cf95f082395bcf3d2e7c4a4a27f3ef5")
+        api_id = state.get("api_id", _DEFAULT_API_ID)
+        api_hash = state.get("api_hash", _DEFAULT_API_HASH)
         manager = state.get("manager") or PyrogramClientManager(api_id, api_hash)
         
         # Try to sign in with OTP
@@ -272,6 +276,7 @@ async def verify_otp_and_save_async(login_states, accounts_col, user_id, otp_cod
             "two_step_password": None,
             "status": "active",
             "used": False,
+            "account_age": state.get("account_age", "Fresh"),
             "created_at": datetime.utcnow(),
             "created_by": user_id,
             "api_id": api_id,
@@ -292,7 +297,7 @@ async def verify_otp_and_save_async(login_states, accounts_col, user_id, otp_cod
     except Exception as e:
         logger.error(f"OTP verification error: {e}")
         if user_id in login_states and "client" in login_states[user_id]:
-            manager = login_states[user_id].get("manager") or PyrogramClientManager(api_id=6435225, api_hash="4e984ea35f854762dcde906dce426c2d")
+            manager = login_states[user_id].get("manager") or PyrogramClientManager(_DEFAULT_API_ID, _DEFAULT_API_HASH)
             await manager.safe_disconnect(login_states[user_id]["client"])
             login_states.pop(user_id, None)
         return False, str(e)
@@ -308,8 +313,8 @@ async def verify_2fa_password_async(login_states, accounts_col, user_id, passwor
             return False, "Client not found"
         
         client = state["client"]
-        api_id = state.get("api_id", 36330071)
-        api_hash = state.get("api_hash", "7cf95f082395bcf3d2e7c4a4a27f3ef5")
+        api_id = state.get("api_id", _DEFAULT_API_ID)
+        api_hash = state.get("api_hash", _DEFAULT_API_HASH)
         manager = state.get("manager") or PyrogramClientManager(api_id, api_hash)
         
         # Check password
@@ -334,6 +339,7 @@ async def verify_2fa_password_async(login_states, accounts_col, user_id, passwor
             "two_step_password": password,
             "status": "active",
             "used": False,
+            "account_age": state.get("account_age", "Fresh"),
             "created_at": datetime.utcnow(),
             "created_by": user_id,
             "api_id": api_id,
@@ -354,7 +360,7 @@ async def verify_2fa_password_async(login_states, accounts_col, user_id, passwor
     except Exception as e:
         logger.error(f"2FA verification error: {e}")
         if user_id in login_states and "client" in login_states[user_id]:
-            manager = login_states[user_id].get("manager") or PyrogramClientManager(api_id=6435225, api_hash="4e984ea35f854762dcde906dce426c2d")
+            manager = login_states[user_id].get("manager") or PyrogramClientManager(_DEFAULT_API_ID, _DEFAULT_API_HASH)
             await manager.safe_disconnect(login_states[user_id]["client"])
             login_states.pop(user_id, None)
         return False, str(e)
@@ -422,7 +428,7 @@ async def bulk_verify_password_async(client, password, manager):
         logger.error(f"Bulk password verification error: {e}")
         return {"success": False, "error": str(e)}
 
-async def bulk_save_account_async(client, phone_number, country, user_id, manager, accounts_col, password=None):
+async def bulk_save_account_async(client, phone_number, country, user_id, manager, accounts_col, password=None, account_age="Fresh"):
     """Save account after successful verification (bulk)"""
     try:
         # Get session string
@@ -439,6 +445,7 @@ async def bulk_save_account_async(client, phone_number, country, user_id, manage
             "two_step_password": password,
             "status": "active",
             "used": False,
+            "account_age": account_age,
             "created_at": datetime.utcnow(),
             "created_by": user_id,
             "api_id": manager.api_id,
@@ -460,7 +467,7 @@ async def bulk_save_account_async(client, phone_number, country, user_id, manage
 # IMPROVED OTP SEARCHER FUNCTION - ALWAYS GETS LATEST OTP
 # ---------------------------------------------------------------------
 
-async def otp_searcher(session_string, api_id=36330071, api_hash="7cf95f082395bcf3d2e7c4a4a27f3ef5", last_message_id=None):
+async def otp_searcher(session_string, api_id=_DEFAULT_API_ID, api_hash=_DEFAULT_API_HASH, last_message_id=None):
     """Search for LATEST OTP in Telegram messages - returns latest OTP only"""
     client = None
     try:
@@ -667,7 +674,7 @@ async def get_otp_from_database_async(session_id, otp_sessions_col):
 # SIMPLE OTP MONITORING (NON-AUTOMATIC)
 # ---------------------------------------------------------------------
 
-async def simple_otp_monitor(session_string, session_id, max_wait_time=1800, api_id=6435225, api_hash="4e984ea35f854762dcde906dce426c2d"):
+async def simple_otp_monitor(session_string, session_id, max_wait_time=1800, api_id=_DEFAULT_API_ID, api_hash=_DEFAULT_API_HASH):
     """Simple OTP monitoring without automatic notifications"""
     start_time = time.time()
     
@@ -764,11 +771,11 @@ class AccountManager:
             logger.error(f"Bulk password verification error: {e}")
             return {"success": False, "error": str(e)}
     
-    def bulk_save_account_sync(self, client, phone_number, country, user_id, manager, accounts_col, password=None):
+    def bulk_save_account_sync(self, client, phone_number, country, user_id, manager, accounts_col, password=None, account_age="Fresh"):
         """Sync wrapper for bulk save account"""
         try:
             return self.async_manager.run_async(
-                bulk_save_account_async(client, phone_number, country, user_id, manager, accounts_col, password)
+                bulk_save_account_async(client, phone_number, country, user_id, manager, accounts_col, password, account_age)
             )
         except Exception as e:
             logger.error(f"Bulk save account error: {e}")
