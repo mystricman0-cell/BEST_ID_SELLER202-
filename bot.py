@@ -2015,6 +2015,31 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
         
         elif data == "cancel_bulk":
             handle_cancel_bulk(call)
+
+        elif data == "edit_bulk_numbers":
+            if not is_admin(user_id):
+                bot.answer_callback_query(call.id, "❌ Unauthorized", show_alert=True)
+                return
+            if user_id not in bulk_add_states:
+                bot.answer_callback_query(call.id, "❌ Session expired. Restart bulk add.", show_alert=True)
+                return
+            state = bulk_add_states[user_id]
+            state["step"] = "waiting_numbers"
+            state.pop("phone_numbers", None)
+            bot.answer_callback_query(call.id, "✏️ Send new phone numbers")
+            try:
+                bot.delete_message(call.message.chat.id, call.message.message_id)
+            except:
+                pass
+            sent = bot.send_message(
+                call.message.chat.id,
+                "✏️ <b>Edit Numbers</b>\n\nSend the phone numbers again (one per line):\n\nExample:\n+8801700000000\n+8801800000000",
+                parse_mode="HTML",
+                reply_markup=InlineKeyboardMarkup().add(
+                    InlineKeyboardButton("❌ Cancel", callback_data="cancel_bulk")
+                )
+            )
+            user_last_message[user_id] = sent.message_id
         
         elif data == "pause_bulk":
             if user_id in bulk_add_states:
@@ -2093,7 +2118,7 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
         
         elif data.startswith("logout_session_"):
             session_id = data.split("_", 2)[2]
-            handle_logout_session(user_id, session_id, call.message.chat.id, call.id)
+            handle_logout_session(user_id, session_id, call.message.chat.id, call.message.message_id, call.id)
         
         elif data.startswith("get_otp_"):
             if not has_user_joined_channels(user_id):
@@ -2108,7 +2133,7 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
                 return
             
             session_id = data.split("_", 2)[2]
-            get_latest_otp(user_id, session_id, call.message.chat.id, call.id)
+            get_latest_otp(user_id, session_id, call.message.chat.id, call.message.message_id, call.id)
         
         elif data == "back_to_countries":
             if not has_user_joined_channels(user_id):
@@ -2772,7 +2797,15 @@ def handle_cancel_bulk(call):
         
         if state.get("current_client") and account_manager:
             try:
-                asyncio.run(account_manager.pyrogram_manager.safe_disconnect(state["current_client"]))
+                def _disc():
+                    import asyncio as _aio
+                    loop = _aio.new_event_loop()
+                    _aio.set_event_loop(loop)
+                    try:
+                        loop.run_until_complete(account_manager.pyrogram_manager.safe_disconnect(state["current_client"]))
+                    finally:
+                        loop.close()
+                threading.Thread(target=_disc, daemon=True).start()
             except:
                 pass
         
@@ -3234,8 +3267,16 @@ def handle_cancel_login(call):
         if "client" in state:
             try:
                 if account_manager and account_manager.pyrogram_manager:
-                    import asyncio
-                    asyncio.run(account_manager.pyrogram_manager.safe_disconnect(state["client"]))
+                    _client = state["client"]
+                    def _disc_login():
+                        import asyncio as _aio
+                        loop = _aio.new_event_loop()
+                        _aio.set_event_loop(loop)
+                        try:
+                            loop.run_until_complete(account_manager.pyrogram_manager.safe_disconnect(_client))
+                        finally:
+                            loop.close()
+                    threading.Thread(target=_disc_login, daemon=True).start()
             except:
                 pass
         login_states.pop(user_id, None)
@@ -3248,7 +3289,7 @@ def handle_cancel_login(call):
     )
     show_admin_panel(call.message.chat.id)
 
-def handle_logout_session(user_id, session_id, chat_id, callback_id):
+def handle_logout_session(user_id, session_id, chat_id, message_id, callback_id):
     try:
         if not account_manager:
             bot.answer_callback_query(callback_id, "❌ Account module not loaded", show_alert=True)
@@ -3261,7 +3302,7 @@ def handle_logout_session(user_id, session_id, chat_id, callback_id):
         
         if success:
             try:
-                bot.delete_message(chat_id, callback_id.message.message_id)
+                bot.delete_message(chat_id, message_id)
             except:
                 pass
             
@@ -3283,7 +3324,7 @@ def handle_logout_session(user_id, session_id, chat_id, callback_id):
         logger.error(f"Logout handler error: {e}")
         bot.answer_callback_query(callback_id, "❌ Error logging out", show_alert=True)
 
-def get_latest_otp(user_id, session_id, chat_id, callback_id):
+def get_latest_otp(user_id, session_id, chat_id, message_id, callback_id):
     try:
         session_data = otp_sessions_col.find_one({"session_id": session_id})
         if not session_data:
@@ -3366,7 +3407,7 @@ def get_latest_otp(user_id, session_id, chat_id, callback_id):
             bot.edit_message_text(
                 message,
                 chat_id,
-                callback_id.message.message_id,
+                message_id,
                 parse_mode="HTML",
                 reply_markup=markup
             )
