@@ -2075,7 +2075,21 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
                 return
             
             account_id = data.split("_", 1)[1]
-            process_purchase(user_id, account_id, call.message.chat.id, call.message.message_id, call.id)
+            # Resolve account before calling process_purchase (avoid BSON re-fetch failure)
+            _account = None
+            try:
+                _account = accounts_col.find_one({"_id": ObjectId(account_id)})
+            except Exception:
+                pass
+            if not _account:
+                try:
+                    _account = accounts_col.find_one({"_id": account_id})
+                except Exception:
+                    pass
+            if not _account:
+                bot.answer_callback_query(call.id, "❌ Account not available", show_alert=True)
+            else:
+                process_purchase(user_id, _account, call.message.chat.id, call.message.message_id, call.id)
         
         elif data.startswith("logout_session_"):
             session_id = data.split("_", 2)[2]
