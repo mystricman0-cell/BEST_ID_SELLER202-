@@ -884,7 +884,7 @@ def format_currency(x):
         return "₹0"
 
 def get_available_accounts_count(country):
-    return accounts_col.count_documents({"country": country, "status": "active", "used": False})
+    return accounts_col.count_documents({"country": country, "status": "active", "used": {"$ne": True}})
 
 def is_user_banned(user_id):
     banned = banned_users_col.find_one({"user_id": user_id, "status": "active"})
@@ -2611,28 +2611,32 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
         elif data.startswith("buy_now_"):
             country_name = data[8:]
             bot.answer_callback_query(call.id, "⏳ Processing...")
-            # Try strict query first, then fallback without status filter
-            account = accounts_col.find_one({"country": country_name, "status": "active", "used": False})
+            # Try strict query first, then progressively looser fallbacks
+            account = accounts_col.find_one({"country": country_name, "status": "active", "used": {"$ne": True}})
             if not account:
-                account = accounts_col.find_one({"country": country_name, "used": False})
+                account = accounts_col.find_one({"country": country_name, "used": {"$ne": True}})
             if not account:
-                # Case-insensitive fallback
-                account = accounts_col.find_one({"country": {"$regex": f"^{re.escape(country_name)}$", "$options": "i"}, "used": False})
+                account = accounts_col.find_one({
+                    "country": {"$regex": f"^{re.escape(country_name)}$", "$options": "i"},
+                    "used": {"$ne": True}
+                })
             if not account:
-                logger.warning(f"No account found for country='{country_name}'. Total in DB for this country: {accounts_col.count_documents({'country': country_name})}")
+                logger.warning(f"No account found for country='{country_name}'. Total in DB: {accounts_col.count_documents({'country': country_name})}")
                 bot.answer_callback_query(call.id, "❌ Out of Stock! No accounts available right now.", show_alert=True)
                 return
-            process_purchase(user_id, str(account["_id"]), call.message.chat.id, call.message.message_id, call.id)
+            process_purchase(user_id, account, call.message.chat.id, call.message.message_id, call.id)
 
         # ── Legacy srv1/srv2 kept for backwards compat ────────────────
         elif data.startswith("srv1_") or data.startswith("srv2_"):
             country_name = data[5:]
             bot.answer_callback_query(call.id, "⏳ Processing...")
-            account = accounts_col.find_one({"country": country_name, "status": "active", "used": False})
+            account = accounts_col.find_one({"country": country_name, "status": "active", "used": {"$ne": True}})
+            if not account:
+                account = accounts_col.find_one({"country": country_name, "used": {"$ne": True}})
             if not account:
                 bot.answer_callback_query(call.id, "❌ No accounts available right now!", show_alert=True)
                 return
-            process_purchase(user_id, str(account["_id"]), call.message.chat.id, call.message.message_id, call.id)
+            process_purchase(user_id, account, call.message.chat.id, call.message.message_id, call.id)
 
         # ── Manage Admins Panel — OWNER ONLY ─────────────────────────
         elif data == "manage_admins_panel":
@@ -4423,7 +4427,7 @@ def show_admin_panel(chat_id):
         return
     
     total_accounts = accounts_col.count_documents({})
-    active_accounts = accounts_col.count_documents({"status": "active", "used": False})
+    active_accounts = accounts_col.count_documents({"status": "active", "used": {"$ne": True}})
     total_users = users_col.count_documents({})
     total_orders = orders_col.count_documents({})
     banned_users = banned_users_col.count_documents({"status": "active"})
@@ -5158,17 +5162,34 @@ def show_country_details(user_id, country_name, chat_id, message_id, callback_id
 # PROCESS PURCHASE FUNCTION
 # ---------------------------------------------------------------------
 
-def process_purchase(user_id, account_id, chat_id, message_id, callback_id):
+def process_purchase(user_id, account_or_id, chat_id, message_id, callback_id):
+    """
+    account_or_id: can be a dict (account document) or a str/ObjectId (account _id).
+    Passing the dict directly avoids BSON/re-fetch issues.
+    """
     try:
-        try:
-            account = accounts_col.find_one({"_id": ObjectId(account_id)})
-        except Exception:
-            account = accounts_col.find_one({"_id": account_id})
-        
+        # Resolve account — accept dict directly to skip fragile re-fetch
+        if isinstance(account_or_id, dict):
+            account = account_or_id
+            account_id = str(account.get('_id', ''))
+        else:
+            account_id = str(account_or_id)
+            account = None
+            try:
+                account = accounts_col.find_one({"_id": ObjectId(account_id)})
+            except Exception:
+                pass
+            if not account:
+                try:
+                    account = accounts_col.find_one({"_id": account_id})
+                except Exception:
+                    pass
+
         if not account:
+            logger.error(f"process_purchase: account not found for id={account_or_id}")
             bot.answer_callback_query(callback_id, "❌ Account not available", show_alert=True)
             return
-        
+
         if account.get('used', False):
             bot.answer_callback_query(callback_id, "❌ Account already sold out", show_alert=True)
             try:
@@ -5236,16 +5257,11 @@ def process_purchase(user_id, account_id, chat_id, message_id, callback_id):
         }
         order_id = orders_col.insert_one(order).inserted_id
         
-        try:
-            accounts_col.update_one(
-                {"_id": account.get('_id')},
-                {"$set": {"used": True, "used_at": datetime.utcnow()}}
-            )
-        except Exception:
-            accounts_col.update_one(
-                {"_id": ObjectId(account_id)},
-                {"$set": {"used": True, "used_at": datetime.utcnow()}}
-            )
+        # Mark account as used — use the _id we already have (no re-fetch)
+        accounts_col.update_one(
+            {"_id": account["_id"]},
+            {"$set": {"used": True, "used_at": datetime.utcnow()}}
+        )
         
         def start_simple_monitoring():
             try:
@@ -5401,7 +5417,7 @@ def cmd_price(msg):
         return
     lines = ["📋 <b>Live Price List &amp; Stock</b>\n"]
     for c in countries:
-        stock = accounts_col.count_documents({"country": c['name'], "status": "active", "used": False})
+        stock = accounts_col.count_documents({"country": c['name'], "status": "active", "used": {"$ne": True}})
         status = "🟢" if stock > 0 else "🔴"
         lines.append(f"{status} <b>{c['name']}</b> — {format_currency(c['price'])} | Stock: {stock}")
     markup = InlineKeyboardMarkup()
@@ -5544,7 +5560,7 @@ def cmd_ping(msg):
     latency = round((t2 - t1) * 1000)
     total_users = users_col.count_documents({})
     total_orders = orders_col.count_documents({})
-    total_accounts = accounts_col.count_documents({"status": "active", "used": False})
+    total_accounts = accounts_col.count_documents({"status": "active", "used": {"$ne": True}})
     bot.edit_message_text(
         f"🏓 <b>Pong!</b>\n\n"
         f"⚡ Latency: <b>{latency}ms</b>\n"
@@ -5665,7 +5681,7 @@ def cmd_topcountries(msg):
     lines = ["🏆 <b>Top Selling Countries</b>\n"]
     medals = ["🥇", "🥈", "🥉"] + ["🔹"] * 10
     for i, r in enumerate(results):
-        stock = accounts_col.count_documents({"country": r["_id"], "status": "active", "used": False})
+        stock = accounts_col.count_documents({"country": r["_id"], "status": "active", "used": {"$ne": True}})
         lines.append(f"{medals[i]} <b>{r['_id']}</b> — {r['count']} sold | Stock: {stock}")
     bot.send_message(msg.chat.id, "\n".join(lines), parse_mode="HTML")
 
@@ -5676,8 +5692,8 @@ def cmd_serverstats(msg):
     if not is_admin(user_id):
         bot.send_message(msg.chat.id, "❌ Admin only command.")
         return
-    s1 = accounts_col.count_documents({"status": "active", "used": False, "server": {"$ne": 2}})
-    s2 = accounts_col.count_documents({"status": "active", "used": False, "server": 2})
+    s1 = accounts_col.count_documents({"status": "active", "used": {"$ne": True}, "server": {"$ne": 2}})
+    s2 = accounts_col.count_documents({"status": "active", "used": {"$ne": True}, "server": 2})
     total = s1 + s2
     used = accounts_col.count_documents({"used": True})
     countries = get_all_countries()
@@ -5690,8 +5706,8 @@ def cmd_serverstats(msg):
         "<b>Per Country:</b>"
     ]
     for c in countries:
-        cs1 = accounts_col.count_documents({"country": c["name"], "status": "active", "used": False, "server": {"$ne": 2}})
-        cs2 = accounts_col.count_documents({"country": c["name"], "status": "active", "used": False, "server": 2})
+        cs1 = accounts_col.count_documents({"country": c["name"], "status": "active", "used": {"$ne": True}, "server": {"$ne": 2}})
+        cs2 = accounts_col.count_documents({"country": c["name"], "status": "active", "used": {"$ne": True}, "server": 2})
         lines.append(f"🌍 {c['name']}: S1={cs1} | S2={cs2}")
     bot.send_message(msg.chat.id, "\n".join(lines), parse_mode="HTML")
 
