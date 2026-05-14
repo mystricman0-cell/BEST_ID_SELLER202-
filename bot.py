@@ -90,10 +90,10 @@ bot = telebot.TeleBot(BOT_TOKEN)
 try:
     from google import genai as _genai
     from google.genai import types as _genai_types
-    _genai_client = _genai.Client(api_key=GEMINI_API_KEY)
     GEMINI_MODEL_NAME = "gemini-2.0-flash"
     gemini_model = True  # flag: initialized
-    logger.info(f"✅ Gemini AI initialized (model: {GEMINI_MODEL_NAME})")
+    _genai_client = None  # initialized lazily using get_ai_key()
+    logger.info(f"✅ Gemini AI ready (model: {GEMINI_MODEL_NAME})")
 except Exception as _ge:
     _genai_client = None
     gemini_model = None
@@ -101,6 +101,23 @@ except Exception as _ge:
 
 # Gemini chat history per user  (list of {"role": ..., "parts": [...]})
 gemini_chat_sessions = {}
+
+def get_ai_key():
+    """Return current Gemini API key — checks MongoDB first, then falls back to hardcoded."""
+    try:
+        cfg = db['bot_config'].find_one({"key": "gemini_api_key"})
+        if cfg and cfg.get("value"):
+            return cfg["value"]
+    except Exception:
+        pass
+    return GEMINI_API_KEY
+
+def get_genai_client():
+    """Get a fresh Gemini client with the latest API key."""
+    try:
+        return _genai.Client(api_key=get_ai_key())
+    except Exception:
+        return None
 
 # MongoDB Setup
 try:
@@ -2742,6 +2759,42 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
                 bot.answer_callback_query(call.id, "❌ Unauthorized", show_alert=True)
 
         # ── Pending Recharges List ────────────────────────────────────
+        elif data == "admin_permissions":
+            if is_super_admin(user_id):
+                bot.answer_callback_query(call.id, "🔐 Admin Permissions")
+                show_admin_permissions_panel(call.message.chat.id, call.message.message_id)
+            else:
+                bot.answer_callback_query(call.id, "❌ Only owner can manage permissions!", show_alert=True)
+
+        elif data.startswith("toggle_perm_"):
+            if not is_super_admin(user_id):
+                bot.answer_callback_query(call.id, "❌ Only owner can change permissions!", show_alert=True)
+                return
+            parts = data.split("_", 3)  # toggle_perm_USERID_PERMNAME
+            if len(parts) < 4:
+                bot.answer_callback_query(call.id, "❌ Invalid action", show_alert=True)
+                return
+            target_uid = int(parts[2])
+            perm_name = parts[3]
+            admin_doc = admins_col.find_one({"user_id": target_uid})
+            if not admin_doc:
+                bot.answer_callback_query(call.id, "❌ Admin not found", show_alert=True)
+                return
+            perms = admin_doc.get("permissions", {})
+            current = perms.get(perm_name, True)
+            perms[perm_name] = not current
+            admins_col.update_one({"user_id": target_uid}, {"$set": {"permissions": perms}})
+            status = "✅ ON" if not current else "❌ OFF"
+            bot.answer_callback_query(call.id, f"{perm_name}: {status}", show_alert=False)
+            show_admin_permissions_panel(call.message.chat.id, call.message.message_id)
+
+        elif data.startswith("view_perms_"):
+            if is_super_admin(user_id):
+                target_uid = int(data.split("_")[-1])
+                show_single_admin_perms(call.message.chat.id, call.message.message_id, target_uid)
+            else:
+                bot.answer_callback_query(call.id, "❌ Unauthorized", show_alert=True)
+
         elif data == "pending_recharges_list":
             if is_admin(user_id):
                 bot.answer_callback_query(call.id, "💳 Pending Recharges")
@@ -3246,8 +3299,9 @@ def handle_login_country_selection(call):
         ("📅 6 yr old", "6_yr_old"),
         ("📅 7 yr old", "7_yr_old"),
     ]
-    for label, key in age_options:
-        markup.add(InlineKeyboardButton(label, callback_data=f"acc_age_{key}"))
+    # Add all buttons at once so row_width=2 puts them 2 per row
+    age_buttons = [InlineKeyboardButton(label, callback_data=f"acc_age_{key}") for label, key in age_options]
+    markup.add(*age_buttons)
     markup.add(InlineKeyboardButton("❌ Cancel", callback_data="cancel_login"))
 
     edit_or_resend(
@@ -4525,7 +4579,8 @@ def show_admin_panel(chat_id):
     )
     if is_super_admin(user_id):
         markup.add(
-            InlineKeyboardButton("👥 Manage Admins 👑", callback_data="manage_admins_panel")
+            InlineKeyboardButton("👥 Manage Admins 👑", callback_data="manage_admins_panel"),
+            InlineKeyboardButton("🔐 Admin Permissions", callback_data="admin_permissions")
         )
     
     # Pending recharges count
@@ -6062,7 +6117,7 @@ def handle_gemini_chat(msg):
     user_id = msg.from_user.id
     text = msg.text.strip() if msg.text else ""
 
-    if not gemini_model or not _genai_client:
+    if not gemini_model:
         bot.send_message(msg.chat.id, "❌ AI Chat is currently unavailable. Contact admin.")
         return
 
@@ -6094,14 +6149,19 @@ def handle_gemini_chat(msg):
     last_error = None
     for attempt in range(3):
         try:
+            # Always get fresh client with latest key (supports /setaikey updates)
+            ai_client = get_genai_client()
+            if not ai_client:
+                raise Exception("Could not create AI client")
+
             # Build conversation history
             history = gemini_chat_sessions.get(user_id, [])
 
             # Add the new user message
             history.append({"role": "user", "parts": [{"text": text}]})
 
-            # Call Gemini 2.0 flash
-            response = _genai_client.models.generate_content(
+            # Call Gemini
+            response = ai_client.models.generate_content(
                 model=GEMINI_MODEL_NAME,
                 contents=history,
                 config=_genai_types.GenerateContentConfig(
@@ -6132,15 +6192,27 @@ def handle_gemini_chat(msg):
 
         except Exception as e:
             last_error = e
+            err_str = str(e).lower()
             logger.error(f"Gemini attempt {attempt+1} failed: {e}")
             gemini_chat_sessions.pop(user_id, None)
+            # Don't retry on auth/key errors
+            if "permission_denied" in err_str or "api_key" in err_str or "leaked" in err_str or "invalid_api_key" in err_str:
+                break
+            if "quota" in err_str or "resource_exhausted" in err_str:
+                break
             time.sleep(1.5)
 
     logger.error(f"Gemini all attempts failed: {last_error}")
-    bot.send_message(
-        msg.chat.id,
-        "❌ AI is temporarily busy. Please try again in a moment.\n\nUse /start to go back to menu.",
-    )
+    err_msg = str(last_error).lower() if last_error else ""
+    if "leaked" in err_msg or "permission_denied" in err_msg:
+        reply_text = "❌ AI key is invalid. Admin ko /setaikey se naya key set karna hoga."
+    elif "quota" in err_msg or "resource_exhausted" in err_msg:
+        reply_text = "❌ AI ka daily quota khatam ho gaya. Kal dobara try karein ya admin se naya key mangein."
+    else:
+        reply_text = "❌ AI abhi busy hai. Thodi der baad try karein."
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("❌ Exit AI Chat", callback_data="exit_ai_chat"))
+    bot.send_message(msg.chat.id, reply_text, reply_markup=markup)
 
 # ---------------------------------------------------------------------
 # MANAGE ADMINS PANEL FUNCTION
@@ -6181,6 +6253,126 @@ def show_manage_admins_panel(chat_id, message_id=None):
             bot.send_message(chat_id, text, parse_mode="HTML", reply_markup=markup)
     except:
         bot.send_message(chat_id, text, parse_mode="HTML", reply_markup=markup)
+
+# ---------------------------------------------------------------------
+# ADMIN PERMISSIONS PANEL FUNCTIONS
+# ---------------------------------------------------------------------
+
+ADMIN_PERMISSIONS = [
+    ("add_accounts", "➕ Add Accounts"),
+    ("approve_recharge", "💳 Approve Recharge"),
+    ("manage_countries", "🌍 Manage Countries"),
+    ("ban_users", "🚫 Ban/Unban Users"),
+    ("broadcast", "📢 Broadcast"),
+    ("deduct_balance", "💸 Deduct Balance"),
+    ("refund", "↩️ Refund"),
+    ("message_user", "💬 Message User"),
+]
+
+def show_admin_permissions_panel(chat_id, message_id=None):
+    if not is_super_admin(chat_id):
+        bot.send_message(chat_id, "❌ Only owner can access this!")
+        return
+
+    admins = get_all_admins()
+    non_super = [a for a in admins if not a.get("is_super_admin", False)]
+
+    text = "🔐 <b>Admin Permissions</b>\n\nClick an admin to manage their permissions:\n\n"
+    markup = InlineKeyboardMarkup(row_width=1)
+
+    for adm in non_super:
+        uid = adm["user_id"]
+        name = adm.get("name", "Unknown")
+        perms = adm.get("permissions", {})
+        # Count enabled permissions (default all True if not set)
+        enabled = sum(1 for pk, _ in ADMIN_PERMISSIONS if perms.get(pk, True))
+        total_p = len(ADMIN_PERMISSIONS)
+        markup.add(InlineKeyboardButton(
+            f"👤 {name} ({uid}) — {enabled}/{total_p} perms",
+            callback_data=f"view_perms_{uid}"
+        ))
+
+    if not non_super:
+        text += "No sub-admins added yet."
+
+    markup.add(InlineKeyboardButton("⬅️ Back to Admin Panel", callback_data="admin_panel"))
+
+    try:
+        if message_id:
+            bot.edit_message_text(text, chat_id, message_id, parse_mode="HTML", reply_markup=markup)
+        else:
+            bot.send_message(chat_id, text, parse_mode="HTML", reply_markup=markup)
+    except:
+        bot.send_message(chat_id, text, parse_mode="HTML", reply_markup=markup)
+
+
+def show_single_admin_perms(chat_id, message_id, target_uid):
+    if not is_super_admin(chat_id):
+        return
+
+    admin_doc = admins_col.find_one({"user_id": target_uid})
+    if not admin_doc:
+        bot.send_message(chat_id, "❌ Admin not found.")
+        return
+
+    name = admin_doc.get("name", "Unknown")
+    perms = admin_doc.get("permissions", {})
+
+    text = f"🔐 <b>Permissions for</b> <code>{target_uid}</code> ({name})\n\n"
+    text += "Toggle permissions on/off:\n"
+
+    markup = InlineKeyboardMarkup(row_width=2)
+    perm_buttons = []
+    for perm_key, perm_label in ADMIN_PERMISSIONS:
+        enabled = perms.get(perm_key, True)
+        icon = "✅" if enabled else "❌"
+        perm_buttons.append(InlineKeyboardButton(
+            f"{icon} {perm_label}",
+            callback_data=f"toggle_perm_{target_uid}_{perm_key}"
+        ))
+    markup.add(*perm_buttons)
+    markup.add(InlineKeyboardButton("⬅️ Back", callback_data="admin_permissions"))
+
+    try:
+        if message_id:
+            bot.edit_message_text(text, chat_id, message_id, parse_mode="HTML", reply_markup=markup)
+        else:
+            bot.send_message(chat_id, text, parse_mode="HTML", reply_markup=markup)
+    except:
+        bot.send_message(chat_id, text, parse_mode="HTML", reply_markup=markup)
+
+
+# /setaikey command — owner only, updates Gemini API key in MongoDB
+@bot.message_handler(commands=['setaikey'])
+def cmd_setaikey(msg):
+    if msg.from_user.id != ADMIN_ID:
+        bot.send_message(msg.chat.id, "❌ Only the owner can use this command.")
+        return
+    parts = msg.text.strip().split(maxsplit=1)
+    if len(parts) < 2 or not parts[1].strip():
+        bot.send_message(msg.chat.id, "Usage: /setaikey <your_new_gemini_api_key>")
+        return
+    new_key = parts[1].strip()
+    # Test the key before saving
+    test_ok = False
+    try:
+        test_client = _genai.Client(api_key=new_key)
+        test_client.models.get(model=GEMINI_MODEL_NAME)
+        test_ok = True
+    except Exception as e:
+        err = str(e)
+        if "not found" in err.lower() or "404" in err:
+            test_ok = True  # key works, model name issue
+        else:
+            bot.send_message(msg.chat.id, f"❌ Key test failed: {err[:200]}\n\nKey NOT saved.")
+            return
+    db['bot_config'].update_one(
+        {"key": "gemini_api_key"},
+        {"$set": {"key": "gemini_api_key", "value": new_key}},
+        upsert=True
+    )
+    bot.send_message(msg.chat.id, "✅ Gemini API key updated! AI ab naye key se kaam karega.")
+
 
 # ---------------------------------------------------------------------
 # FLASK WEBHOOK SERVER — exclusive control, no polling conflicts
