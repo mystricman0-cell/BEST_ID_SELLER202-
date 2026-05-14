@@ -51,7 +51,7 @@ ADMIN_ID = int(os.getenv('ADMIN_ID', '8358951104'))
 MONGO_URL = os.getenv('MONGO_URL', 'mongodb+srv://dhruvkumarray3_db_user:Sc1nt6kCkoEuTzW3@cluster0.rgwrfli.mongodb.net/?appName=Cluster0')
 API_ID = int(os.getenv('API_ID', '34242066'))
 API_HASH = os.getenv('API_HASH', '707c322fc645117058c0f2a421122ff7')
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyCXMgXfYVoDzGQYGYKnr8JIVteXvaMmIBo')
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyDB0DQ8pV0NO7XmCrw-UYxxq58MJvkW_2Q')
 
 # UPI PAYMENT CONFIG
 UPI_ID = os.getenv('UPI_ID', 'rishabhkumarray@fam')
