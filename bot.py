@@ -66,11 +66,11 @@ LOG_CHANNEL_ID = "-1003659930873"
 # Referral commission percentage
 REFERRAL_COMMISSION = 1.7
 
-# Global API Credentials for Pyrogram Login (Server 1) — Owner's own credentials
+# Primary API Credentials for Pyrogram Login
 GLOBAL_API_ID = 34242066
 GLOBAL_API_HASH = "707c322fc645117058c0f2a421122ff7"
 
-# Server 2 API Credentials
+# Backup API Credentials
 SERVER2_API_ID = 37751241
 SERVER2_API_HASH = "2e90f273e745d4c080fdfab24fa98494"
 
@@ -5753,9 +5753,7 @@ def cmd_serverstats(msg):
     used = accounts_col.count_documents({"used": True})
     countries = get_all_countries()
     lines = [
-        "🖥️ <b>Server Stock Dashboard</b>\n",
-        f"🖥️ Server 1: <b>{s1}</b> accounts",
-        f"🖥️ Server 2: <b>{s2}</b> accounts",
+        "📦 <b>Stock Dashboard</b>\n",
         f"📦 Total Available: <b>{total}</b>",
         f"✅ Total Sold: <b>{used}</b>\n",
         "<b>Per Country:</b>"
@@ -5763,7 +5761,8 @@ def cmd_serverstats(msg):
     for c in countries:
         cs1 = accounts_col.count_documents({"country": c["name"], "status": "active", "used": {"$ne": True}, "server": {"$ne": 2}})
         cs2 = accounts_col.count_documents({"country": c["name"], "status": "active", "used": {"$ne": True}, "server": 2})
-        lines.append(f"🌍 {c['name']}: S1={cs1} | S2={cs2}")
+        ctotal = cs1 + cs2
+        lines.append(f"🌍 {c['name']}: <b>{ctotal}</b> available")
     bot.send_message(msg.chat.id, "\n".join(lines), parse_mode="HTML")
 
 # ── Rate limiting store (honeypot layer) ──────────────────────────────
@@ -5882,7 +5881,7 @@ def cmd_ohelp(msg):
         "/sales — Sales summary\n"
         "/revenue — Revenue by country\n"
         "/topcountries — Top 10 countries\n"
-        "/serverstats — Server 1 &amp; 2 stock\n"
+        "/serverstats — Stock dashboard\n"
         "/security — Security dashboard\n"
         "/honeypot_list — Monitor users\n"
         "/clearaccounts — Delete ALL accounts from DB\n"
