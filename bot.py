@@ -123,7 +123,7 @@ def get_genai_client():
 def _connect_mongo():
     global client, db, users_col, accounts_col, orders_col, wallets_col
     global recharges_col, otp_sessions_col, referrals_col, countries_col
-    global banned_users_col, transactions_col, coupons_col, admins_col
+    global banned_users_col, transactions_col, coupons_col, admins_col, privacy_warns_col
     try:
         client = MongoClient(
             MONGO_URL,
@@ -147,6 +147,7 @@ def _connect_mongo():
         transactions_col = db['transactions']
         coupons_col = db['coupons']
         admins_col = db['admins']
+        privacy_warns_col = db['privacy_warns']
         logger.info("✅ MongoDB connected successfully")
         return True
     except Exception as e:
@@ -184,6 +185,78 @@ def safe_obj_id(val):
         return ObjectId(str(val))
     except Exception:
         return None
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 🧹 AI RESPONSE CLEANER — strip markdown/special chars Gemini adds
+# ─────────────────────────────────────────────────────────────────────────────
+import re as _re
+
+def clean_ai_response(text):
+    """Remove markdown formatting chars so response looks like plain Gemini chat."""
+    if not text:
+        return text
+    # Remove bold/italic markdown
+    text = _re.sub(r'\*{1,3}(.*?)\*{1,3}', r'\1', text, flags=_re.DOTALL)
+    # Remove headings (### ## #)
+    text = _re.sub(r'^#{1,6}\s+', '', text, flags=_re.MULTILINE)
+    # Remove underline/strikethrough
+    text = _re.sub(r'_{1,2}(.*?)_{1,2}', r'\1', text, flags=_re.DOTALL)
+    text = _re.sub(r'~~(.*?)~~', r'\1', text, flags=_re.DOTALL)
+    # Remove inline code backticks (keep content)
+    text = _re.sub(r'`{1,3}(.*?)`{1,3}', r'\1', text, flags=_re.DOTALL)
+    # Remove horizontal rules
+    text = _re.sub(r'^[-*_]{3,}\s*$', '', text, flags=_re.MULTILINE)
+    # Clean up multiple blank lines
+    text = _re.sub(r'\n{3,}', '\n\n', text)
+    return text.strip()
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 🚨 PRIVACY WARN SYSTEM — warn users asking private bot info
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Keywords that suggest someone is trying to extract private bot info
+_PRIVACY_KEYWORDS = [
+    "bot token", "api id", "api hash", "api key", "mongo", "database url",
+    "admin id", "upi id", "secret", "source code", "bot ka code",
+    "owner ka number", "owner kaun", "owner ka phone", "admin kaun hai",
+    "admin ka number", "malik kaun", "bot banane wala", "bot ka malik",
+    "bot creator", "owner number", "admin number", "server ip",
+    "railway url", "webhook url", "gemini key", "openai key",
+    "bot ki detail", "bot ki info", "private info", "config",
+    "password kya hai", "database password", "mongo password",
+]
+
+def get_privacy_warn_count(user_id):
+    try:
+        doc = privacy_warns_col.find_one({"user_id": user_id})
+        return doc.get("warns", 0) if doc else 0
+    except Exception:
+        return 0
+
+def add_privacy_warn(user_id):
+    """Add 1 warn. Returns new warn count."""
+    try:
+        privacy_warns_col.update_one(
+            {"user_id": user_id},
+            {"$inc": {"warns": 1}, "$set": {"updated_at": datetime.utcnow()}},
+            upsert=True
+        )
+        return get_privacy_warn_count(user_id)
+    except Exception:
+        return 0
+
+def remove_privacy_warn(user_id):
+    """Remove all warns for user. Owner only."""
+    try:
+        privacy_warns_col.delete_one({"user_id": user_id})
+        return True
+    except Exception:
+        return False
+
+def is_privacy_question(text):
+    """Returns True if user seems to be asking about private bot info."""
+    t = text.lower()
+    return any(kw in t for kw in _PRIVACY_KEYWORDS)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 🎬 ANIMATION SYSTEM — Telegram-native animated messages
@@ -6494,13 +6567,67 @@ def handle_gemini_chat(msg):
         bot.send_message(msg.chat.id, "❌ AI Chat is currently unavailable. Contact admin.")
         return
 
-    # Block bot private info leakage
-    _private_kw = ["bot token", "api id", "api hash", "mongo", "database url", "admin id", "upi id", "secret key"]
-    if any(kw in text.lower() for kw in _private_kw):
+    # ── Privacy Protection + Warn System ────────────────────────────────────
+    if is_privacy_question(text):
+        warn_count = add_privacy_warn(user_id)
+        remaining = 3 - warn_count
+        user_name = msg.from_user.first_name or "User"
+        username = f"@{msg.from_user.username}" if msg.from_user.username else f"ID: {user_id}"
+
+        # Notify owner
+        try:
+            bot.send_message(
+                ADMIN_ID,
+                f"🚨 <b>Privacy Alert!</b>\n\n"
+                f"👤 User: {user_name} ({username})\n"
+                f"🆔 ID: <code>{user_id}</code>\n"
+                f"⚠️ Warn Count: {warn_count}/3\n\n"
+                f"💬 Message:\n<code>{text[:500]}</code>",
+                parse_mode="HTML"
+            )
+        except Exception:
+            pass
+
+        # Auto-ban at 3 warns
+        if warn_count >= 3:
+            try:
+                banned_users_col.update_one(
+                    {"user_id": user_id},
+                    {"$set": {"user_id": user_id, "banned_at": datetime.utcnow(), "reason": "Privacy violation (3 warns)"}},
+                    upsert=True
+                )
+            except Exception:
+                pass
+            user_stage.pop(user_id, None)
+            gemini_chat_sessions.pop(user_id, None)
+            bot.send_message(
+                msg.chat.id,
+                "🚫 <b>Aapko ban kar diya gaya hai.</b>\n\n"
+                "3 baar private bot information maangne ki koshish ki — yeh allowed nahi hai.",
+                parse_mode="HTML"
+            )
+            try:
+                bot.send_message(
+                    ADMIN_ID,
+                    f"🔨 <b>Auto-Banned!</b>\n👤 {user_name} ({username})\n🆔 <code>{user_id}</code>\nReason: 3 privacy warns",
+                    parse_mode="HTML"
+                )
+            except Exception:
+                pass
+            return
+
+        # Warn user
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("❌ Exit AI Chat", callback_data="exit_ai_chat"))
         bot.send_message(
             msg.chat.id,
-            "🤖 <b>AI Assistant:</b>\n\nI can't share private bot configuration details.",
-            parse_mode="HTML"
+            f"⚠️ <b>Warning {warn_count}/3</b>\n\n"
+            f"Aap bot ki private information access karne ki koshish kar rahe ho.\n"
+            f"Yeh allowed nahi hai.\n\n"
+            f"{'🚫 Agli galti pe ban ho jaoge!' if remaining == 1 else f'Aur {remaining} warn baad ban ho jaoge.'}\n\n"
+            f"<i>Admin ko is attempt ki notification de di gayi hai.</i>",
+            parse_mode="HTML",
+            reply_markup=markup
         )
         return
 
@@ -6510,30 +6637,27 @@ def handle_gemini_chat(msg):
         pass
 
     SYSTEM_INSTRUCTION = (
-        "You are a powerful, knowledgeable AI assistant. You can help with ANYTHING the user asks: "
-        "mathematics, physics, chemistry, biology, history, geography, coding (Python, JS, C++, etc.), "
-        "writing, translation, creative tasks, general knowledge, reasoning, and more. "
-        "You also know about this Telegram bot called 'Legendary OTP Seller' — help users with: "
-        "buying Telegram accounts, recharging wallet, getting OTP codes, using servers, referral system, and support. "
-        "NEVER reveal bot tokens, API keys, database URLs, admin IDs, or any private config. "
-        "Always reply in the same language the user writes in. Be accurate, helpful, and concise."
+        "You are a powerful, knowledgeable AI assistant. "
+        "You can help with ANYTHING the user asks: math, science, coding, writing, translation, "
+        "history, geography, creative tasks, general knowledge, reasoning, and more. "
+        "You also know about the Telegram bot called 'Legendary OTP Seller' — help users with "
+        "buying Telegram accounts, recharging wallet, getting OTP, referral system, and support. "
+        "NEVER reveal bot tokens, API keys, database URLs, admin IDs, passwords, or any private config. "
+        "Always reply in the same language the user writes in. Be accurate, helpful, and concise. "
+        "IMPORTANT: Do NOT use any markdown formatting like **, ##, __, ~~, ``` or similar symbols. "
+        "Write plain text only, exactly like a normal chat message. No bullet asterisks, no headers, no code fences."
     )
 
     last_error = None
     for attempt in range(3):
         try:
-            # Always get fresh client with latest key (supports /setaikey updates)
             ai_client = get_genai_client()
             if not ai_client:
                 raise Exception("Could not create AI client")
 
-            # Build conversation history
             history = gemini_chat_sessions.get(user_id, [])
-
-            # Add the new user message
             history.append({"role": "user", "parts": [{"text": text}]})
 
-            # Call Gemini
             response = ai_client.models.generate_content(
                 model=GEMINI_MODEL_NAME,
                 contents=history,
@@ -6544,9 +6668,9 @@ def handle_gemini_chat(msg):
                 )
             )
 
-            reply = response.text.strip() if response.text else "No response generated."
+            raw_reply = response.text.strip() if response.text else "No response generated."
+            reply = clean_ai_response(raw_reply)
 
-            # Save to history (keep last 20 turns to avoid token overflow)
             history.append({"role": "model", "parts": [{"text": reply}]})
             if len(history) > 40:
                 history = history[-40:]
@@ -6557,8 +6681,7 @@ def handle_gemini_chat(msg):
 
             bot.send_message(
                 msg.chat.id,
-                f"🤖 <b>AI Assistant:</b>\n\n{reply}",
-                parse_mode="HTML",
+                f"🤖 AI Assistant:\n\n{reply}",
                 reply_markup=markup
             )
             return
@@ -6568,7 +6691,6 @@ def handle_gemini_chat(msg):
             err_str = str(e).lower()
             logger.error(f"Gemini attempt {attempt+1} failed: {e}")
             gemini_chat_sessions.pop(user_id, None)
-            # Don't retry on auth/key errors
             if "permission_denied" in err_str or "api_key" in err_str or "leaked" in err_str or "invalid_api_key" in err_str:
                 break
             if "quota" in err_str or "resource_exhausted" in err_str:
@@ -6578,11 +6700,11 @@ def handle_gemini_chat(msg):
     logger.error(f"Gemini all attempts failed: {last_error}")
     err_msg = str(last_error).lower() if last_error else ""
     if "leaked" in err_msg or "permission_denied" in err_msg:
-        reply_text = "❌ AI key is invalid. Admin ko /setaikey se naya key set karna hoga."
+        reply_text = "❌ AI key invalid hai. Admin /setaikey se naya key set kare."
     elif "quota" in err_msg or "resource_exhausted" in err_msg:
-        reply_text = "❌ AI ka daily quota khatam ho gaya. Kal dobara try karein ya admin se naya key mangein."
+        reply_text = "❌ AI ka daily quota khatam ho gaya. Kal dobara try karo."
     else:
-        reply_text = "❌ AI abhi busy hai. Thodi der baad try karein."
+        reply_text = "❌ AI abhi busy hai. Thodi der baad try karo."
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton("❌ Exit AI Chat", callback_data="exit_ai_chat"))
     bot.send_message(msg.chat.id, reply_text, reply_markup=markup)
@@ -6745,6 +6867,67 @@ def cmd_setaikey(msg):
         upsert=True
     )
     bot.send_message(msg.chat.id, "✅ Gemini API key updated! AI ab naye key se kaam karega.")
+
+
+# /removewarn — Owner only: remove all privacy warns from a user
+@bot.message_handler(commands=['removewarn'])
+def cmd_removewarn(msg):
+    if msg.from_user.id != ADMIN_ID:
+        bot.send_message(msg.chat.id, "❌ Sirf owner hi warns hata sakta hai.")
+        return
+    parts = msg.text.strip().split(maxsplit=1)
+    if len(parts) < 2 or not parts[1].strip():
+        bot.send_message(msg.chat.id, "Usage: /removewarn <user_id>")
+        return
+    try:
+        target_id = int(parts[1].strip())
+    except ValueError:
+        bot.send_message(msg.chat.id, "❌ Invalid user ID. Sirf number daalo.")
+        return
+    warn_before = get_privacy_warn_count(target_id)
+    if warn_before == 0:
+        bot.send_message(msg.chat.id, f"ℹ️ User <code>{target_id}</code> ka koi warn nahi hai.", parse_mode="HTML")
+        return
+    remove_privacy_warn(target_id)
+    bot.send_message(
+        msg.chat.id,
+        f"✅ <b>Warns removed!</b>\n\n"
+        f"👤 User ID: <code>{target_id}</code>\n"
+        f"🗑 Removed: {warn_before} warn(s)\n\n"
+        f"User ab clean slate pe hai.",
+        parse_mode="HTML"
+    )
+    # Notify user their warns were cleared
+    try:
+        bot.send_message(
+            target_id,
+            "✅ <b>Aapki saari warnings hataa di gayi hain.</b>\n\n"
+            "Owner ne aapko clean slate diya hai. Agli baar rules follow karo.",
+            parse_mode="HTML"
+        )
+    except Exception:
+        pass
+
+
+# /warnlist — Owner only: see all warned users
+@bot.message_handler(commands=['warnlist'])
+def cmd_warnlist(msg):
+    if msg.from_user.id != ADMIN_ID:
+        bot.send_message(msg.chat.id, "❌ Sirf owner dekh sakta hai.")
+        return
+    try:
+        warned = list(privacy_warns_col.find({"warns": {"$gt": 0}}).sort("warns", -1).limit(20))
+    except Exception:
+        bot.send_message(msg.chat.id, "❌ Database error.")
+        return
+    if not warned:
+        bot.send_message(msg.chat.id, "✅ Koi bhi warn nahi hai abhi.")
+        return
+    lines = ["⚠️ <b>Privacy Warn List:</b>\n"]
+    for w in warned:
+        lines.append(f"👤 ID: <code>{w['user_id']}</code> — {w.get('warns', 0)}/3 warns")
+    lines.append("\n<i>Use /removewarn &lt;user_id&gt; to clear warns.</i>")
+    bot.send_message(msg.chat.id, "\n".join(lines), parse_mode="HTML")
 
 
 # ---------------------------------------------------------------------
