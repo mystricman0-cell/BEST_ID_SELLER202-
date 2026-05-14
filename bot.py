@@ -119,25 +119,71 @@ def get_genai_client():
     except Exception:
         return None
 
-# MongoDB Setup
-try:
-    client = MongoClient(MONGO_URL)
-    db = client['otp_bot']
-    users_col = db['users']
-    accounts_col = db['accounts']
-    orders_col = db['orders']
-    wallets_col = db['wallets']
-    recharges_col = db['recharges']
-    otp_sessions_col = db['otp_sessions']
-    referrals_col = db['referrals']
-    countries_col = db['countries']
-    banned_users_col = db['banned_users']
-    transactions_col = db['transactions']
-    coupons_col = db['coupons']
-    admins_col = db['admins']  # New collection for multiple admins
-    logger.info("✅ MongoDB connected successfully")
-except Exception as e:
-    logger.error(f"❌ MongoDB connection failed: {e}")
+# MongoDB Setup — with retry and reconnect support for Railway
+def _connect_mongo():
+    global client, db, users_col, accounts_col, orders_col, wallets_col
+    global recharges_col, otp_sessions_col, referrals_col, countries_col
+    global banned_users_col, transactions_col, coupons_col, admins_col
+    try:
+        client = MongoClient(
+            MONGO_URL,
+            serverSelectionTimeoutMS=10000,
+            connectTimeoutMS=10000,
+            socketTimeoutMS=30000,
+            retryWrites=True,
+            maxPoolSize=10,
+        )
+        client.admin.command('ping')  # Verify connection
+        db = client['otp_bot']
+        users_col = db['users']
+        accounts_col = db['accounts']
+        orders_col = db['orders']
+        wallets_col = db['wallets']
+        recharges_col = db['recharges']
+        otp_sessions_col = db['otp_sessions']
+        referrals_col = db['referrals']
+        countries_col = db['countries']
+        banned_users_col = db['banned_users']
+        transactions_col = db['transactions']
+        coupons_col = db['coupons']
+        admins_col = db['admins']
+        logger.info("✅ MongoDB connected successfully")
+        return True
+    except Exception as e:
+        logger.error(f"❌ MongoDB connection failed: {e}")
+        return False
+
+_connect_mongo()
+
+def safe_db_op(fn, *args, default=None, **kwargs):
+    """Wrap any MongoDB call — auto-reconnect on connection error, never crash."""
+    for _attempt in range(3):
+        try:
+            return fn(*args, **kwargs)
+        except Exception as _e:
+            err = str(_e).lower()
+            if any(k in err for k in ("connection", "timeout", "network", "reset", "closed")):
+                logger.warning(f"MongoDB connection issue, reconnecting... ({_e})")
+                try:
+                    _connect_mongo()
+                except Exception:
+                    pass
+                time.sleep(1)
+            else:
+                logger.error(f"MongoDB op error: {_e}")
+                return default
+    return default
+
+def safe_obj_id(val):
+    """Safely convert any value to ObjectId — returns None on failure."""
+    if val is None:
+        return None
+    if isinstance(val, ObjectId):
+        return val
+    try:
+        return ObjectId(str(val))
+    except Exception:
+        return None
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 🎬 ANIMATION SYSTEM — Telegram-native animated messages
@@ -2273,10 +2319,12 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
             account_id = data.split("_", 1)[1]
             # Resolve account before calling process_purchase (avoid BSON re-fetch failure)
             _account = None
-            try:
-                _account = accounts_col.find_one({"_id": ObjectId(account_id)})
-            except Exception:
-                pass
+            _oid = safe_obj_id(account_id)
+            if _oid:
+                try:
+                    _account = accounts_col.find_one({"_id": _oid})
+                except Exception:
+                    pass
             if not _account:
                 try:
                     _account = accounts_col.find_one({"_id": account_id})
@@ -2901,7 +2949,11 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
 
         elif data.startswith("confirm_remove_admin_"):
             if is_super_admin(user_id):
-                target_id = int(data.split("_")[-1])
+                try:
+                    target_id = int(data.split("_")[-1])
+                except (ValueError, IndexError):
+                    bot.answer_callback_query(call.id, "❌ Invalid admin ID", show_alert=True)
+                    return
                 success, msg_text = remove_admin(target_id, user_id)
                 bot.answer_callback_query(call.id, msg_text, show_alert=True)
                 try:
@@ -2944,7 +2996,11 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
 
         elif data.startswith("view_perms_"):
             if is_super_admin(user_id):
-                target_uid = int(data.split("_")[-1])
+                try:
+                    target_uid = int(data.split("_")[-1])
+                except (ValueError, IndexError):
+                    bot.answer_callback_query(call.id, "❌ Invalid ID", show_alert=True)
+                    return
                 show_single_admin_perms(call.message.chat.id, call.message.message_id, target_uid)
             else:
                 bot.answer_callback_query(call.id, "❌ Unauthorized", show_alert=True)
@@ -3584,7 +3640,9 @@ def get_latest_otp(user_id, session_id, chat_id, message_id, callback_id):
         two_step_password = ""
         if account_id:
             try:
-                account = accounts_col.find_one({"_id": ObjectId(account_id)})
+                _aoid = safe_obj_id(account_id)
+                if _aoid:
+                    account = accounts_col.find_one({"_id": _aoid})
                 if account:
                     two_step_password = account.get("two_step_password", "")
             except:
@@ -4103,9 +4161,9 @@ def handle_screenshot_input(msg):
         
         recharge_id = recharges_col.insert_one(recharge_data).inserted_id
         
-        # Update with req_id
+        # Update with req_id (recharge_id is already an ObjectId from insert_one)
         recharges_col.update_one(
-            {"_id": ObjectId(recharge_id)},
+            {"_id": recharge_id},
             {"$set": {"req_id": req_id}}
         )
         
@@ -5439,10 +5497,12 @@ def process_purchase(user_id, account_or_id, chat_id, message_id, callback_id):
         else:
             account_id = str(account_or_id)
             account = None
-            try:
-                account = accounts_col.find_one({"_id": ObjectId(account_id)})
-            except Exception:
-                pass
+            _oid2 = safe_obj_id(account_id)
+            if _oid2:
+                try:
+                    account = accounts_col.find_one({"_id": _oid2})
+                except Exception:
+                    pass
             if not account:
                 try:
                     account = accounts_col.find_one({"_id": account_id})
@@ -6700,16 +6760,33 @@ REPLIT_DOMAIN = os.getenv("REPLIT_DEV_DOMAIN", "")
 
 @flask_app.route(WEBHOOK_PATH, methods=["POST"])
 def telegram_webhook():
-    if flask_request.headers.get("content-type") == "application/json":
-        json_str = flask_request.get_data(as_text=True)
-        update = telebot.types.Update.de_json(json_str)
-        bot.process_new_updates([update])
-        return "OK", 200
-    abort(403)
+    try:
+        if flask_request.headers.get("content-type") == "application/json":
+            json_str = flask_request.get_data(as_text=True)
+            try:
+                update = telebot.types.Update.de_json(json_str)
+                bot.process_new_updates([update])
+            except Exception as _ue:
+                logger.error(f"Update processing error: {_ue}")
+            return "OK", 200
+        abort(403)
+    except Exception as _we:
+        logger.error(f"Webhook handler error: {_we}")
+        return "OK", 200  # Always return 200 to Telegram — never let it retry forever
 
 @flask_app.route("/", methods=["GET"])
 def health():
     return "˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ ꭙ 𝐎ᴛᴘ 𝐒ᴇʟʟᴇʀ [ 𝐁ᴏᴛ ] ❤️‍🔥 is running via webhook ✅", 200
+
+@flask_app.errorhandler(Exception)
+def handle_flask_exception(e):
+    logger.error(f"Flask unhandled exception: {e}")
+    return "Internal error — bot still running", 200
+
+@flask_app.errorhandler(500)
+def handle_500(e):
+    logger.error(f"Flask 500 error: {e}")
+    return "OK", 200
 
 # ---------------------------------------------------------------------
 # HEARTBEAT SYSTEM — keeps bot alive 24x7 on Railway
@@ -6742,6 +6819,26 @@ def heartbeat_worker():
 # ---------------------------------------------------------------------
 # RUN BOT
 # ---------------------------------------------------------------------
+
+import sys as _sys
+import threading as _thr
+
+def _thread_excepthook(args):
+    """Log uncaught thread exceptions — prevents silent Railway crashes."""
+    logger.error(f"Uncaught thread exception: {args.exc_type.__name__}: {args.exc_value}")
+
+try:
+    _thr.excepthook = _thread_excepthook
+except AttributeError:
+    pass  # Python < 3.8 fallback
+
+def _global_excepthook(exc_type, exc_value, exc_tb):
+    if issubclass(exc_type, KeyboardInterrupt):
+        _sys.__excepthook__(exc_type, exc_value, exc_tb)
+        return
+    logger.error(f"Uncaught global exception: {exc_type.__name__}: {exc_value}")
+
+_sys.excepthook = _global_excepthook
 
 if __name__ == "__main__":
     logger.info(f"🤖 ˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ ꭙ 𝐎ᴛᴘ 𝐒ᴇʟʟᴇʀ [ 𝐁ᴏᴛ ] ❤️‍🔥 Starting (Webhook Mode)...")
