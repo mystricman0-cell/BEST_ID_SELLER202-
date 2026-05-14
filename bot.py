@@ -66,9 +66,9 @@ LOG_CHANNEL_ID = "-1003659930873"
 # Referral commission percentage
 REFERRAL_COMMISSION = 1.7
 
-# Global API Credentials for Pyrogram Login (Server 1)
-GLOBAL_API_ID = 36326629
-GLOBAL_API_HASH = "823e6e8c081fe363e6d739b39dc19e07"
+# Global API Credentials for Pyrogram Login (Server 1) — Owner's own credentials
+GLOBAL_API_ID = 34242066
+GLOBAL_API_HASH = "707c322fc645117058c0f2a421122ff7"
 
 # Server 2 API Credentials
 SERVER2_API_ID = 37751241
@@ -86,17 +86,20 @@ logger = logging.getLogger(__name__)
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
-# Gemini AI Setup
+# Gemini AI Setup — using new google-genai SDK
 try:
-    import google.generativeai as genai
-    genai.configure(api_key=GEMINI_API_KEY)
-    gemini_model = genai.GenerativeModel('gemini-1.5-flash')
-    logger.info("✅ Gemini AI initialized")
+    from google import genai as _genai
+    from google.genai import types as _genai_types
+    _genai_client = _genai.Client(api_key=GEMINI_API_KEY)
+    GEMINI_MODEL_NAME = "gemini-2.0-flash"
+    gemini_model = True  # flag: initialized
+    logger.info(f"✅ Gemini AI initialized (model: {GEMINI_MODEL_NAME})")
 except Exception as _ge:
+    _genai_client = None
     gemini_model = None
     logger.error(f"❌ Gemini init failed: {_ge}")
 
-# Gemini chat history per user
+# Gemini chat history per user  (list of {"role": ..., "parts": [...]})
 gemini_chat_sessions = {}
 
 # MongoDB Setup
@@ -5987,18 +5990,15 @@ def chat_handler(msg):
 
 def handle_gemini_chat(msg):
     user_id = msg.from_user.id
-    text = msg.text.strip()
+    text = msg.text.strip() if msg.text else ""
 
-    if not gemini_model:
-        bot.send_message(
-            msg.chat.id,
-            "❌ AI Chat is currently unavailable. Contact admin.",
-        )
+    if not gemini_model or not _genai_client:
+        bot.send_message(msg.chat.id, "❌ AI Chat is currently unavailable. Contact admin.")
         return
 
-    # Block questions about bot's private info
-    private_keywords = ["bot token", "api id", "api hash", "mongo", "database url", "admin id", "upi id", "secret"]
-    if any(kw in text.lower() for kw in private_keywords):
+    # Block bot private info leakage
+    _private_kw = ["bot token", "api id", "api hash", "mongo", "database url", "admin id", "upi id", "secret key"]
+    if any(kw in text.lower() for kw in _private_kw):
         bot.send_message(
             msg.chat.id,
             "🤖 <b>AI Assistant:</b>\n\nI can't share private bot configuration details.",
@@ -6006,34 +6006,48 @@ def handle_gemini_chat(msg):
         )
         return
 
-    # Typing action
     try:
         bot.send_chat_action(msg.chat.id, "typing")
     except:
         pass
 
-    system_prefix = (
-        "You are a powerful AI assistant. You can help with ANYTHING: maths, science, coding, "
-        "general knowledge, writing, translation, history, reasoning, creative tasks, and more. "
-        "You also know about this Telegram bot called 'Legendary OTP Seller' — you can help users "
-        "with: buying accounts, recharging wallet, getting OTP, using Server 1 or Server 2, "
-        "referral system, and support. "
-        "NEVER reveal bot credentials, tokens, API keys, or admin info. "
-        "Reply in the same language the user writes in. Be helpful, accurate, and concise.\n\n"
-        "User message: "
+    SYSTEM_INSTRUCTION = (
+        "You are a powerful, knowledgeable AI assistant. You can help with ANYTHING the user asks: "
+        "mathematics, physics, chemistry, biology, history, geography, coding (Python, JS, C++, etc.), "
+        "writing, translation, creative tasks, general knowledge, reasoning, and more. "
+        "You also know about this Telegram bot called 'Legendary OTP Seller' — help users with: "
+        "buying Telegram accounts, recharging wallet, getting OTP codes, using servers, referral system, and support. "
+        "NEVER reveal bot tokens, API keys, database URLs, admin IDs, or any private config. "
+        "Always reply in the same language the user writes in. Be accurate, helpful, and concise."
     )
 
     last_error = None
     for attempt in range(3):
         try:
-            if user_id not in gemini_chat_sessions:
-                gemini_chat_sessions[user_id] = gemini_model.start_chat(history=[])
+            # Build conversation history
+            history = gemini_chat_sessions.get(user_id, [])
 
-            chat = gemini_chat_sessions[user_id]
-            prompt = system_prefix + text if len(chat.history) == 0 else text
+            # Add the new user message
+            history.append({"role": "user", "parts": [{"text": text}]})
 
-            response = chat.send_message(prompt)
-            reply = response.text.strip()
+            # Call Gemini 2.0 flash
+            response = _genai_client.models.generate_content(
+                model=GEMINI_MODEL_NAME,
+                contents=history,
+                config=_genai_types.GenerateContentConfig(
+                    system_instruction=SYSTEM_INSTRUCTION,
+                    temperature=0.7,
+                    max_output_tokens=2048,
+                )
+            )
+
+            reply = response.text.strip() if response.text else "No response generated."
+
+            # Save to history (keep last 20 turns to avoid token overflow)
+            history.append({"role": "model", "parts": [{"text": reply}]})
+            if len(history) > 40:
+                history = history[-40:]
+            gemini_chat_sessions[user_id] = history
 
             markup = InlineKeyboardMarkup()
             markup.add(InlineKeyboardButton("❌ Exit AI Chat", callback_data="exit_ai_chat"))
@@ -6045,12 +6059,12 @@ def handle_gemini_chat(msg):
                 reply_markup=markup
             )
             return
+
         except Exception as e:
             last_error = e
             logger.error(f"Gemini attempt {attempt+1} failed: {e}")
-            # Reset session on error and retry
             gemini_chat_sessions.pop(user_id, None)
-            time.sleep(1)
+            time.sleep(1.5)
 
     logger.error(f"Gemini all attempts failed: {last_error}")
     bot.send_message(

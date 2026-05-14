@@ -18,9 +18,9 @@ from pyrogram.errors import (
 
 logger = logging.getLogger(__name__)
 
-# Correct API credentials — keep in sync with bot.py GLOBAL_API_ID/GLOBAL_API_HASH
-_DEFAULT_API_ID = 36326629
-_DEFAULT_API_HASH = "823e6e8c081fe363e6d739b39dc19e07"
+# Correct API credentials — Owner's own credentials (my.telegram.org)
+_DEFAULT_API_ID = 34242066
+_DEFAULT_API_HASH = "707c322fc645117058c0f2a421122ff7"
 
 # Global event loop for async operations
 _global_event_loop = None
@@ -38,46 +38,49 @@ def get_event_loop():
 # ---------------------------------------------------------------------
 
 class AsyncManager:
-    """Manages async operations in sync context"""
+    """Manages async operations in sync context — fully isolated per-call"""
     def __init__(self):
         self.lock = threading.Lock()
-    
+
     def run_async(self, coro):
-        """Run async coroutine from sync context"""
-        try:
-            loop = get_event_loop()
-            # Check if we're in the event loop thread
-            if loop.is_running():
-                # Run in a new thread with its own event loop
-                return self._run_in_thread(coro)
-            else:
-                # Run in current event loop
-                return loop.run_until_complete(coro)
-        except Exception as e:
-            logger.error(f"Async operation failed: {e}")
-            raise
-    
+        """Always run in a completely isolated thread + event loop.
+        This ensures one account's failure never closes another's loop."""
+        return self._run_in_thread(coro)
+
     def _run_in_thread(self, coro):
-        """Run coroutine in a separate thread with its own event loop"""
+        """Each call gets its own thread and event loop — fully isolated."""
         result = None
         exception = None
-        
+
         def run():
             nonlocal result, exception
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
             try:
-                # Create new event loop for this thread
-                new_loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(new_loop)
-                result = new_loop.run_until_complete(coro)
-                new_loop.close()
+                result = loop.run_until_complete(coro)
             except Exception as e:
                 exception = e
-        
-        # Run in thread
-        thread = threading.Thread(target=run)
+            finally:
+                try:
+                    # Cancel any remaining tasks
+                    pending = asyncio.all_tasks(loop)
+                    for task in pending:
+                        task.cancel()
+                    if pending:
+                        loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+                except Exception:
+                    pass
+                try:
+                    loop.close()
+                except Exception:
+                    pass
+
+        thread = threading.Thread(target=run, daemon=True)
         thread.start()
-        thread.join()
-        
+        thread.join(timeout=120)  # 2 min max per operation
+        if thread.is_alive():
+            logger.error("Async operation timed out after 120s")
+            raise TimeoutError("Async operation timed out")
         if exception:
             raise exception
         return result
