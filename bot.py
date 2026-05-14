@@ -139,6 +139,160 @@ try:
 except Exception as e:
     logger.error(f"❌ MongoDB connection failed: {e}")
 
+# ─────────────────────────────────────────────────────────────────────────────
+# 🎬 ANIMATION SYSTEM — Telegram-native animated messages
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _typing(chat_id):
+    """Send 'typing' action silently."""
+    try:
+        bot.send_chat_action(chat_id, "typing")
+    except:
+        pass
+
+def _upload_action(chat_id):
+    """Send 'upload_document' action silently."""
+    try:
+        bot.send_chat_action(chat_id, "upload_document")
+    except:
+        pass
+
+class AnimLoader:
+    """
+    Send an animated loading message that cycles through frames,
+    then call .finish(text, markup) to replace it with the final content.
+    Usage:
+        anim = AnimLoader(chat_id, AnimLoader.PURCHASE_FRAMES)
+        # ... do work ...
+        anim.finish("✅ Done!", markup=markup)
+    """
+
+    LOADING_FRAMES = [
+        "⠋ Loading...",
+        "⠙ Loading...",
+        "⠹ Loading...",
+        "⠸ Loading...",
+        "⠼ Loading...",
+        "⠴ Loading...",
+        "⠦ Loading...",
+        "⠧ Loading...",
+        "⠇ Loading...",
+        "⠏ Loading...",
+    ]
+
+    PURCHASE_FRAMES = [
+        "🔄 <b>Processing your order...</b>\n\n▱▱▱▱▱▱▱▱▱▱  0%",
+        "🔄 <b>Verifying account...</b>\n\n▰▰▱▱▱▱▱▱▱▱  20%",
+        "🔄 <b>Checking balance...</b>\n\n▰▰▰▰▱▱▱▱▱▱  40%",
+        "🔄 <b>Securing session...</b>\n\n▰▰▰▰▰▰▱▱▱▱  60%",
+        "🔄 <b>Activating account...</b>\n\n▰▰▰▰▰▰▰▰▱▱  80%",
+        "✨ <b>Finalizing order...</b>\n\n▰▰▰▰▰▰▰▰▰▰  100%",
+    ]
+
+    FETCH_FRAMES = [
+        "🔍 Fetching data...",
+        "🔍 Fetching data..",
+        "🔍 Fetching data.",
+        "🔍 Please wait...",
+    ]
+
+    SCAN_FRAMES = [
+        "📡 Scanning servers...",
+        "📡 Scanning servers..",
+        "📡 Scanning servers.",
+        "📡 Checking stock...",
+        "📡 Checking stock..",
+        "📡 Checking stock.",
+    ]
+
+    RECHARGE_FRAMES = [
+        "💳 <b>Submitting request...</b>\n\n⏳ Please wait...",
+        "💳 <b>Verifying payment...</b>\n\n⏳ Processing...",
+        "💳 <b>Almost done...</b>\n\n⏳ Finalizing...",
+    ]
+
+    PROFILE_FRAMES = [
+        "🪪 Loading your profile...",
+        "🪪 Loading your profile..",
+        "🪪 Loading your profile.",
+        "📊 Fetching stats...",
+    ]
+
+    HISTORY_FRAMES = [
+        "🛒 Fetching your orders...",
+        "🛒 Fetching your orders..",
+        "🛒 Scanning database...",
+    ]
+
+    PRICE_FRAMES = [
+        "📋 Loading live prices...",
+        "📋 Checking stock...",
+        "📋 Almost ready...",
+    ]
+
+    def __init__(self, chat_id, frames, interval=0.45, parse_mode=None):
+        self.chat_id = chat_id
+        self.frames = frames
+        self.interval = interval
+        self.parse_mode = parse_mode
+        self._stop = threading.Event()
+        self._msg_id = None
+        self._thread = None
+        try:
+            kw = {}
+            if parse_mode:
+                kw["parse_mode"] = parse_mode
+            m = bot.send_message(chat_id, frames[0], **kw)
+            self._msg_id = m.message_id
+        except:
+            return
+        self._start()
+
+    def _start(self):
+        def _run():
+            i = 0
+            while not self._stop.is_set():
+                i = (i + 1) % len(self.frames)
+                try:
+                    kw = {}
+                    if self.parse_mode:
+                        kw["parse_mode"] = self.parse_mode
+                    bot.edit_message_text(self.frames[i], self.chat_id, self._msg_id, **kw)
+                except:
+                    pass
+                self._stop.wait(self.interval)
+        self._thread = threading.Thread(target=_run, daemon=True)
+        self._thread.start()
+
+    def finish(self, text, markup=None, parse_mode="HTML"):
+        """Stop animation and replace with final message."""
+        self._stop.set()
+        if self._thread:
+            self._thread.join(timeout=1.5)
+        try:
+            bot.edit_message_text(
+                text, self.chat_id, self._msg_id,
+                parse_mode=parse_mode, reply_markup=markup
+            )
+            return self._msg_id
+        except:
+            try:
+                m = bot.send_message(self.chat_id, text, parse_mode=parse_mode, reply_markup=markup)
+                return m.message_id
+            except:
+                return self._msg_id
+
+    def delete(self):
+        """Stop animation and delete the message."""
+        self._stop.set()
+        try:
+            bot.delete_message(self.chat_id, self._msg_id)
+        except:
+            pass
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+
 # Store temporary data
 user_states = {}
 pending_messages = {}
@@ -5326,6 +5480,32 @@ def process_purchase(user_id, account_or_id, chat_id, message_id, callback_id):
             )
             return
         
+        # ── Animated purchase progress bar ──────────────────────────
+        try:
+            _typing(chat_id)
+            _anim_msg = bot.send_message(
+                chat_id,
+                "🔄 <b>Processing your order...</b>\n\n▱▱▱▱▱▱▱▱▱▱  0%",
+                parse_mode="HTML"
+            )
+            _anim_id = _anim_msg.message_id
+            _steps = [
+                ("🔄 <b>Verifying account...</b>\n\n▰▰▱▱▱▱▱▱▱▱  20%", 0.5),
+                ("🔄 <b>Checking balance...</b>\n\n▰▰▰▰▱▱▱▱▱▱  40%", 0.5),
+                ("🔄 <b>Securing session...</b>\n\n▰▰▰▰▰▰▱▱▱▱  60%", 0.5),
+                ("🔄 <b>Activating account...</b>\n\n▰▰▰▰▰▰▰▰▱▱  80%", 0.5),
+                ("✨ <b>Finalizing order...</b>\n\n▰▰▰▰▰▰▰▰▰▰  100%", 0.4),
+            ]
+            for _txt, _delay in _steps:
+                try:
+                    bot.edit_message_text(_txt, chat_id, _anim_id, parse_mode="HTML")
+                except:
+                    pass
+                time.sleep(_delay)
+        except:
+            _anim_id = message_id  # fallback to original message_id
+        # ────────────────────────────────────────────────────────────
+
         deduct_balance(user_id, price)
         
         try:
@@ -5414,14 +5594,26 @@ def process_purchase(user_id, account_or_id, chat_id, message_id, callback_id):
         get_otp_markup.add(InlineKeyboardButton("🔢 Get OTP Now", callback_data=f"get_otp_{session_id}"))
         get_otp_markup.add(InlineKeyboardButton("🎉 Join Success Group", url=PURCHASE_SUCCESS_LINK))
         get_otp_markup.add(InlineKeyboardButton("🏠 Back to Menu", callback_data="back_to_menu"))
-        
-        sent_msg = edit_or_resend(
-            chat_id,
-            message_id,
-            account_details,
-            markup=get_otp_markup,
-            parse_mode="Markdown"
-        )
+
+        # Replace the animated progress bar with purchase details
+        _final_sent = None
+        try:
+            _final_sent = bot.edit_message_text(
+                account_details,
+                chat_id,
+                _anim_id,
+                parse_mode="Markdown",
+                reply_markup=get_otp_markup
+            )
+        except:
+            _final_sent = edit_or_resend(
+                chat_id,
+                message_id,
+                account_details,
+                markup=get_otp_markup,
+                parse_mode="Markdown"
+            )
+        sent_msg = _final_sent
         
         if sent_msg:
             user_last_message[user_id] = sent_msg.message_id
@@ -5474,19 +5666,28 @@ def cmd_menu(msg):
 def cmd_balance(msg):
     user_id = msg.from_user.id
     if is_user_banned(user_id): return
+    _typing(msg.chat.id)
     ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
+    anim = AnimLoader(msg.chat.id, [
+        "💰 Loading your wallet...",
+        "💰 Loading your wallet..",
+        "💳 Fetching balance...",
+        "💳 Almost ready...",
+    ])
     bal = get_balance(user_id)
     user_data = users_col.find_one({"user_id": user_id}) or {}
     markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("➕ Recharge Wallet", callback_data="recharge"))
     markup.add(InlineKeyboardButton("⬅️ Back to Menu", callback_data="back_to_menu"))
-    bot.send_message(
-        msg.chat.id,
+    anim.finish(
         f"💰 <b>Your Wallet</b>\n\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n"
         f"💳 Balance: <b>{format_currency(bal)}</b>\n"
-        f"👥 Referrals: {user_data.get('total_referrals', 0)}\n"
-        f"🏆 Commission: {format_currency(user_data.get('total_commission_earned', 0))}\n"
-        f"🔑 Ref Code: <code>{user_data.get('referral_code', 'REF' + str(user_id))}</code>",
-        parse_mode="HTML", reply_markup=markup
+        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"👥 Total Referrals: {user_data.get('total_referrals', 0)}\n"
+        f"🏆 Commission Earned: {format_currency(user_data.get('total_commission_earned', 0))}\n"
+        f"🔑 Your Ref Code: <code>{user_data.get('referral_code', 'REF' + str(user_id))}</code>",
+        markup=markup
     )
 
 # /profile — Profile card
@@ -5494,25 +5695,35 @@ def cmd_balance(msg):
 def cmd_profile(msg):
     user_id = msg.from_user.id
     if is_user_banned(user_id): return
+    _typing(msg.chat.id)
     ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
+    anim = AnimLoader(msg.chat.id, AnimLoader.PROFILE_FRAMES)
     user_data = users_col.find_one({"user_id": user_id}) or {}
     total_orders = orders_col.count_documents({"user_id": user_id})
     bal = get_balance(user_id)
     joined = user_data.get("created_at", datetime.utcnow()).strftime("%d %b %Y") if user_data.get("created_at") else "N/A"
     role = "👑 Super Admin" if is_super_admin(user_id) else ("🛡️ Admin" if is_admin(user_id) else "👤 User")
-    markup = InlineKeyboardMarkup()
+    total_refs = user_data.get('total_referrals', 0)
+    commission = format_currency(user_data.get('total_commission_earned', 0))
+    ref_code = user_data.get('referral_code', 'REF' + str(user_id))
+    markup = InlineKeyboardMarkup(row_width=2)
+    markup.add(
+        InlineKeyboardButton("💰 Check Balance", callback_data="wallet_info"),
+        InlineKeyboardButton("🛒 Buy Account", callback_data="buy_account")
+    )
     markup.add(InlineKeyboardButton("⬅️ Back to Menu", callback_data="back_to_menu"))
-    bot.send_message(
-        msg.chat.id,
+    anim.finish(
         f"🪪 <b>Your Profile Card</b>\n\n"
-        f"👤 Name: {msg.from_user.first_name or 'N/A'}\n"
-        f"🆔 ID: <code>{user_id}</code>\n"
-        f"🎭 Role: {role}\n"
-        f"💰 Balance: <b>{format_currency(bal)}</b>\n"
-        f"🛒 Total Orders: {total_orders}\n"
-        f"📅 Joined: {joined}\n"
-        f"🔑 Ref Code: <code>{user_data.get('referral_code', 'REF' + str(user_id))}</code>",
-        parse_mode="HTML", reply_markup=markup
+        f"╔══════════════════════╗\n"
+        f"  👤 {msg.from_user.first_name or 'User'}  |  {role}\n"
+        f"╚══════════════════════╝\n\n"
+        f"🆔 <b>ID:</b> <code>{user_id}</code>\n"
+        f"💰 <b>Balance:</b> {format_currency(bal)}\n"
+        f"🛒 <b>Total Orders:</b> {total_orders}\n"
+        f"👥 <b>Referrals:</b> {total_refs}  |  💎 Commission: {commission}\n"
+        f"📅 <b>Joined:</b> {joined}\n"
+        f"🔑 <b>Ref Code:</b> <code>{ref_code}</code>",
+        markup=markup
     )
 
 # /price — Live price list with stock
@@ -5520,99 +5731,132 @@ def cmd_profile(msg):
 def cmd_price(msg):
     user_id = msg.from_user.id
     if is_user_banned(user_id): return
+    _typing(msg.chat.id)
     ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
+    anim = AnimLoader(msg.chat.id, AnimLoader.PRICE_FRAMES)
     countries = get_all_countries()
     if not countries:
-        bot.send_message(msg.chat.id, "❌ No countries available right now.")
+        anim.finish("❌ No countries available right now.")
         return
-    lines = ["📋 <b>Live Price List &amp; Stock</b>\n"]
+    lines = ["📋 <b>Live Price List &amp; Stock</b>\n━━━━━━━━━━━━━━━━━━━━\n"]
     for c in countries:
         stock = accounts_col.count_documents({"country": c['name'], "status": "active", "used": {"$ne": True}})
         status = "🟢" if stock > 0 else "🔴"
-        lines.append(f"{status} <b>{c['name']}</b> — {format_currency(c['price'])} | Stock: {stock}")
+        lines.append(f"{status} <b>{c['name']}</b> — {format_currency(c['price'])}  |  📦 Stock: {stock}")
+    lines.append("\n━━━━━━━━━━━━━━━━━━━━")
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton("🛒 Buy Now", callback_data="buy_account"))
+    markup.add(InlineKeyboardButton("🔄 Refresh", callback_data="back_to_menu"))
     markup.add(InlineKeyboardButton("⬅️ Back to Menu", callback_data="back_to_menu"))
-    bot.send_message(msg.chat.id, "\n".join(lines), parse_mode="HTML", reply_markup=markup)
+    anim.finish("\n".join(lines), markup=markup)
 
 # /history — Your last 10 purchases
 @bot.message_handler(commands=['history'])
 def cmd_history(msg):
     user_id = msg.from_user.id
     if is_user_banned(user_id): return
+    _typing(msg.chat.id)
     ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
+    anim = AnimLoader(msg.chat.id, AnimLoader.HISTORY_FRAMES)
     orders = list(orders_col.find({"user_id": user_id}).sort("created_at", -1).limit(10))
     if not orders:
-        bot.send_message(msg.chat.id, "📭 You have no purchase history yet.\n\nUse /price to see available accounts.")
+        anim.finish("📭 <b>No Purchase History</b>\n\nYou haven't bought any accounts yet.\n\nUse /price to see available accounts and start buying!")
         return
-    lines = ["🛒 <b>Your Last 10 Purchases</b>\n"]
+    lines = ["🛒 <b>Your Last 10 Purchases</b>\n━━━━━━━━━━━━━━━━━━━━\n"]
+    medals = ["🥇", "🥈", "🥉"]
     for i, o in enumerate(orders, 1):
         date = o.get("created_at", datetime.utcnow()).strftime("%d %b %H:%M") if o.get("created_at") else "N/A"
+        medal = medals[i-1] if i <= 3 else f"{i}."
         lines.append(
-            f"{i}. 🌍 {o.get('country','?')} | 💰 {format_currency(o.get('price',0))} | {date}"
+            f"{medal} 🌍 <b>{o.get('country','?')}</b>  |  💰 {format_currency(o.get('price',0))}  |  🕐 {date}"
         )
+    lines.append("\n━━━━━━━━━━━━━━━━━━━━")
     markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🛒 Buy Again", callback_data="buy_account"))
     markup.add(InlineKeyboardButton("⬅️ Back to Menu", callback_data="back_to_menu"))
-    bot.send_message(msg.chat.id, "\n".join(lines), parse_mode="HTML", reply_markup=markup)
+    anim.finish("\n".join(lines), markup=markup)
 
 # /refer — Invite friends and earn
 @bot.message_handler(commands=['refer'])
 def cmd_refer(msg):
     user_id = msg.from_user.id
     if is_user_banned(user_id): return
+    _typing(msg.chat.id)
     ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
     show_referral_info(user_id, msg.chat.id)
 
 # /myid — Your Telegram ID and role
 @bot.message_handler(commands=['myid'])
 def cmd_myid(msg):
+    _typing(msg.chat.id)
     user_id = msg.from_user.id
     role = "👑 Super Admin" if is_super_admin(user_id) else ("🛡️ Admin" if is_admin(user_id) else "👤 User")
+    username = f"@{msg.from_user.username}" if msg.from_user.username else "N/A"
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("⬅️ Back to Menu", callback_data="back_to_menu"))
     bot.send_message(
         msg.chat.id,
         f"🆔 <b>Your Info</b>\n\n"
-        f"User ID: <code>{user_id}</code>\n"
-        f"Username: @{msg.from_user.username or 'N/A'}\n"
-        f"Role: {role}",
-        parse_mode="HTML"
+        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"👤 Name: {msg.from_user.first_name or 'N/A'}\n"
+        f"🔗 Username: {username}\n"
+        f"🆔 User ID: <code>{user_id}</code>\n"
+        f"🎭 Role: {role}\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"<i>💡 Tip: Apna ID share karo referrals ke liye!</i>",
+        parse_mode="HTML", reply_markup=markup
     )
 
 # /support — Contact support
 @bot.message_handler(commands=['support'])
 def cmd_support(msg):
+    _typing(msg.chat.id)
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton("💬 Contact Support", url="https://t.me/rchiex"))
+    markup.add(InlineKeyboardButton("📢 Updates Channel", url="https://t.me/II_LEGEND_OTP_SELLER_UPDATES_II"))
     markup.add(InlineKeyboardButton("⬅️ Back to Menu", callback_data="back_to_menu"))
     bot.send_message(
         msg.chat.id,
-        "🛠️ <b>Support</b>\n\n"
-        "Need help? Contact our support team:\n"
-        "👉 @rchiex\n\n"
-        "<i>Response time: Usually within a few hours.</i>",
+        "🛠️ <b>Support Center</b>\n\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "❓ Koi problem hai? Hum help karenge!\n\n"
+        "💬 <b>Support:</b> @rchiex\n"
+        "⏱️ <b>Response Time:</b> Kuch ghanton mein\n\n"
+        "📌 <b>Common Issues:</b>\n"
+        "• OTP nahi aa raha → /cancel karke dobara try karo\n"
+        "• Balance nahi kat raha → Admin se contact karo\n"
+        "• Account kaam nahi kar raha → Support ko batao\n"
+        "━━━━━━━━━━━━━━━━━━━━",
         parse_mode="HTML", reply_markup=markup
     )
 
 # /safety — How you are protected
 @bot.message_handler(commands=['safety'])
 def cmd_safety(msg):
+    _typing(msg.chat.id)
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton("⬅️ Back to Menu", callback_data="back_to_menu"))
     bot.send_message(
         msg.chat.id,
-        "🛡️ <b>How You Are Protected</b>\n\n"
-        "🔐 All sessions are encrypted\n"
-        "👤 Your data is never shared\n"
-        "✅ Accounts verified before delivery\n"
-        "💰 Balance protected — no unauthorized deductions\n"
-        "🔒 OTPs expire and are not stored permanently\n"
-        "📋 Full transaction logs maintained\n\n"
-        "<i>Your privacy and safety is our top priority.</i>",
+        "🛡️ <b>Your Safety — Humare Vaade</b>\n\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "🔐 Sabhi sessions encrypted hain\n"
+        "👤 Aapka data kabhi share nahi hoga\n"
+        "✅ Delivery se pehle accounts verify hote hain\n"
+        "💰 Balance protected — koi unauthorized deduction nahi\n"
+        "🔒 OTP expire ho jaate hain, permanently store nahi hote\n"
+        "📋 Full transaction logs maintained hain\n"
+        "🚫 Koi bhi scam attempt ban hoga turant\n"
+        "🤝 100% genuine accounts guaranteed\n"
+        "━━━━━━━━━━━━━━━━━━━━\n\n"
+        "<i>✨ Aapki privacy aur safety humaari top priority hai.</i>",
         parse_mode="HTML", reply_markup=markup
     )
 
 # /cancel — Exit any pending input
 @bot.message_handler(commands=['cancel'])
 def cmd_cancel(msg):
+    _typing(msg.chat.id)
     user_id = msg.from_user.id
     admin_deduct_state.pop(user_id, None)
     admin_add_state.pop(user_id, None)
@@ -5628,7 +5872,9 @@ def cmd_cancel(msg):
     markup.add(InlineKeyboardButton("🏠 Main Menu", callback_data="back_to_menu"))
     bot.send_message(
         msg.chat.id,
-        "✅ <b>All pending actions cancelled.</b>\n\nUse /start or the button below to go to menu.",
+        "✅ <b>Sabhi pending actions cancel ho gaye!</b>\n\n"
+        "🔄 Fresh start ke liye neeche button dabao.\n\n"
+        "<i>Koi bhi active session, login ya input clear ho gaya hai.</i>",
         parse_mode="HTML",
         reply_markup=markup
     )
@@ -5664,26 +5910,47 @@ def cmd_endchat(msg):
 @bot.message_handler(commands=['ping'])
 def cmd_ping(msg):
     import time as _time
+    _typing(msg.chat.id)
     t1 = _time.time()
-    sent = bot.send_message(msg.chat.id, "🏓 Pinging...")
+    sent = bot.send_message(msg.chat.id, "📡 Pinging servers...")
     t2 = _time.time()
     latency = round((t2 - t1) * 1000)
     total_users = users_col.count_documents({})
     total_orders = orders_col.count_documents({})
     total_accounts = accounts_col.count_documents({"status": "active", "used": {"$ne": True}})
+    # Latency bar
+    if latency < 200:
+        bar = "🟢🟢🟢🟢🟢"
+        status_icon = "🚀 Excellent"
+    elif latency < 500:
+        bar = "🟡🟡🟡🟢🟢"
+        status_icon = "✅ Good"
+    elif latency < 1000:
+        bar = "🟠🟠🟡🟡🟢"
+        status_icon = "⚡ Average"
+    else:
+        bar = "🔴🟠🟠🟡🟡"
+        status_icon = "⚠️ Slow"
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("⬅️ Back to Menu", callback_data="back_to_menu"))
     bot.edit_message_text(
         f"🏓 <b>Pong!</b>\n\n"
-        f"⚡ Latency: <b>{latency}ms</b>\n"
-        f"👥 Total Users: {total_users}\n"
-        f"🛒 Total Orders: {total_orders}\n"
-        f"📦 Available Stock: {total_accounts}\n"
-        f"✅ Status: Online",
-        msg.chat.id, sent.message_id, parse_mode="HTML"
+        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"⚡ <b>Latency:</b> {latency}ms  {bar}\n"
+        f"📶 <b>Status:</b> {status_icon}\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"👥 <b>Total Users:</b> {total_users}\n"
+        f"🛒 <b>Total Orders:</b> {total_orders}\n"
+        f"📦 <b>Available Stock:</b> {total_accounts}\n"
+        f"🤖 <b>Bot Status:</b> 🟢 Online\n"
+        f"━━━━━━━━━━━━━━━━━━━━",
+        msg.chat.id, sent.message_id, parse_mode="HTML", reply_markup=markup
     )
 
 # /help — Show all commands
 @bot.message_handler(commands=['help'])
 def cmd_help(msg):
+    _typing(msg.chat.id)
     user_id = msg.from_user.id
     text = (
         "📋 <b>Complete Command List</b>\n\n"
