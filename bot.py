@@ -2389,8 +2389,8 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
                 start(call.message)
                 return
             
-            account_id = data.split("_", 1)[1]
-            # Resolve account before calling process_purchase (avoid BSON re-fetch failure)
+            # Correctly strip the "buy_account_" prefix (12 chars)
+            account_id = data[len("buy_account_"):]
             _account = None
             _oid = safe_obj_id(account_id)
             if _oid:
@@ -5535,7 +5535,7 @@ def show_country_details(user_id, country_name, chat_id, message_id, callback_id
         markup = InlineKeyboardMarkup(row_width=1)
         if accounts_count > 0:
             markup.add(InlineKeyboardButton(
-                f"🛒 Buy Now — {accounts_count} Available",
+                "🛒 Buy Now",
                 callback_data=f"buy_now_{country_name}"
             ))
         else:
