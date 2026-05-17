@@ -91,6 +91,7 @@ try:
     from google import genai as _genai
     from google.genai import types as _genai_types
     GEMINI_MODEL_NAME = "gemini-2.0-flash"
+    GEMINI_FALLBACK_MODELS = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-8b"]
     gemini_model = True  # flag: initialized
     _genai_client = None  # initialized lazily using get_ai_key()
     logger.info(f"✅ Gemini AI ready (model: {GEMINI_MODEL_NAME})")
@@ -1174,7 +1175,11 @@ def format_currency(x):
         return "₹0"
 
 def get_available_accounts_count(country):
-    return accounts_col.count_documents({"country": country, "status": "active", "used": {"$ne": True}})
+    return accounts_col.count_documents({
+        "country": country,
+        "used": {"$ne": True},
+        "$or": [{"status": "active"}, {"status": {"$exists": False}}]
+    })
 
 def is_user_banned(user_id):
     banned = banned_users_col.find_one({"user_id": user_id, "status": "active"})
@@ -6649,55 +6654,62 @@ def handle_gemini_chat(msg):
     )
 
     last_error = None
-    for attempt in range(3):
-        try:
-            ai_client = get_genai_client()
-            if not ai_client:
-                raise Exception("Could not create AI client")
+    models_to_try = GEMINI_FALLBACK_MODELS if gemini_model else [GEMINI_MODEL_NAME]
+    for model_name in models_to_try:
+        quota_hit = False
+        for attempt in range(2):
+            try:
+                ai_client = get_genai_client()
+                if not ai_client:
+                    raise Exception("Could not create AI client")
 
-            history = gemini_chat_sessions.get(user_id, [])
-            history.append({"role": "user", "parts": [{"text": text}]})
+                history = gemini_chat_sessions.get(user_id, [])
+                history.append({"role": "user", "parts": [{"text": text}]})
 
-            response = ai_client.models.generate_content(
-                model=GEMINI_MODEL_NAME,
-                contents=history,
-                config=_genai_types.GenerateContentConfig(
-                    system_instruction=SYSTEM_INSTRUCTION,
-                    temperature=0.7,
-                    max_output_tokens=2048,
+                response = ai_client.models.generate_content(
+                    model=model_name,
+                    contents=history,
+                    config=_genai_types.GenerateContentConfig(
+                        system_instruction=SYSTEM_INSTRUCTION,
+                        temperature=0.7,
+                        max_output_tokens=2048,
+                    )
                 )
-            )
 
-            raw_reply = response.text.strip() if response.text else "No response generated."
-            reply = clean_ai_response(raw_reply)
+                raw_reply = response.text.strip() if response.text else "No response generated."
+                reply = clean_ai_response(raw_reply)
 
-            history.append({"role": "model", "parts": [{"text": reply}]})
-            if len(history) > 40:
-                history = history[-40:]
-            gemini_chat_sessions[user_id] = history
+                history.append({"role": "model", "parts": [{"text": reply}]})
+                if len(history) > 40:
+                    history = history[-40:]
+                gemini_chat_sessions[user_id] = history
 
-            markup = InlineKeyboardMarkup()
-            markup.add(InlineKeyboardButton("❌ Exit AI Chat", callback_data="exit_ai_chat"))
+                markup = InlineKeyboardMarkup()
+                markup.add(InlineKeyboardButton("❌ Exit AI Chat", callback_data="exit_ai_chat"))
 
-            bot.send_message(
-                msg.chat.id,
-                f"🤖 AI Assistant:\n\n{reply}",
-                reply_markup=markup
-            )
-            return
+                bot.send_message(
+                    msg.chat.id,
+                    f"🤖 AI Assistant:\n\n{reply}",
+                    reply_markup=markup
+                )
+                return
 
-        except Exception as e:
-            last_error = e
-            err_str = str(e).lower()
-            logger.error(f"Gemini attempt {attempt+1} failed: {e}")
-            gemini_chat_sessions.pop(user_id, None)
-            if "permission_denied" in err_str or "api_key" in err_str or "leaked" in err_str or "invalid_api_key" in err_str:
-                break
-            if "quota" in err_str or "resource_exhausted" in err_str:
-                break
-            time.sleep(1.5)
+            except Exception as e:
+                last_error = e
+                err_str = str(e).lower()
+                logger.error(f"Gemini model={model_name} attempt {attempt+1} failed: {e}")
+                gemini_chat_sessions.pop(user_id, None)
+                if "permission_denied" in err_str or "api_key" in err_str or "leaked" in err_str or "invalid_api_key" in err_str:
+                    quota_hit = True
+                    break
+                if "quota" in err_str or "resource_exhausted" in err_str:
+                    quota_hit = True
+                    break
+                time.sleep(1)
+        if not quota_hit:
+            break
 
-    logger.error(f"Gemini all attempts failed: {last_error}")
+    logger.error(f"Gemini all models/attempts failed: {last_error}")
     err_msg = str(last_error).lower() if last_error else ""
     if "leaked" in err_msg or "permission_denied" in err_msg:
         reply_text = "❌ AI key invalid hai. Admin /setaikey se naya key set kare."

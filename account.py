@@ -54,26 +54,29 @@ class AsyncManager:
 
         def run():
             nonlocal result, exception
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
             try:
-                result = loop.run_until_complete(coro)
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                try:
+                    result = loop.run_until_complete(coro)
+                except Exception as e:
+                    exception = e
+                finally:
+                    try:
+                        # Cancel any remaining tasks
+                        pending = asyncio.all_tasks(loop)
+                        for task in pending:
+                            task.cancel()
+                        if pending:
+                            loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+                    except Exception:
+                        pass
+                    try:
+                        loop.close()
+                    except Exception:
+                        pass
             except Exception as e:
                 exception = e
-            finally:
-                try:
-                    # Cancel any remaining tasks
-                    pending = asyncio.all_tasks(loop)
-                    for task in pending:
-                        task.cancel()
-                    if pending:
-                        loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
-                except Exception:
-                    pass
-                try:
-                    loop.close()
-                except Exception:
-                    pass
 
         thread = threading.Thread(target=run, daemon=True)
         thread.start()
@@ -83,6 +86,8 @@ class AsyncManager:
             raise TimeoutError("Async operation timed out")
         if exception:
             raise exception
+        if result is None:
+            raise RuntimeError("Async operation returned no result")
         return result
 
 # ---------------------------------------------------------------------
@@ -708,12 +713,15 @@ class AccountManager:
     def pyrogram_login_flow_sync(self, login_states, accounts_col, user_id, phone_number, chat_id, message_id, country):
         """Sync wrapper for async login flow"""
         try:
-            return self.async_manager.run_async(
+            result = self.async_manager.run_async(
                 pyrogram_login_flow_async(
                     login_states, accounts_col, user_id, phone_number,
                     chat_id, message_id, country, self.api_id, self.api_hash
                 )
             )
+            if result is None:
+                return False, "Login failed. Please try again."
+            return result
         except Exception as e:
             logger.error(f"Login flow error: {e}")
             return False, str(e)
@@ -721,9 +729,12 @@ class AccountManager:
     def verify_otp_and_save_sync(self, login_states, accounts_col, user_id, otp_code):
         """Sync wrapper for async OTP verification"""
         try:
-            return self.async_manager.run_async(
+            result = self.async_manager.run_async(
                 verify_otp_and_save_async(login_states, accounts_col, user_id, otp_code)
             )
+            if result is None:
+                return False, "OTP verification failed. Please try again."
+            return result
         except Exception as e:
             logger.error(f"OTP verification error: {e}")
             return False, str(e)
@@ -731,9 +742,12 @@ class AccountManager:
     def verify_2fa_password_sync(self, login_states, accounts_col, user_id, password):
         """Sync wrapper for async 2FA verification"""
         try:
-            return self.async_manager.run_async(
+            result = self.async_manager.run_async(
                 verify_2fa_password_async(login_states, accounts_col, user_id, password)
             )
+            if result is None:
+                return False, "Password verification failed. Please try again."
+            return result
         except Exception as e:
             logger.error(f"2FA verification error: {e}")
             return False, str(e)
