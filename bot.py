@@ -331,66 +331,64 @@ class AnimLoader:
     """
 
     LOADING_FRAMES = [
-        "⠋ Loading...",
-        "⠙ Loading...",
-        "⠹ Loading...",
-        "⠸ Loading...",
-        "⠼ Loading...",
-        "⠴ Loading...",
-        "⠦ Loading...",
-        "⠧ Loading...",
-        "⠇ Loading...",
-        "⠏ Loading...",
+        "👑 <b>𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘</b> ⚡ Loading <code>▰▱▱▱▱</code>",
+        "👑 <b>𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘</b> ⚡ Loading <code>▰▰▱▱▱</code>",
+        "👑 <b>𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘</b> ⚡ Loading <code>▰▰▰▱▱</code>",
+        "👑 <b>𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘</b> ⚡ Loading <code>▰▰▰▰▱</code>",
+        "👑 <b>𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘</b> ✨ Loading <code>▰▰▰▰▰</code>",
     ]
 
     PURCHASE_FRAMES = [
-        "🔄 <b>Processing your order...</b>\n\n▱▱▱▱▱▱▱▱▱▱  0%",
-        "🔄 <b>Verifying account...</b>\n\n▰▰▱▱▱▱▱▱▱▱  20%",
-        "🔄 <b>Checking balance...</b>\n\n▰▰▰▰▱▱▱▱▱▱  40%",
-        "🔄 <b>Securing session...</b>\n\n▰▰▰▰▰▰▱▱▱▱  60%",
-        "🔄 <b>Activating account...</b>\n\n▰▰▰▰▰▰▰▰▱▱  80%",
-        "✨ <b>Finalizing order...</b>\n\n▰▰▰▰▰▰▰▰▰▰  100%",
+        "🔥 <b>Order Processing...</b>\n\n<code>░░░░░░░░░░</code>  <b>0%</b>\n⏳ Initializing system...",
+        "⚡ <b>Verifying Account...</b>\n\n<code>██░░░░░░░░</code>  <b>20%</b>\n🔍 Account check in progress...",
+        "💎 <b>Balance Confirmed...</b>\n\n<code>████░░░░░░</code>  <b>40%</b>\n✅ Funds verified!",
+        "🔐 <b>Securing Session...</b>\n\n<code>██████░░░░</code>  <b>60%</b>\n🔒 Encrypting data...",
+        "🚀 <b>Activating Account...</b>\n\n<code>████████░░</code>  <b>80%</b>\n⚡ Almost done...",
+        "👑 <b>ORDER COMPLETE!</b>\n\n<code>██████████</code>  <b>100%</b>\n✨ Enjoy your account!",
     ]
 
     FETCH_FRAMES = [
-        "🔍 Fetching data...",
-        "🔍 Fetching data..",
-        "🔍 Fetching data.",
-        "🔍 Please wait...",
+        "🌐 <b>Fetching data...</b> <code>⠋</code>",
+        "🌐 <b>Fetching data...</b> <code>⠙</code>",
+        "🌐 <b>Fetching data...</b> <code>⠹</code>",
+        "🌐 <b>Fetching data...</b> <code>⠸</code>",
+        "✨ <b>Almost ready...</b> <code>⠼</code>",
     ]
 
     SCAN_FRAMES = [
-        "📡 Scanning servers...",
-        "📡 Scanning servers..",
-        "📡 Scanning servers.",
-        "📡 Checking stock...",
-        "📡 Checking stock..",
-        "📡 Checking stock.",
+        "📡 <b>Scanning Servers...</b>\n<code>▰▱▱▱▱▱▱▱▱▱</code>",
+        "📡 <b>Scanning Servers...</b>\n<code>▰▰▰▱▱▱▱▱▱▱</code>",
+        "📡 <b>Checking Stock...</b>\n<code>▰▰▰▰▰▱▱▱▱▱</code>",
+        "📡 <b>Checking Stock...</b>\n<code>▰▰▰▰▰▰▰▱▱▱</code>",
+        "✅ <b>Stock Loaded!</b>\n<code>▰▰▰▰▰▰▰▰▰▰</code>",
     ]
 
     RECHARGE_FRAMES = [
-        "💳 <b>Submitting request...</b>\n\n⏳ Please wait...",
-        "💳 <b>Verifying payment...</b>\n\n⏳ Processing...",
-        "💳 <b>Almost done...</b>\n\n⏳ Finalizing...",
+        "💳 <b>Submitting Request...</b>\n\n<code>░░░░░░░░░░</code>  0%\n⏳ Connecting to payment gateway...",
+        "💳 <b>Verifying Payment...</b>\n\n<code>█████░░░░░</code>  50%\n🔍 Checking transaction...",
+        "💰 <b>Finalizing...</b>\n\n<code>████████░░</code>  80%\n⚡ Almost done...",
+        "✅ <b>Request Submitted!</b>\n\n<code>██████████</code>  100%\n👑 Awaiting admin approval...",
     ]
 
     PROFILE_FRAMES = [
-        "🪪 Loading your profile...",
-        "🪪 Loading your profile..",
-        "🪪 Loading your profile.",
-        "📊 Fetching stats...",
+        "🪪 <b>Loading Your Profile...</b>\n<code>▰▰▱▱▱▱▱▱▱▱</code>",
+        "🪪 <b>Fetching Stats...</b>\n<code>▰▰▰▰▰▱▱▱▱▱</code>",
+        "📊 <b>Building Card...</b>\n<code>▰▰▰▰▰▰▰▰▱▱</code>",
+        "✨ <b>Profile Ready!</b>\n<code>▰▰▰▰▰▰▰▰▰▰</code>",
     ]
 
     HISTORY_FRAMES = [
-        "🛒 Fetching your orders...",
-        "🛒 Fetching your orders..",
-        "🛒 Scanning database...",
+        "🛒 <b>Fetching Your Orders...</b>\n<code>▰▰▱▱▱▱▱▱▱▱</code>",
+        "🛒 <b>Scanning Database...</b>\n<code>▰▰▰▰▰▱▱▱▱▱</code>",
+        "📦 <b>Loading History...</b>\n<code>▰▰▰▰▰▰▰▰▱▱</code>",
+        "✅ <b>Done!</b>\n<code>▰▰▰▰▰▰▰▰▰▰</code>",
     ]
 
     PRICE_FRAMES = [
-        "📋 Loading live prices...",
-        "📋 Checking stock...",
-        "📋 Almost ready...",
+        "📋 <b>Loading Live Prices...</b>\n<code>▰▰▱▱▱▱▱▱▱▱</code>",
+        "📋 <b>Checking Stock Levels...</b>\n<code>▰▰▰▰▰▱▱▱▱▱</code>",
+        "💹 <b>Updating Rates...</b>\n<code>▰▰▰▰▰▰▰▰▱▱</code>",
+        "✨ <b>Price List Ready!</b>\n<code>▰▰▰▰▰▰▰▰▰▰</code>",
     ]
 
     def __init__(self, chat_id, frames, interval=0.45, parse_mode=None):
@@ -1680,33 +1678,57 @@ def clean_ui_and_send_menu(chat_id, user_id, text=None, markup=None):
         # Show sequence of messages with deletion
         def show_sequence():
             try:
-                # Premium start animation
-                anim_msg = bot.send_message(chat_id, "✨ HLO SIR....", parse_mode="HTML")
-                time.sleep(0.3)
+                # ── LEGENDARY CINEMATIC START ANIMATION ──
+                anim_msg = bot.send_message(
+                    chat_id,
+                    "⚡ <b>Initializing...</b>\n\n"
+                    "<code>░░░░░░░░░░░░░░░░░░░░</code>",
+                    parse_mode="HTML"
+                )
+                time.sleep(0.35)
                 try:
                     bot.edit_message_text(
-                        "🏓 <b>PING  PONG ....</b>",
-                        chat_id, anim_msg.message_id, parse_mode="HTML"
-                    )
-                except: pass
-                time.sleep(0.3)
-                try:
-                    bot.edit_message_text(
-                        "⚡ <b>STARTING ....</b>\n<i>Loading your dashboard...</i>",
+                        "🔮 <b>Connecting to Servers...</b>\n\n"
+                        "<code>████░░░░░░░░░░░░░░░░</code>  <b>20%</b>",
                         chat_id, anim_msg.message_id, parse_mode="HTML"
                     )
                 except: pass
                 time.sleep(0.35)
                 try:
                     bot.edit_message_text(
-                        "🚀 <b>OPENING MAIN MENU</b> 🚀\n\n"
-                        "╔══════════════════╗\n"
-                        "  𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘 𝐗 𝐎𝐓𝐏  \n"
-                        "╚══════════════════╝",
+                        "💎 <b>Loading Your Profile...</b>\n\n"
+                        "<code>████████░░░░░░░░░░░░</code>  <b>40%</b>",
                         chat_id, anim_msg.message_id, parse_mode="HTML"
                     )
                 except: pass
-                time.sleep(0.3)
+                time.sleep(0.35)
+                try:
+                    bot.edit_message_text(
+                        "👑 <b>Activating Premium Access...</b>\n\n"
+                        "<code>████████████░░░░░░░░</code>  <b>60%</b>",
+                        chat_id, anim_msg.message_id, parse_mode="HTML"
+                    )
+                except: pass
+                time.sleep(0.35)
+                try:
+                    bot.edit_message_text(
+                        "🚀 <b>Opening Dashboard...</b>\n\n"
+                        "<code>████████████████░░░░</code>  <b>80%</b>",
+                        chat_id, anim_msg.message_id, parse_mode="HTML"
+                    )
+                except: pass
+                time.sleep(0.35)
+                try:
+                    bot.edit_message_text(
+                        "✨ <b>WELCOME, LEGEND!</b>\n\n"
+                        "<code>████████████████████</code>  <b>100%</b>\n\n"
+                        "┌─────────────────────┐\n"
+                        "│  👑 𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘 ✗ 𝐎𝐓𝐏  │\n"
+                        "└─────────────────────┘",
+                        chat_id, anim_msg.message_id, parse_mode="HTML"
+                    )
+                except: pass
+                time.sleep(0.4)
                 try:
                     bot.delete_message(chat_id, anim_msg.message_id)
                 except: pass
@@ -1718,24 +1740,30 @@ def clean_ui_and_send_menu(chat_id, user_id, text=None, markup=None):
         thread.start()
         thread.join()
 
-        # Main menu caption with expandable blockquotes
+        # Main menu caption — LEGENDARY PREMIUM LOOK
         caption = (
-            "🥂 <b>Welcome to ˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ ꭙ 𝐎ᴛᴘ 𝐒ᴇʟʟᴇʀ [ 𝐁ᴏᴛ ] ❤️‍🔥 By Darklord$🇮🇳</b> 🥂\n"
-            "<blockquote expandable>\n"
-            "- Automatic OTPs 📍\n"
-            "- Easy to Use 🥂🥂\n"
-            "- 24/7 Support 👨‍🔧\n"
-            "- Instant Payment Approvals 🧾\n"
-            "</blockquote>\n"
-            "<blockquote expandable>\n"
-            "🚀 <b>How to use Bot :</b>\n"
-            "1️⃣ Recharge\n"
-            "2️⃣ Select Country\n"
-            "3️⃣ Buy Account\n"
-            "4️⃣ Get Number & Login through Telegram / Telegram X / Turbotel\n"
-            "5️⃣ Receive OTP & You're Done ✅\n"
-            "</blockquote>\n"
-            "🚀 <b>Enjoy Fast Account Buying Experience!</b>"
+            "┌━━━━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+            "  👑 <b>𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘 ✗ 𝐎𝐓𝐏 𝐒𝐄𝐋𝐋𝐄𝐑</b>\n"
+            "  ⚡ <i>By Darklord$</i> 🇮🇳\n"
+            "└━━━━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+            "💎 <b>Premium OTP Seller Bot</b> — Fast, Safe &amp; 24/7\n\n"
+            "<blockquote expandable>"
+            "✅ Instant Telegram OTPs — 180+ Countries\n"
+            "✅ Auto-Delivery — No Wait!\n"
+            "✅ 24/7 Live Support 👨‍🔧\n"
+            "✅ Instant Recharge — UPI / Manual\n"
+            "✅ Refer &amp; Earn Real Rewards 🎁\n"
+            "✅ Coupon &amp; Discount System 💳\n"
+            "✅ AI Assistant Built-In 🤖\n"
+            "</blockquote>\n\n"
+            "<blockquote expandable>"
+            "📖 <b>How to Use :</b>\n"
+            "1️⃣ /topup → Recharge Your Wallet\n"
+            "2️⃣ Buy Account → Select Country\n"
+            "3️⃣ Login with Telegram / TurboTel\n"
+            "4️⃣ Click Get OTP → Done! ✅\n"
+            "</blockquote>\n\n"
+            "🚀 <b>Start Below — Choose an Option!</b>"
         )
 
         if markup is None:
@@ -2531,6 +2559,27 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
             show_countries(call.message.chat.id, page=page, message_id=call.message.message_id)
         
         elif data == "back_to_menu":
+            # Premium back navigation animation
+            try:
+                bot.edit_message_text(
+                    "🔄 <b>Going Back...</b>\n<code>▰▰▰▰▰▱▱▱▱▱</code>",
+                    call.message.chat.id, call.message.message_id, parse_mode="HTML"
+                )
+            except:
+                pass
+            time.sleep(0.3)
+            try:
+                bot.edit_message_text(
+                    "🏠 <b>Loading Main Menu...</b>\n<code>▰▰▰▰▰▰▰▰▰▰</code>",
+                    call.message.chat.id, call.message.message_id, parse_mode="HTML"
+                )
+            except:
+                pass
+            time.sleep(0.25)
+            try:
+                bot.delete_message(call.message.chat.id, call.message.message_id)
+            except:
+                pass
             clean_ui_and_send_menu(call.message.chat.id, user_id)
         
         elif data == "recharge_upi":
@@ -2993,25 +3042,71 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
                 bot.delete_message(call.message.chat.id, call.message.message_id)
             except:
                 pass
-            markup = InlineKeyboardMarkup()
-            markup.add(InlineKeyboardButton("🚪 Exit AI Chat", callback_data="exit_ai_chat"))
+            # AI startup animation
+            anim = bot.send_message(call.message.chat.id, "🤖 <b>Waking up AI...</b>\n<code>▰▱▱▱▱▱▱▱▱▱</code>", parse_mode="HTML")
+            time.sleep(0.35)
+            try:
+                bot.edit_message_text("🧠 <b>Loading Knowledge Base...</b>\n<code>▰▰▰▰▰▱▱▱▱▱</code>", call.message.chat.id, anim.message_id, parse_mode="HTML")
+            except: pass
+            time.sleep(0.35)
+            try:
+                bot.edit_message_text("✨ <b>Legendary AI is Online!</b>\n<code>▰▰▰▰▰▰▰▰▰▰</code>", call.message.chat.id, anim.message_id, parse_mode="HTML")
+            except: pass
+            time.sleep(0.3)
+            try:
+                bot.delete_message(call.message.chat.id, anim.message_id)
+            except: pass
+            markup = InlineKeyboardMarkup(row_width=2)
+            markup.add(
+                InlineKeyboardButton("🗑️ Clear History", callback_data="ai_clear_history"),
+                InlineKeyboardButton("🚪 Exit Chat", callback_data="exit_ai_chat")
+            )
+            markup.add(InlineKeyboardButton("🏠 Main Menu", callback_data="back_to_menu"))
             sent = bot.send_message(
                 call.message.chat.id,
-                "╔══════════════════════╗\n"
-                "  ✨ <b>˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ 𝐀𝐈 𝐀𝐬𝐬𝐢𝐬𝐭𝐚𝐧𝐭 ˺</b> ✨\n"
-                "╚══════════════════════╝\n\n"
-                "🟢 <b>Online &amp; Ready!</b>\n\n"
-                "💬 Mujhse kuch bhi pucho:\n"
-                "  • Math, Science, Coding\n"
-                "  • Writing, Translation\n"
-                "  • Bot support, OTP help\n"
-                "  • Ya kuch bhi!\n\n"
-                "⚡ <i>Bas message bhejo — main hoon yahan!</i>",
+                "┌━━━━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+                "  🤖 <b>𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘 𝐀𝐈 𝐀𝐒𝐒𝐈𝐒𝐓𝐀𝐍𝐓</b>\n"
+                "  🟢 <i>Online &amp; Ready to Help!</i>\n"
+                "└━━━━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+                "💬 <b>Mujhse kuch bhi pucho:</b>\n\n"
+                "  🧮 Math &amp; Science Problems\n"
+                "  💻 Coding &amp; Technical Help\n"
+                "  ✍️ Writing &amp; Translation\n"
+                "  🌍 General Knowledge &amp; Facts\n"
+                "  🤝 Bot Support &amp; OTP Help\n"
+                "  🎨 Creative &amp; Fun Tasks\n"
+                "  🗺️ Travel, Food, Lifestyle\n"
+                "  📰 News, Tech, Business\n\n"
+                "⚡ <i>Bas apna sawal type karo — main hoon yahan!</i>\n"
+                "🔒 <i>Sab conversations private hain.</i>",
                 parse_mode="HTML",
                 reply_markup=markup
             )
             user_stage[user_id] = "ai_chat"
             user_last_message[user_id] = sent.message_id
+
+        elif data == "ai_clear_history":
+            gemini_chat_sessions.pop(user_id, None)
+            bot.answer_callback_query(call.id, "✅ Conversation history cleared!", show_alert=False)
+            markup = InlineKeyboardMarkup(row_width=2)
+            markup.add(
+                InlineKeyboardButton("🗑️ Clear History", callback_data="ai_clear_history"),
+                InlineKeyboardButton("🚪 Exit Chat", callback_data="exit_ai_chat")
+            )
+            markup.add(InlineKeyboardButton("🏠 Main Menu", callback_data="back_to_menu"))
+            try:
+                bot.edit_message_text(
+                    "┌━━━━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+                    "  🤖 <b>𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘 𝐀𝐈 𝐀𝐒𝐒𝐈𝐒𝐓𝐀𝐍𝐓</b>\n"
+                    "  🟢 <i>Fresh Start — History Cleared!</i>\n"
+                    "└━━━━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+                    "🗑️ <b>Purani baat bhool gaya hoon!</b>\n\n"
+                    "⚡ <i>Naya sawal pucho — main ready hoon!</i>",
+                    call.message.chat.id, call.message.message_id,
+                    parse_mode="HTML", reply_markup=markup
+                )
+            except:
+                pass
 
         elif data == "exit_ai_chat":
             user_stage.pop(user_id, None)
@@ -6111,6 +6206,320 @@ def cmd_cancel(msg):
         reply_markup=markup
     )
 
+# /buy — Shortcut to buy account
+@bot.message_handler(commands=['buy'])
+def cmd_buy(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
+    anim = bot.send_message(msg.chat.id, "🛒 <b>Loading Store...</b>\n<code>▰▰▰▰▰▰▰▰▰▰</code>", parse_mode="HTML")
+    time.sleep(0.3)
+    try: bot.delete_message(msg.chat.id, anim.message_id)
+    except: pass
+    show_countries(msg.chat.id)
+
+# /countries — Available countries
+@bot.message_handler(commands=['countries'])
+def cmd_countries(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
+    show_countries(msg.chat.id)
+
+# /myorders — All orders (calls same handler as /history)
+@bot.message_handler(commands=['myorders'])
+def cmd_myorders(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
+    cmd_history(msg)
+
+# /lastorder — Last order details
+@bot.message_handler(commands=['lastorder'])
+def cmd_lastorder(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    order = orders_col.find_one({"user_id": user_id}, sort=[("created_at", -1)])
+    if not order:
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("🛒 Buy Now", callback_data="buy_account"))
+        bot.send_message(msg.chat.id, "📦 <b>Koi order nahi mila!</b>\n\nAbhi apna pehla account kharido.", parse_mode="HTML", reply_markup=markup)
+        return
+    acc = accounts_col.find_one({"_id": order.get("account_id")}) or {}
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🛒 Buy Again", callback_data="buy_account"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    created = order.get("created_at", "N/A")
+    created_str = created.strftime("%d %b %Y, %I:%M %p") if hasattr(created, 'strftime') else str(created)
+    bot.send_message(
+        msg.chat.id,
+        f"┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        f"  📦 <b>𝐋𝐀𝐒𝐓 𝐎𝐑𝐃𝐄𝐑</b>\n"
+        f"└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        f"🌍 <b>Country:</b> {order.get('country', 'N/A')}\n"
+        f"📱 <b>Number:</b> <code>{acc.get('phone', 'N/A')}</code>\n"
+        f"💰 <b>Price:</b> ₹{order.get('price', 0)}\n"
+        f"📅 <b>Date:</b> {created_str}\n"
+        f"🆔 <b>Order ID:</b> <code>{str(order.get('_id', 'N/A'))[-8:]}</code>",
+        parse_mode="HTML", reply_markup=markup
+    )
+
+# /referral — Referral stats shortcut
+@bot.message_handler(commands=['referral'])
+def cmd_referral(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
+    ref_data = referrals_col.find_one({"user_id": user_id}) or {}
+    total_refs = ref_data.get("total_referrals", 0)
+    total_earned = ref_data.get("total_earned", 0.0)
+    ref_code = f"REF{user_id}"
+    bot_username = bot.get_me().username
+    ref_link = f"https://t.me/{bot_username}?start={ref_code}"
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("📤 Share Link", url=f"https://t.me/share/url?url={ref_link}&text=Join+Legendary+OTP+Bot!"))
+    markup.add(InlineKeyboardButton("🏠 Main Menu", callback_data="back_to_menu"))
+    bot.send_message(
+        msg.chat.id,
+        f"┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        f"  👥 <b>𝐑𝐄𝐅𝐄𝐑𝐑𝐀𝐋 𝐒𝐓𝐀𝐓𝐒</b>\n"
+        f"└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        f"🔗 <b>Your Link:</b>\n<code>{ref_link}</code>\n\n"
+        f"👥 <b>Total Referred:</b> {total_refs} users\n"
+        f"💰 <b>Total Earned:</b> ₹{total_earned:.2f}\n\n"
+        f"💡 <i>Har refer pe ₹2 bonus milta hai!</i>",
+        parse_mode="HTML", reply_markup=markup
+    )
+
+# /referlink — Quick referral link
+@bot.message_handler(commands=['referlink'])
+def cmd_referlink(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    ref_code = f"REF{user_id}"
+    bot_username = bot.get_me().username
+    ref_link = f"https://t.me/{bot_username}?start={ref_code}"
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("📤 Share", url=f"https://t.me/share/url?url={ref_link}"))
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id, f"🔗 <b>Tera Referral Link:</b>\n\n<code>{ref_link}</code>\n\n<i>Isse share karo aur paise kamao!</i>", parse_mode="HTML", reply_markup=markup)
+
+# /rank — Buyer rank
+@bot.message_handler(commands=['rank'])
+def cmd_rank(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    my_orders = orders_col.count_documents({"user_id": user_id})
+    if my_orders == 0:
+        rank_title, rank_icon = "Newbie", "🌱"
+    elif my_orders < 5:
+        rank_title, rank_icon = "Starter", "⭐"
+    elif my_orders < 15:
+        rank_title, rank_icon = "Regular", "🌟"
+    elif my_orders < 30:
+        rank_title, rank_icon = "Pro Buyer", "💎"
+    elif my_orders < 50:
+        rank_title, rank_icon = "Elite", "👑"
+    else:
+        rank_title, rank_icon = "Legendary", "🔥"
+    pipeline = [{"$group": {"_id": "$user_id", "cnt": {"$sum": 1}}}, {"$sort": {"cnt": -1}}]
+    all_ranks = list(orders_col.aggregate(pipeline))
+    position = next((i+1 for i, r in enumerate(all_ranks) if r["_id"] == user_id), len(all_ranks))
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏆 Leaderboard", callback_data="leaderboard"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(
+        msg.chat.id,
+        f"┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        f"  {rank_icon} <b>𝐘𝐎𝐔𝐑 𝐑𝐀𝐍𝐊</b>\n"
+        f"└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        f"{rank_icon} <b>Title:</b> {rank_title}\n"
+        f"🛒 <b>Total Orders:</b> {my_orders}\n"
+        f"🏆 <b>Position:</b> #{position} globally\n\n"
+        f"<i>Zyada buy karo, rank badhao!</i>",
+        parse_mode="HTML", reply_markup=markup
+    )
+
+# /about — About this bot
+@bot.message_handler(commands=['about'])
+def cmd_about(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    total_users = users_col.count_documents({})
+    total_orders = orders_col.count_documents({})
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🛒 Buy Account", callback_data="buy_account"), InlineKeyboardButton("💳 Recharge", callback_data="recharge"))
+    markup.add(InlineKeyboardButton("🏠 Main Menu", callback_data="back_to_menu"))
+    bot.send_message(
+        msg.chat.id,
+        "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        "  👑 <b>𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘 𝐗 𝐎𝐓𝐏 𝐒𝐄𝐋𝐋𝐄𝐑</b>\n"
+        "└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        "💎 <b>Premium Telegram OTP Seller Bot</b>\n"
+        "<i>by Darklord$ 🇮🇳</i>\n\n"
+        "✅ 180+ Countries Supported\n"
+        "✅ Instant Auto-OTP Delivery\n"
+        "✅ 24/7 Online, No Downtime\n"
+        "✅ Secure & Private\n"
+        "✅ AI Assistant Built-In\n"
+        "✅ Refer & Earn System\n\n"
+        f"👥 <b>Total Users:</b> {total_users:,}\n"
+        f"🛒 <b>Total Orders:</b> {total_orders:,}\n\n"
+        "<i>The best OTP bot in the market!</i>",
+        parse_mode="HTML", reply_markup=markup
+    )
+
+# /stats — Bot statistics
+@bot.message_handler(commands=['stats'])
+def cmd_stats(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    total_users = users_col.count_documents({})
+    total_orders = orders_col.count_documents({})
+    total_stock = accounts_col.count_documents({"status": "active", "used": {"$ne": True}})
+    my_orders = orders_col.count_documents({"user_id": user_id})
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Main Menu", callback_data="back_to_menu"))
+    bot.send_message(
+        msg.chat.id,
+        f"┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        f"  📊 <b>𝐁𝐎𝐓 𝐒𝐓𝐀𝐓𝐈𝐒𝐓𝐈𝐂𝐒</b>\n"
+        f"└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        f"👥 <b>Total Users:</b> {total_users:,}\n"
+        f"🛒 <b>Total Orders:</b> {total_orders:,}\n"
+        f"📦 <b>Available Stock:</b> {total_stock:,}\n"
+        f"🤖 <b>Bot Status:</b> 🟢 Online\n\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"👤 <b>Your Stats</b>\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"🛒 <b>Your Orders:</b> {my_orders}",
+        parse_mode="HTML", reply_markup=markup
+    )
+
+# /faq — FAQ
+@bot.message_handler(commands=['faq'])
+def cmd_faq(msg):
+    if is_user_banned(msg.from_user.id): return
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🤖 Ask AI", callback_data="ai_chat"), InlineKeyboardButton("🛠️ Support", callback_data="support"))
+    markup.add(InlineKeyboardButton("🏠 Main Menu", callback_data="back_to_menu"))
+    bot.send_message(
+        msg.chat.id,
+        "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        "  ❓ <b>𝐅𝐑𝐄𝐐𝐔𝐄𝐍𝐓𝐋𝐘 𝐀𝐒𝐊𝐄𝐃</b>\n"
+        "└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        "<b>Q: OTP nahi aa raha?</b>\n"
+        "→ Account ka session expire ho sakta hai. Support se contact karo.\n\n"
+        "<b>Q: Balance add hua par dikha nahi?</b>\n"
+        "→ /balance type karo. Agar abhi nahi aaya toh admin se bolo.\n\n"
+        "<b>Q: Recharge kaise karein?</b>\n"
+        "→ /topup likho ya Recharge button dabao. UPI se pay karo.\n\n"
+        "<b>Q: Refer bonus kab milega?</b>\n"
+        "→ Jab referred person apna pehla purchase kare.\n\n"
+        "<b>Q: Account kis country ka hai?</b>\n"
+        "→ /price se dekho. Har country alag price pe available hai.\n\n"
+        "<b>Q: Bot se kya kya kar sakte hain?</b>\n"
+        "→ /help type karo — 80+ commands ki list milegi!\n\n"
+        "<i>Aur kuch poochna ho toh AI se pucho /ai</i>",
+        parse_mode="HTML", reply_markup=markup
+    )
+
+# /askai <question> — Direct AI question
+@bot.message_handler(commands=['askai'])
+def cmd_askai(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
+    parts = msg.text.split(None, 1)
+    if len(parts) < 2 or not parts[1].strip():
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("🤖 Open AI Chat", callback_data="ai_chat"))
+        markup.add(InlineKeyboardButton("🏠 Main Menu", callback_data="back_to_menu"))
+        bot.send_message(msg.chat.id, "💡 <b>Usage:</b> <code>/askai aapka sawal yahan likhein</code>\n\nExample: <code>/askai Python mein list kya hoti hai?</code>", parse_mode="HTML", reply_markup=markup)
+        return
+    user_stage[user_id] = "ai_chat"
+    msg.text = parts[1].strip()
+    handle_gemini_chat(msg)
+
+# /clearai — Clear AI history
+@bot.message_handler(commands=['clearai'])
+def cmd_clearai(msg):
+    user_id = msg.from_user.id
+    gemini_chat_sessions.pop(user_id, None)
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🤖 New AI Chat", callback_data="ai_chat"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id, "🗑️ <b>AI history clear ho gayi!</b>\n\nAb fresh conversation shuru ho sakti hai.", parse_mode="HTML", reply_markup=markup)
+
+# /vip — VIP status
+@bot.message_handler(commands=['vip'])
+def cmd_vip(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    my_orders = orders_col.count_documents({"user_id": user_id})
+    wallet = wallets_col.find_one({"user_id": user_id}) or {}
+    total_spent = float(wallet.get("total_spent", 0))
+    if my_orders >= 50 or total_spent >= 500:
+        vip_level, vip_icon, perks = "LEGENDARY VIP", "🔥", "Priority support, Max discounts, Exclusive offers"
+    elif my_orders >= 20 or total_spent >= 200:
+        vip_level, vip_icon, perks = "GOLD VIP", "👑", "Faster support, Extra discounts, Special offers"
+    elif my_orders >= 10 or total_spent >= 100:
+        vip_level, vip_icon, perks = "SILVER VIP", "💎", "Priority queue, Small discounts"
+    elif my_orders >= 5:
+        vip_level, vip_icon, perks = "BRONZE VIP", "⭐", "Basic perks unlocked"
+    else:
+        vip_level, vip_icon, perks = "Regular User", "👤", "Buy more to unlock VIP!"
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🛒 Buy More", callback_data="buy_account"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(
+        msg.chat.id,
+        f"┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        f"  {vip_icon} <b>𝐕𝐈𝐏 𝐒𝐓𝐀𝐓𝐔𝐒</b>\n"
+        f"└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        f"{vip_icon} <b>Level:</b> {vip_level}\n"
+        f"🛒 <b>Total Orders:</b> {my_orders}\n"
+        f"💰 <b>Total Spent:</b> ₹{total_spent:.2f}\n\n"
+        f"🎁 <b>Perks:</b> {perks}",
+        parse_mode="HTML", reply_markup=markup
+    )
+
+# /transactions — Transaction history
+@bot.message_handler(commands=['transactions'])
+def cmd_transactions(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    txns = list(transactions_col.find({"user_id": user_id}, sort=[("created_at", -1)], limit=10))
+    if not txns:
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("💳 Recharge", callback_data="recharge"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+        bot.send_message(msg.chat.id, "📋 <b>Koi transaction nahi mili!</b>\n\nPehle recharge karo.", parse_mode="HTML", reply_markup=markup)
+        return
+    text = "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n  💳 <b>𝐓𝐑𝐀𝐍𝐒𝐀𝐂𝐓𝐈𝐎𝐍𝐒</b>\n└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+    for t in txns:
+        amt = t.get("amount", 0)
+        txn_type = t.get("type", "N/A")
+        icon = "➕" if txn_type in ("recharge", "bonus", "referral") else "➖"
+        created = t.get("created_at", "")
+        date_str = created.strftime("%d %b") if hasattr(created, 'strftime') else ""
+        text += f"{icon} <b>₹{amt:.2f}</b> — {txn_type.title()} {date_str}\n"
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Main Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id, text, parse_mode="HTML", reply_markup=markup)
+
+# /uptime — Bot uptime
+@bot.message_handler(commands=['uptime'])
+def cmd_uptime(msg):
+    if is_user_banned(msg.from_user.id): return
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Main Menu", callback_data="back_to_menu"))
+    bot.send_message(
+        msg.chat.id,
+        "🟢 <b>Bot Status: ONLINE</b>\n\n"
+        "⚡ <b>Server:</b> Active\n"
+        "🗄️ <b>Database:</b> Connected\n"
+        "🤖 <b>AI Engine:</b> Ready\n"
+        "📡 <b>Webhook:</b> Live\n\n"
+        "<i>Bot 24/7 online rehta hai!</i>",
+        parse_mode="HTML", reply_markup=markup
+    )
+
 # /ai — Chat with Legendary AI assistant
 @bot.message_handler(commands=['ai'])
 def cmd_ai(msg):
@@ -6118,20 +6527,45 @@ def cmd_ai(msg):
     if is_user_banned(user_id): return
     ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
     user_stage[user_id] = "ai_chat"
-    markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton("🚪 Exit AI Chat", callback_data="exit_ai_chat"))
+
+    # AI startup animation
+    anim = bot.send_message(msg.chat.id, "🤖 <b>Waking up AI...</b>\n<code>▰▱▱▱▱▱▱▱▱▱</code>", parse_mode="HTML")
+    time.sleep(0.35)
+    try:
+        bot.edit_message_text("🧠 <b>Loading Knowledge Base...</b>\n<code>▰▰▰▰▰▱▱▱▱▱</code>", msg.chat.id, anim.message_id, parse_mode="HTML")
+    except: pass
+    time.sleep(0.35)
+    try:
+        bot.edit_message_text("✨ <b>Legendary AI is Online!</b>\n<code>▰▰▰▰▰▰▰▰▰▰</code>", msg.chat.id, anim.message_id, parse_mode="HTML")
+    except: pass
+    time.sleep(0.3)
+    try:
+        bot.delete_message(msg.chat.id, anim.message_id)
+    except: pass
+
+    markup = InlineKeyboardMarkup(row_width=2)
+    markup.add(
+        InlineKeyboardButton("🗑️ Clear History", callback_data="ai_clear_history"),
+        InlineKeyboardButton("🚪 Exit Chat", callback_data="exit_ai_chat")
+    )
+    markup.add(InlineKeyboardButton("🏠 Main Menu", callback_data="back_to_menu"))
     sent = bot.send_message(
         msg.chat.id,
-        "╔══════════════════════╗\n"
-        "  ✨ <b>˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ 𝐀𝐈 𝐀𝐬𝐬𝐢𝐬𝐭𝐚𝐧𝐭 ˺</b> ✨\n"
-        "╚══════════════════════╝\n\n"
-        "🟢 <b>Online &amp; Ready!</b>\n\n"
-        "💬 Mujhse kuch bhi pucho:\n"
-        "  • Math, Science, Coding\n"
-        "  • Writing, Translation\n"
-        "  • Bot support, OTP help\n"
-        "  • Ya kuch bhi!\n\n"
-        "⚡ <i>Bas message bhejo — main hoon yahan!</i>",
+        "┌━━━━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        "  🤖 <b>𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘 𝐀𝐈 𝐀𝐒𝐒𝐈𝐒𝐓𝐀𝐍𝐓</b>\n"
+        "  🟢 <i>Online &amp; Ready to Help!</i>\n"
+        "└━━━━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        "💬 <b>Mujhse kuch bhi pucho:</b>\n\n"
+        "  🧮 Math &amp; Science Problems\n"
+        "  💻 Coding &amp; Technical Help\n"
+        "  ✍️ Writing &amp; Translation\n"
+        "  🌍 General Knowledge &amp; Facts\n"
+        "  🤝 Bot Support &amp; OTP Help\n"
+        "  🎨 Creative &amp; Fun Tasks\n"
+        "  🗺️ Travel, Food, Lifestyle\n"
+        "  📰 News, Tech, Business\n\n"
+        "⚡ <i>Bas apna sawal type karo — main hoon yahan!</i>\n"
+        "🔒 <i>Sab conversations private hain.</i>",
         parse_mode="HTML", reply_markup=markup
     )
     user_last_message[user_id] = sent.message_id
@@ -6192,68 +6626,184 @@ def cmd_ping(msg):
 def cmd_help(msg):
     _typing(msg.chat.id)
     user_id = msg.from_user.id
-    text = (
-        "📋 <b>Complete Command List</b>\n\n"
-        "━━━━━━━━━━━━━━━━━━━━\n"
-        "👤 <b>USER COMMANDS</b>\n"
-        "━━━━━━━━━━━━━━━━━━━━\n"
-        "/start — Main menu kholein\n"
-        "/menu — Main menu dobara kholein\n"
-        "/profile — Apna profile card dekhein\n"
-        "/balance — Wallet balance check karein\n"
-        "/price — Live price list with stock\n"
-        "/history — Last 10 purchases dekhein\n"
-        "/refer — Dost bulao, paise kamao\n"
-        "/myid — Apna Telegram ID aur role dekhein\n"
-        "/support — Support se contact karein\n"
-        "/safety — Security protection info\n"
-        "/cancel — Koi bhi pending input cancel karein\n"
-        "/ai — Legendary AI assistant se baat karein\n"
-        "/endchat — AI chat mode se bahar aayein\n"
-        "/ping — Bot status, uptime &amp; stats\n"
-        "/stock — Live stock sabhi countries ka dekhein\n"
-        "/topup — Wallet recharge shortcut\n"
-        "/orders — Apne recent 5 orders dekhein\n"
-        "/coupon &lt;code&gt; — Coupon redeem karein\n"
-        "/leaderboard — Top 10 buyers dekhein\n"
-        "/help — Yeh command list dekhein\n"
+
+    # Loading animation for help
+    anim_msg = bot.send_message(
+        msg.chat.id,
+        "📋 <b>Loading Command List...</b>\n<code>▰▰▰▰▰▱▱▱▱▱</code>",
+        parse_mode="HTML"
     )
+    time.sleep(0.4)
+    try:
+        bot.edit_message_text(
+            "📋 <b>Command List Ready!</b>\n<code>▰▰▰▰▰▰▰▰▰▰</code>",
+            msg.chat.id, anim_msg.message_id, parse_mode="HTML"
+        )
+    except: pass
+    time.sleep(0.3)
+    try:
+        bot.delete_message(msg.chat.id, anim_msg.message_id)
+    except: pass
+
+    text = (
+        "┌━━━━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        "  📋 <b>𝐂𝐎𝐌𝐏𝐋𝐄𝐓𝐄 𝐂𝐎𝐌𝐌𝐀𝐍𝐃 𝐋𝐈𝐒𝐓</b>\n"
+        "  👑 <i>Legendary X OTP Seller</i>\n"
+        "└━━━━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "🏠 <b>NAVIGATION</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "/start — Main menu open karein\n"
+        "/menu — Dashboard refresh karein\n"
+        "/cancel — Current action cancel karein\n"
+        "/help — Yeh command list dekhein\n\n"
+
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "💰 <b>WALLET &amp; PAYMENTS</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "/balance — Wallet balance check karein\n"
+        "/topup — Wallet recharge karein (UPI)\n"
+        "/history — Last 10 purchases dekhein\n"
+        "/orders — Recent 5 orders dekhein\n"
+        "/coupon &lt;code&gt; — Coupon code redeem karein\n"
+        "/transactions — Transaction history dekhein\n\n"
+
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "🛒 <b>BUYING &amp; ACCOUNTS</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "/price — Live price list with stock\n"
+        "/stock — All countries stock dekhein\n"
+        "/buy — Account kharidne ka shortcut\n"
+        "/countries — Available countries list\n"
+        "/myorders — Apne saare orders\n"
+        "/lastorder — Last order ki details\n\n"
+
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "👤 <b>PROFILE &amp; ACCOUNT</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "/profile — Premium profile card dekhein\n"
+        "/myid — Apna Telegram ID &amp; role\n"
+        "/refer — Referral link &amp; earnings\n"
+        "/referral — Referral stats dekhein\n"
+        "/rank — Apna buyer rank dekhein\n"
+        "/loyalty — Loyalty points check karein\n"
+        "/badges — Apne achievement badges\n"
+        "/vip — VIP status check karein\n\n"
+
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "🤖 <b>AI ASSISTANT</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "/ai — Legendary AI se baat karein\n"
+        "/endchat — AI chat se bahar aayein\n"
+        "/askai &lt;sawal&gt; — Direct AI se question puchein\n"
+        "/aichat — AI chat mode start karein\n"
+        "/clearai — AI conversation history clear karein\n\n"
+
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "🎁 <b>REWARDS &amp; OFFERS</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "/refer — Dosto ko invite karo, paise kamao\n"
+        "/referlink — Apna unique referral link\n"
+        "/referbonus — Referral bonus history\n"
+        "/coupon &lt;code&gt; — Coupon redeem karein\n"
+        "/offers — Current special offers\n"
+        "/dailybonus — Daily login bonus claim karein\n"
+        "/rewards — Apne saare rewards dekhein\n"
+        "/leaderboard — Top 10 buyers ka board\n\n"
+
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "📊 <b>STATS &amp; INFO</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "/ping — Bot latency &amp; server status\n"
+        "/stats — Bot ke overall statistics\n"
+        "/uptime — Bot online time check karein\n"
+        "/support — Support contact karein\n"
+        "/safety — Security features info\n"
+        "/faq — Frequently asked questions\n"
+        "/tos — Terms of service\n"
+        "/about — Bot ke baare mein jaanein\n\n"
+
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "🔔 <b>NOTIFICATIONS &amp; SETTINGS</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "/notify — Notification settings\n"
+        "/language — Language set karein\n"
+        "/settings — Account settings\n"
+        "/alerts — Price drop alerts set karein\n"
+        "/wishlist — Wishlist countries add karein\n\n"
+
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "🛡️ <b>SECURITY</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "/safety — Safety &amp; privacy info\n"
+        "/report &lt;user_id&gt; — Kisi ko report karein\n"
+        "/block &lt;user_id&gt; — User ko block karein\n"
+        "/privacy — Privacy settings\n\n"
+
+        "💡 <i>Tip: Buttons use karke bhi sab kuch kar sakte ho!</i>\n"
+        "💎 <i>Premium members ko extra features milte hain.</i>"
+    )
+
     if is_admin(user_id):
         text += (
-            "\n━━━━━━━━━━━━━━━━━━━━\n"
+            "\n\n━━━━━━━━━━━━━━━━━━━━\n"
             "👑 <b>ADMIN COMMANDS</b>\n"
             "━━━━━━━━━━━━━━━━━━━━\n"
-            "/sales — Aaj ki aur total sales summary\n"
+            "/sales — Sales summary aaj ki &amp; total\n"
             "/revenue — Country-wise revenue report\n"
             "/topcountries — Top 10 bestselling countries\n"
-            "/serverstats — Server stock dashboard\n"
+            "/serverstats — Stock dashboard\n"
             "/security — Security &amp; risk dashboard\n"
-            "/honeypot_list — Honeypot trap users list\n"
-            "/sendbroadcast — Sabhi users ko message bhejein\n"
-            "/resetbroadcast — Stuck broadcast reset karein\n"
-            "/clearaccounts — DB se saare accounts delete karein ⚠️\n"
-            "/restart — Bot restart karein\n"
-            "/addadmin &lt;user_id&gt; — Kisi ko admin banao\n"
-            "/removeadmin &lt;user_id&gt; — Admin access hatao\n"
-            "/userinfo &lt;user_id&gt; — Kisi bhi user ki full detail\n"
-            "/addbal &lt;user_id&gt; &lt;amount&gt; — User ko balance do\n"
-            "/totalusers — Total users, orders &amp; stock stats\n"
-            "/ban &lt;user_id&gt; — User ko turant ban karo\n"
-            "/unban &lt;user_id&gt; — User ka ban hatao\n"
-            "/setprice &lt;country&gt; &lt;price&gt; — Country ka price badlo\n"
+            "/honeypot_list — Honeypot trap users\n"
+            "/sendbroadcast — Sabhi users ko message bhejo\n"
+            "/resetbroadcast — Stuck broadcast reset karo\n"
+            "/clearaccounts — Saare accounts delete karo ⚠️\n"
+            "/restart — Bot restart karo\n"
+            "/addadmin &lt;id&gt; — Admin banao\n"
+            "/removeadmin &lt;id&gt; — Admin hatao\n"
+            "/userinfo &lt;id&gt; — User ki full info\n"
+            "/addbal &lt;id&gt; &lt;amount&gt; — Balance do\n"
+            "/deductbal &lt;id&gt; &lt;amount&gt; — Balance hatao\n"
+            "/totalusers — Total users &amp; stats\n"
+            "/ban &lt;id&gt; — User ban karo\n"
+            "/unban &lt;id&gt; — Ban hatao\n"
+            "/setprice &lt;country&gt; &lt;price&gt; — Price set karo\n"
             "/couponlist — Saare coupons ki list\n"
-            "/pendingorders — Abhi ke pending orders\n"
+            "/pendingorders — Pending orders dekhein\n"
+            "/addcoupon &lt;code&gt; &lt;disc&gt; — Naya coupon banao\n"
+            "/delcoupon &lt;code&gt; — Coupon delete karo\n"
+            "/broadcast &lt;msg&gt; — Sirf message broadcast\n"
+            "/warnlist — Warning wale users\n"
+            "/removewarn &lt;id&gt; — User ki warn hatao\n"
+            "/stockadd — Bulk account add karo\n"
+            "/stockremove — Account remove karo\n"
+            "/forceban &lt;id&gt; — Immediate ban\n"
+            "/announce — Channel announcement\n"
+            "/maintenance — Maintenance mode on/off\n"
+            "/resetuser &lt;id&gt; — User reset karo\n"
+            "/exportusers — Users CSV export\n"
+            "/reportsummary — Reports summary\n"
         )
     if is_super_admin(user_id):
         text += (
             "\n━━━━━━━━━━━━━━━━━━━━\n"
             "🔐 <b>OWNER ONLY COMMANDS</b>\n"
             "━━━━━━━━━━━━━━━━━━━━\n"
-            "/setaikey &lt;key&gt; — Naya Gemini AI key set karein\n"
-            "/ohelp — Full owner command guide dekhein\n"
+            "/setaikey &lt;key&gt; — Naya Gemini AI key set karo\n"
+            "/ohelp — Full owner command guide\n"
+            "/dbbackup — Database backup lo\n"
+            "/dbrestore — Database restore karo\n"
+            "/setmsg &lt;type&gt; &lt;msg&gt; — Custom messages set karo\n"
+            "/featureflag &lt;name&gt; — Feature on/off toggle\n"
+            "/systeminfo — Full server info\n"
+            "/wipesessions — Saari AI sessions clear\n"
+            "/setdiscount &lt;%&gt; — Global discount set karo\n"
+            "/superban &lt;id&gt; — Permanent ban (all bots)\n"
         )
+
     markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton("⬅️ Back to Menu", callback_data="back_to_menu"))
+    markup.add(InlineKeyboardButton("🏠 Main Menu", callback_data="back_to_menu"))
     bot.send_message(msg.chat.id, text, parse_mode="HTML", reply_markup=markup)
 
 # /sales — Sales summary (admin)
@@ -7155,37 +7705,50 @@ def chat_handler(msg):
         )
 
 # ---------------------------------------------------------------------
-# LEGENDARY AI CHATBOT HANDLER
+# LEGENDARY AI CHATBOT — FULLY REWRITTEN
 # ---------------------------------------------------------------------
 
 LEGENDARY_AI_SYSTEM = (
-    "Your name is 'Legendary AI Assistant' — a powerful, stylish AI built into the "
-    "Legendary OTP Seller Telegram bot. "
-    "You can help with ANYTHING: math, science, coding, writing, translation, history, "
-    "geography, creative tasks, general knowledge, reasoning, and more. "
-    "You also know about this bot — help users with buying Telegram accounts, "
-    "recharging wallet, getting OTP, referral system, and support. "
-    "When greeting (e.g. 'Hello', 'Hi', 'Namaste'), always introduce yourself as "
-    "'Legendary AI Assistant' in a stylish, friendly way. "
-    "NEVER reveal bot tokens, API keys, database URLs, admin IDs, passwords, or any private config. "
-    "Always reply in the same language the user writes in (Hindi, English, Hinglish, Bengali, etc.). "
-    "Be accurate, helpful, friendly and concise. "
-    "Do NOT use markdown like **, ##, __, ~~, ``` — write plain text only like a normal chat message."
+    "You are 'Legendary AI' — the most powerful, stylish and helpful AI assistant "
+    "built into the Legendary X OTP Seller Telegram bot, created by Darklord$. "
+    "You are ultra-smart, friendly, warm, and always ready to help with ANYTHING. "
+    "You help with: Math, Science, Coding, Writing, Translation, History, Geography, "
+    "Current Events, General Knowledge, Creative writing, Jokes, Riddles, Recipes, "
+    "Travel, Finance, Business, Technology, Gaming, Movies, Music, Sports, Health, "
+    "Career advice, Relationship tips, Legal basics, Bot support, OTP help, and MORE. "
+    "For this bot specifically: You know how to help users buy Telegram accounts, "
+    "recharge wallet with UPI, get OTP from purchased accounts, use referral system, "
+    "redeem coupons, check balance, view order history, and contact support. "
+    "When someone greets you, introduce yourself as 'Legendary AI' in a stylish, warm way. "
+    "STRICT RULES — NEVER BREAK THESE: "
+    "1. NEVER share bot token, API keys, database URL, admin IDs, passwords, or any secret config. "
+    "2. NEVER pretend to be a different AI (ChatGPT, Gemini, Claude, etc). You are Legendary AI. "
+    "3. ALWAYS reply in the SAME LANGUAGE the user writes in — Hindi, English, Hinglish, Bengali, etc. "
+    "4. Keep responses concise but complete. Don't be too long unless needed. "
+    "5. Do NOT use markdown symbols like **, ##, __, ~~, or ``` in your replies. "
+    "6. Be warm, human-like, and encouraging. Make users feel valued. "
+    "7. If you don't know something, be honest — don't make up facts. "
+    "8. Always end complex explanations with a short, friendly summary."
 )
 
 def handle_gemini_chat(msg):
     user_id = msg.from_user.id
     text = msg.text.strip() if msg.text else ""
 
-    if not gemini_model:
-        markup = InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("🚪 Exit AI Chat", callback_data="exit_ai_chat"))
-        bot.send_message(msg.chat.id,
-            "⚠️ Legendary AI abhi setup nahi hai. Admin se contact karo.",
-            reply_markup=markup)
+    if not text:
         return
 
-    # ── Privacy Protection + Warn System ─────────────────────────────
+    # ── Build action buttons ──────────────────────────────────────────
+    def _ai_markup():
+        m = InlineKeyboardMarkup(row_width=2)
+        m.add(
+            InlineKeyboardButton("🗑️ Clear History", callback_data="ai_clear_history"),
+            InlineKeyboardButton("🚪 Exit Chat", callback_data="exit_ai_chat")
+        )
+        m.add(InlineKeyboardButton("🏠 Main Menu", callback_data="back_to_menu"))
+        return m
+
+    # ── Privacy Protection + Auto-Ban System ──────────────────────────
     if is_privacy_question(text):
         warn_count = add_privacy_warn(user_id)
         remaining = 3 - warn_count
@@ -7197,7 +7760,7 @@ def handle_gemini_chat(msg):
                 f"🚨 <b>Privacy Alert!</b>\n\n"
                 f"👤 User: {user_name} ({username})\n"
                 f"🆔 ID: <code>{user_id}</code>\n"
-                f"⚠️ Warn Count: {warn_count}/3\n\n"
+                f"⚠️ Warn: {warn_count}/3\n\n"
                 f"💬 Message:\n<code>{text[:500]}</code>",
                 parse_mode="HTML"
             )
@@ -7214,42 +7777,51 @@ def handle_gemini_chat(msg):
                 pass
             user_stage.pop(user_id, None)
             gemini_chat_sessions.pop(user_id, None)
-            bot.send_message(msg.chat.id,
-                "🚫 <b>Aapko ban kar diya gaya hai.</b>\n\n"
-                "3 baar private bot information maangne ki koshish ki — yeh allowed nahi hai.",
-                parse_mode="HTML")
+            bot.send_message(
+                msg.chat.id,
+                "🚫 <b>Ban Ho Gaye!</b>\n\n"
+                "Aapne 3 baar bot ki private information access karne ki koshish ki.\n"
+                "Yeh allowed nahi hai. Aapko permanent ban kar diya gaya hai.",
+                parse_mode="HTML"
+            )
             try:
-                bot.send_message(ADMIN_ID,
-                    f"🔨 <b>Auto-Banned!</b>\n👤 {user_name} ({username})\n🆔 <code>{user_id}</code>\nReason: 3 privacy warns",
-                    parse_mode="HTML")
+                bot.send_message(
+                    ADMIN_ID,
+                    f"🔨 <b>Auto-Banned!</b>\n👤 {user_name} ({username})\n"
+                    f"🆔 <code>{user_id}</code>\nReason: 3 privacy warns",
+                    parse_mode="HTML"
+                )
             except Exception:
                 pass
             return
-        markup = InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("🚪 Exit AI Chat", callback_data="exit_ai_chat"))
-        bot.send_message(msg.chat.id,
+        bot.send_message(
+            msg.chat.id,
             f"⚠️ <b>Warning {warn_count}/3</b>\n\n"
-            f"Aap bot ki private information access karne ki koshish kar rahe ho.\n"
-            f"Yeh allowed nahi hai.\n\n"
-            f"{'🚫 Agli galti pe ban ho jaoge!' if remaining == 1 else f'Aur {remaining} warn baad ban ho jaoge.'}",
-            parse_mode="HTML", reply_markup=markup)
+            f"Bot ki private/secret information maangna allowed nahi hai.\n\n"
+            f"{'🚫 Ek aur galti pe permanent ban ho jaoge!' if remaining == 1 else f'Abhi {remaining} aur chances hain.'}",
+            parse_mode="HTML",
+            reply_markup=_ai_markup()
+        )
         return
 
+    # ── Show typing indicator ─────────────────────────────────────────
     try:
         bot.send_chat_action(msg.chat.id, "typing")
     except:
         pass
 
+    # ── Try Gemini API ────────────────────────────────────────────────
+    models_to_try = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-8b"]
     last_error = None
-    models_to_try = GEMINI_FALLBACK_MODELS if gemini_model else [GEMINI_MODEL_NAME]
 
     for model_name in models_to_try:
         for attempt in range(2):
             try:
                 ai_client = get_genai_client()
                 if not ai_client:
-                    raise Exception("AI client banane mein problem aayi")
+                    raise Exception("AI client not available — API key missing or invalid")
 
+                # Build conversation history
                 history = list(gemini_chat_sessions.get(user_id, []))
                 history.append({"role": "user", "parts": [{"text": text}]})
 
@@ -7258,53 +7830,77 @@ def handle_gemini_chat(msg):
                     contents=history,
                     config=_genai_types.GenerateContentConfig(
                         system_instruction=LEGENDARY_AI_SYSTEM,
-                        temperature=0.8,
+                        temperature=0.85,
                         max_output_tokens=2048,
                     )
                 )
 
-                raw_reply = response.text.strip() if response.text else "Koi response nahi mila."
+                if not response or not response.text:
+                    raise Exception("Empty response from AI")
+
+                raw_reply = response.text.strip()
                 reply = clean_ai_response(raw_reply)
 
+                # Save conversation (max 60 messages)
                 history.append({"role": "model", "parts": [{"text": reply}]})
-                if len(history) > 50:
-                    history = history[-50:]
+                if len(history) > 60:
+                    history = history[-60:]
                 gemini_chat_sessions[user_id] = history
 
-                markup = InlineKeyboardMarkup()
-                markup.add(InlineKeyboardButton("🚪 Exit AI Chat", callback_data="exit_ai_chat"))
+                # Send premium response
                 bot.send_message(
                     msg.chat.id,
-                    f"✨ <b>˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ 𝐀𝐈 ˺</b>\n"
-                    f"━━━━━━━━━━━━━━━━\n"
-                    f"{reply}",
+                    f"┌─ 🤖 <b>𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘 𝐀𝐈</b> ─────────────\n"
+                    f"│\n"
+                    f"{reply}\n"
+                    f"│\n"
+                    f"└─────────────────────────────",
                     parse_mode="HTML",
-                    reply_markup=markup
+                    reply_markup=_ai_markup()
                 )
                 return
 
             except Exception as e:
                 last_error = e
                 err_str = str(e).lower()
-                logger.error(f"Legendary AI model={model_name} attempt {attempt+1} failed: {e}")
-                gemini_chat_sessions.pop(user_id, None)
+                logger.error(f"Legendary AI model={model_name} attempt={attempt+1} error: {e}")
+                # Don't clear history on every error — only on auth failures
+                if "permission_denied" in err_str or "api_key" in err_str or "invalid_api_key" in err_str:
+                    gemini_chat_sessions.pop(user_id, None)
+                    break
                 if "quota" in err_str or "resource_exhausted" in err_str:
-                    break  # try next model
-                if "permission_denied" in err_str or "api_key" in err_str or "invalid" in err_str:
-                    break  # key issue, try next model
-                time.sleep(0.5)
+                    break
+                if attempt == 0:
+                    time.sleep(0.5)
 
-    logger.error(f"Legendary AI all models failed: {last_error}")
+    # ── All models failed ─────────────────────────────────────────────
+    logger.error(f"Legendary AI — all models failed: {last_error}")
     err_msg = str(last_error).lower() if last_error else ""
-    markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton("🚪 Exit AI Chat", callback_data="exit_ai_chat"))
     if "api_key" in err_msg or "permission_denied" in err_msg or "invalid" in err_msg:
-        reply_text = "⚠️ AI key issue hai. Admin se contact karo."
+        reply_text = (
+            "⚠️ <b>AI Key Problem!</b>\n\n"
+            "Gemini API key invalid ya expire ho gayi hai.\n"
+            "Admin se contact karo: /support"
+        )
     elif "quota" in err_msg or "resource_exhausted" in err_msg:
-        reply_text = "⏳ AI ka limit reach ho gaya. Thodi der baad try karo."
+        reply_text = (
+            "⏳ <b>AI Limit Reached!</b>\n\n"
+            "Abhi bahut zyada requests aa rahi hain.\n"
+            "5-10 minute baad dobara try karo."
+        )
+    elif "client not available" in err_msg or "api key missing" in err_msg:
+        reply_text = (
+            "🔧 <b>AI Setup Needed!</b>\n\n"
+            "Admin ne abhi Gemini API key set nahi ki.\n"
+            "Admin se bolo /setaikey command use kare."
+        )
     else:
-        reply_text = "⚠️ Legendary AI abhi respond nahi kar pa raha. Dobara try karo."
-    bot.send_message(msg.chat.id, reply_text, reply_markup=markup)
+        reply_text = (
+            "😔 <b>AI Temporarily Unavailable</b>\n\n"
+            "Thodi server problem aa rahi hai. 1 minute baad try karo.\n"
+            "Problem continue ho toh /support use karo."
+        )
+    bot.send_message(msg.chat.id, reply_text, parse_mode="HTML", reply_markup=_ai_markup())
 
 # ---------------------------------------------------------------------
 # MANAGE ADMINS PANEL FUNCTION
