@@ -2996,8 +2996,12 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
         elif data.startswith("buy_now_"):
             country_name = data[8:]
             bot.answer_callback_query(call.id, "⏳ Processing...")
-            # Try strict query first, then progressively looser fallbacks
-            account = accounts_col.find_one({"country": country_name, "status": "active", "used": {"$ne": True}})
+            # Match same query as get_available_accounts_count — status active OR missing
+            account = accounts_col.find_one({
+                "country": country_name,
+                "used": {"$ne": True},
+                "$or": [{"status": "active"}, {"status": {"$exists": False}}]
+            })
             if not account:
                 account = accounts_col.find_one({"country": country_name, "used": {"$ne": True}})
             if not account:
