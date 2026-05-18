@@ -6171,6 +6171,8 @@ def cmd_help(msg):
         "/stock — Live stock sabhi countries ka dekhein\n"
         "/topup — Wallet recharge shortcut\n"
         "/orders — Apne recent 5 orders dekhein\n"
+        "/coupon &lt;code&gt; — Coupon redeem karein\n"
+        "/leaderboard — Top 10 buyers dekhein\n"
         "/help — Yeh command list dekhein\n"
     )
     if is_admin(user_id):
@@ -6193,6 +6195,11 @@ def cmd_help(msg):
             "/userinfo &lt;user_id&gt; — Kisi bhi user ki full detail\n"
             "/addbal &lt;user_id&gt; &lt;amount&gt; — User ko balance do\n"
             "/totalusers — Total users, orders &amp; stock stats\n"
+            "/ban &lt;user_id&gt; — User ko turant ban karo\n"
+            "/unban &lt;user_id&gt; — User ka ban hatao\n"
+            "/setprice &lt;country&gt; &lt;price&gt; — Country ka price badlo\n"
+            "/couponlist — Saare coupons ki list\n"
+            "/pendingorders — Abhi ke pending orders\n"
         )
     if is_super_admin(user_id):
         text += (
@@ -6430,6 +6437,8 @@ def cmd_ohelp(msg):
         "/stock — Live stock sabhi countries\n"
         "/topup — Wallet recharge shortcut\n"
         "/orders — Recent 5 orders dekhein\n"
+        "/coupon <code> — Coupon redeem karein\n"
+        "/leaderboard — Top 10 buyers\n"
         "/help — Command list\n\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
         "👑 <b>ADMIN COMMANDS</b>\n"
@@ -6448,7 +6457,12 @@ def cmd_ohelp(msg):
         "/removeadmin &lt;user_id&gt; — Admin hatao\n"
         "/userinfo &lt;user_id&gt; — Kisi bhi user ki full detail\n"
         "/addbal &lt;user_id&gt; &lt;amount&gt; — User ko balance do\n"
-        "/totalusers — Total users, orders &amp; stock stats\n\n"
+        "/totalusers — Total users, orders &amp; stock stats\n"
+        "/ban &lt;user_id&gt; — User ko turant ban karo\n"
+        "/unban &lt;user_id&gt; — User ka ban hatao\n"
+        "/setprice &lt;country&gt; &lt;price&gt; — Country ka price badlo\n"
+        "/couponlist — Saare coupons ki list\n"
+        "/pendingorders — Abhi ke pending orders\n\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
         "🔐 <b>OWNER ONLY COMMANDS</b>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
@@ -6710,6 +6724,231 @@ def cmd_totalusers(msg):
         )
     except Exception as e:
         logger.error(f"/totalusers error: {e}")
+        bot.send_message(msg.chat.id, f"❌ Error: {e}")
+
+
+# /coupon <code> — Quick coupon redeem via command
+@bot.message_handler(commands=['coupon'])
+def cmd_coupon(msg):
+    user_id = msg.from_user.id
+    ensure_user_exists(user_id, msg.from_user.first_name,
+                       f"@{msg.from_user.username}" if msg.from_user.username else None)
+    parts = msg.text.strip().split(maxsplit=1)
+    if len(parts) < 2 or not parts[1].strip():
+        bot.send_message(msg.chat.id,
+            "🎟 <b>Coupon Redeem</b>\n\nUsage: /coupon &lt;CODE&gt;\nExample: /coupon SAVE50",
+            parse_mode="HTML")
+        return
+    code = parts[1].strip().upper()
+    _typing(msg.chat.id)
+    success, result_msg = claim_coupon(code, user_id)
+    if success:
+        bal = get_balance(user_id)
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("🛒 Buy Now", callback_data="buy_account"))
+        bot.send_message(msg.chat.id,
+            f"🎉 <b>Coupon Redeemed!</b>\n\n"
+            f"🎟 Code: <code>{code}</code>\n"
+            f"✅ {result_msg}\n"
+            f"💰 New Balance: ₹{bal:.2f}",
+            parse_mode="HTML", reply_markup=markup)
+    else:
+        bot.send_message(msg.chat.id,
+            f"❌ <b>Coupon Failed</b>\n\n🎟 Code: <code>{code}</code>\n⚠️ {result_msg}",
+            parse_mode="HTML")
+
+
+# /ban <user_id> — Admin quick ban
+@bot.message_handler(commands=['ban'])
+def cmd_ban(msg):
+    if not is_admin(msg.from_user.id):
+        bot.send_message(msg.chat.id, "❌ Sirf admin kar sakta hai.")
+        return
+    parts = msg.text.strip().split(maxsplit=1)
+    if len(parts) < 2:
+        bot.send_message(msg.chat.id, "Usage: /ban <user_id>")
+        return
+    try:
+        target_id = int(parts[1].strip())
+    except ValueError:
+        bot.send_message(msg.chat.id, "❌ Invalid user ID.")
+        return
+    try:
+        if is_user_banned(target_id):
+            bot.send_message(msg.chat.id, f"ℹ️ User <code>{target_id}</code> pehle se banned hai.", parse_mode="HTML")
+            return
+        safe_insert_one(banned_users_col, {
+            "user_id": target_id,
+            "banned_by": msg.from_user.id,
+            "reason": "Admin banned via /ban",
+            "status": "active",
+            "banned_at": datetime.utcnow()
+        }, "ban")
+        bot.send_message(msg.chat.id, f"🚫 <b>User Banned!</b>\n👤 ID: <code>{target_id}</code>", parse_mode="HTML")
+        try:
+            bot.send_message(target_id, "🚫 <b>Aapko is bot se ban kar diya gaya hai.</b>", parse_mode="HTML")
+        except Exception:
+            pass
+    except Exception as e:
+        bot.send_message(msg.chat.id, f"❌ Error: {e}")
+
+
+# /unban <user_id> — Admin quick unban
+@bot.message_handler(commands=['unban'])
+def cmd_unban(msg):
+    if not is_admin(msg.from_user.id):
+        bot.send_message(msg.chat.id, "❌ Sirf admin kar sakta hai.")
+        return
+    parts = msg.text.strip().split(maxsplit=1)
+    if len(parts) < 2:
+        bot.send_message(msg.chat.id, "Usage: /unban <user_id>")
+        return
+    try:
+        target_id = int(parts[1].strip())
+    except ValueError:
+        bot.send_message(msg.chat.id, "❌ Invalid user ID.")
+        return
+    try:
+        result = banned_users_col.update_one(
+            {"user_id": target_id, "status": "active"},
+            {"$set": {"status": "unbanned", "unbanned_by": msg.from_user.id, "unbanned_at": datetime.utcnow()}}
+        )
+        if result.modified_count == 0:
+            bot.send_message(msg.chat.id, f"ℹ️ User <code>{target_id}</code> banned nahi hai.", parse_mode="HTML")
+        else:
+            bot.send_message(msg.chat.id, f"✅ <b>User Unbanned!</b>\n👤 ID: <code>{target_id}</code>", parse_mode="HTML")
+            try:
+                bot.send_message(target_id, "✅ <b>Aapka ban hat gaya hai. Ab bot use kar sakte ho!</b>", parse_mode="HTML")
+            except Exception:
+                pass
+    except Exception as e:
+        bot.send_message(msg.chat.id, f"❌ Error: {e}")
+
+
+# /setprice <country> <price> — Admin quick price change
+@bot.message_handler(commands=['setprice'])
+def cmd_setprice(msg):
+    if not is_admin(msg.from_user.id):
+        bot.send_message(msg.chat.id, "❌ Sirf admin kar sakta hai.")
+        return
+    parts = msg.text.strip().split()
+    if len(parts) < 3:
+        bot.send_message(msg.chat.id,
+            "Usage: /setprice &lt;Country Name&gt; &lt;price&gt;\nExample: /setprice India 30",
+            parse_mode="HTML")
+        return
+    try:
+        price = float(parts[-1])
+        country_name = " ".join(parts[1:-1]).strip()
+    except ValueError:
+        bot.send_message(msg.chat.id, "❌ Invalid price. Number daalo.")
+        return
+    _typing(msg.chat.id)
+    try:
+        result = countries_col.update_one(
+            {"name": {"$regex": f"^{country_name}$", "$options": "i"}},
+            {"$set": {"price": price}}
+        )
+        if result.matched_count == 0:
+            bot.send_message(msg.chat.id, f"❌ Country <b>{country_name}</b> nahi mili.", parse_mode="HTML")
+        else:
+            bot.send_message(msg.chat.id,
+                f"✅ <b>Price Updated!</b>\n\n🌍 Country: <b>{country_name}</b>\n💰 New Price: ₹{price:.2f}",
+                parse_mode="HTML")
+    except Exception as e:
+        bot.send_message(msg.chat.id, f"❌ Error: {e}")
+
+
+# /couponlist — Admin: list all coupons
+@bot.message_handler(commands=['couponlist'])
+def cmd_couponlist(msg):
+    if not is_admin(msg.from_user.id):
+        bot.send_message(msg.chat.id, "❌ Sirf admin dekh sakta hai.")
+        return
+    _typing(msg.chat.id)
+    try:
+        coupons = list(coupons_col.find({}).sort("created_at", -1).limit(20))
+        if not coupons:
+            bot.send_message(msg.chat.id, "📭 Koi coupon nahi bana abhi tak.")
+            return
+        lines = []
+        for c in coupons:
+            status = c.get("status", "active")
+            icon = "✅" if status == "active" else "❌"
+            code = c.get("coupon_code", "N/A")
+            amount = c.get("amount", 0)
+            claimed = c.get("total_claimed_count", 0)
+            max_u = c.get("max_users", 0)
+            lines.append(f"{icon} <code>{code}</code> — ₹{amount} | {claimed}/{max_u} used | {status}")
+        bot.send_message(msg.chat.id,
+            "🎟 <b>All Coupons</b> (last 20)\n"
+            "━━━━━━━━━━━━━━━━━━━━\n\n" + "\n".join(lines),
+            parse_mode="HTML")
+    except Exception as e:
+        bot.send_message(msg.chat.id, f"❌ Error: {e}")
+
+
+# /pendingorders — Admin: pending/active orders
+@bot.message_handler(commands=['pendingorders'])
+def cmd_pendingorders(msg):
+    if not is_admin(msg.from_user.id):
+        bot.send_message(msg.chat.id, "❌ Sirf admin dekh sakta hai.")
+        return
+    _typing(msg.chat.id)
+    try:
+        pending = list(orders_col.find({"status": "waiting_otp"}).sort("created_at", -1).limit(15))
+        if not pending:
+            bot.send_message(msg.chat.id, "✅ Koi pending order nahi hai abhi.")
+            return
+        lines = []
+        for o in pending:
+            uid = o.get("user_id", "N/A")
+            country = o.get("country", "N/A")
+            phone = o.get("phone_number", "N/A")
+            price = o.get("price", 0)
+            created = o.get("created_at")
+            age = ""
+            if created:
+                diff = datetime.utcnow() - created
+                mins = int(diff.total_seconds() // 60)
+                age = f"{mins}m ago"
+            lines.append(f"⏳ <code>{uid}</code> | {country} | {phone} | ₹{price} | {age}")
+        bot.send_message(msg.chat.id,
+            f"📋 <b>Pending Orders</b> ({len(pending)})\n"
+            "━━━━━━━━━━━━━━━━━━━━\n\n" + "\n".join(lines),
+            parse_mode="HTML")
+    except Exception as e:
+        bot.send_message(msg.chat.id, f"❌ Error: {e}")
+
+
+# /leaderboard — Top 10 buyers
+@bot.message_handler(commands=['leaderboard'])
+def cmd_leaderboard(msg):
+    _typing(msg.chat.id)
+    try:
+        pipeline = [
+            {"$group": {"_id": "$user_id", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+            {"$limit": 10}
+        ]
+        top = list(orders_col.aggregate(pipeline))
+        if not top:
+            bot.send_message(msg.chat.id, "📭 Abhi koi purchases nahi hue.")
+            return
+        lines = []
+        medals = ["🥇", "🥈", "🥉"]
+        for i, entry in enumerate(top):
+            uid = entry["_id"]
+            count = entry["count"]
+            medal = medals[i] if i < 3 else f"{i+1}."
+            user = users_col.find_one({"user_id": uid})
+            name = user.get("name", "User") if user else "User"
+            lines.append(f"{medal} <b>{name}</b> — {count} purchases")
+        bot.send_message(msg.chat.id,
+            "🏆 <b>˹ Top Buyers Leaderboard ˺</b>\n"
+            "━━━━━━━━━━━━━━━━━━━━\n\n" + "\n".join(lines),
+            parse_mode="HTML")
+    except Exception as e:
         bot.send_message(msg.chat.id, f"❌ Error: {e}")
 
 
