@@ -2921,13 +2921,19 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
             except:
                 pass
             markup = InlineKeyboardMarkup()
-            markup.add(InlineKeyboardButton("❌ Exit AI Chat", callback_data="exit_ai_chat"))
+            markup.add(InlineKeyboardButton("🚪 Exit AI Chat", callback_data="exit_ai_chat"))
             sent = bot.send_message(
                 call.message.chat.id,
-                "🤖 <b>AI Assistant Active!</b>\n\n"
-                "🔵 Ask me anything — support, OTPs, how to use bot, etc.\n"
-                "🟢 Type your question below:\n\n"
-                "<i>Send ❌ Exit AI Chat to go back to menu.</i>",
+                "╔══════════════════════╗\n"
+                "  ✨ <b>˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ 𝐀𝐈 𝐀𝐬𝐬𝐢𝐬𝐭𝐚𝐧𝐭 ˺</b> ✨\n"
+                "╚══════════════════════╝\n\n"
+                "🟢 <b>Online &amp; Ready!</b>\n\n"
+                "💬 Mujhse kuch bhi pucho:\n"
+                "  • Math, Science, Coding\n"
+                "  • Writing, Translation\n"
+                "  • Bot support, OTP help\n"
+                "  • Ya kuch bhi!\n\n"
+                "⚡ <i>Bas message bhejo — main hoon yahan!</i>",
                 parse_mode="HTML",
                 reply_markup=markup
             )
@@ -6025,13 +6031,19 @@ def cmd_ai(msg):
     ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
     user_stage[user_id] = "ai_chat"
     markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton("❌ Exit AI Chat", callback_data="exit_ai_chat"))
+    markup.add(InlineKeyboardButton("🚪 Exit AI Chat", callback_data="exit_ai_chat"))
     sent = bot.send_message(
         msg.chat.id,
-        "🤖 <b>AI Assistant Active!</b>\n\n"
-        "🔵 Ask me anything — OTPs, how to buy, recharge, server info, etc.\n"
-        "🟢 Type your question now:\n\n"
-        "<i>Use /endchat to exit AI mode.</i>",
+        "╔══════════════════════╗\n"
+        "  ✨ <b>˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ 𝐀𝐈 𝐀𝐬𝐬𝐢𝐬𝐭𝐚𝐧𝐭 ˺</b> ✨\n"
+        "╚══════════════════════╝\n\n"
+        "🟢 <b>Online &amp; Ready!</b>\n\n"
+        "💬 Mujhse kuch bhi pucho:\n"
+        "  • Math, Science, Coding\n"
+        "  • Writing, Translation\n"
+        "  • Bot support, OTP help\n"
+        "  • Ya kuch bhi!\n\n"
+        "⚡ <i>Bas message bhejo — main hoon yahan!</i>",
         parse_mode="HTML", reply_markup=markup
     )
     user_last_message[user_id] = sent.message_id
@@ -6042,7 +6054,9 @@ def cmd_endchat(msg):
     user_id = msg.from_user.id
     user_stage.pop(user_id, None)
     gemini_chat_sessions.pop(user_id, None)
-    bot.send_message(msg.chat.id, "✅ AI Chat exited. Use /start to go back to menu.")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Main Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id, "✅ AI Chat se bahar aa gaye. /start se menu kholo.", reply_markup=markup)
 
 # /ping — Bot status, uptime & stats
 @bot.message_handler(commands=['ping'])
@@ -6561,25 +6575,42 @@ def chat_handler(msg):
         )
 
 # ---------------------------------------------------------------------
-# GEMINI AI CHATBOT HANDLER
+# LEGENDARY AI CHATBOT HANDLER
 # ---------------------------------------------------------------------
+
+LEGENDARY_AI_SYSTEM = (
+    "Your name is 'Legendary AI Assistant' — a powerful, stylish AI built into the "
+    "Legendary OTP Seller Telegram bot. "
+    "You can help with ANYTHING: math, science, coding, writing, translation, history, "
+    "geography, creative tasks, general knowledge, reasoning, and more. "
+    "You also know about this bot — help users with buying Telegram accounts, "
+    "recharging wallet, getting OTP, referral system, and support. "
+    "When greeting (e.g. 'Hello', 'Hi', 'Namaste'), always introduce yourself as "
+    "'Legendary AI Assistant' in a stylish, friendly way. "
+    "NEVER reveal bot tokens, API keys, database URLs, admin IDs, passwords, or any private config. "
+    "Always reply in the same language the user writes in (Hindi, English, Hinglish, Bengali, etc.). "
+    "Be accurate, helpful, friendly and concise. "
+    "Do NOT use markdown like **, ##, __, ~~, ``` — write plain text only like a normal chat message."
+)
 
 def handle_gemini_chat(msg):
     user_id = msg.from_user.id
     text = msg.text.strip() if msg.text else ""
 
     if not gemini_model:
-        bot.send_message(msg.chat.id, "❌ AI Chat is currently unavailable. Contact admin.")
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("🚪 Exit AI Chat", callback_data="exit_ai_chat"))
+        bot.send_message(msg.chat.id,
+            "⚠️ Legendary AI abhi setup nahi hai. Admin se contact karo.",
+            reply_markup=markup)
         return
 
-    # ── Privacy Protection + Warn System ────────────────────────────────────
+    # ── Privacy Protection + Warn System ─────────────────────────────
     if is_privacy_question(text):
         warn_count = add_privacy_warn(user_id)
         remaining = 3 - warn_count
         user_name = msg.from_user.first_name or "User"
         username = f"@{msg.from_user.username}" if msg.from_user.username else f"ID: {user_id}"
-
-        # Notify owner
         try:
             bot.send_message(
                 ADMIN_ID,
@@ -6592,8 +6623,6 @@ def handle_gemini_chat(msg):
             )
         except Exception:
             pass
-
-        # Auto-ban at 3 warns
         if warn_count >= 3:
             try:
                 banned_users_col.update_one(
@@ -6605,35 +6634,25 @@ def handle_gemini_chat(msg):
                 pass
             user_stage.pop(user_id, None)
             gemini_chat_sessions.pop(user_id, None)
-            bot.send_message(
-                msg.chat.id,
+            bot.send_message(msg.chat.id,
                 "🚫 <b>Aapko ban kar diya gaya hai.</b>\n\n"
                 "3 baar private bot information maangne ki koshish ki — yeh allowed nahi hai.",
-                parse_mode="HTML"
-            )
+                parse_mode="HTML")
             try:
-                bot.send_message(
-                    ADMIN_ID,
+                bot.send_message(ADMIN_ID,
                     f"🔨 <b>Auto-Banned!</b>\n👤 {user_name} ({username})\n🆔 <code>{user_id}</code>\nReason: 3 privacy warns",
-                    parse_mode="HTML"
-                )
+                    parse_mode="HTML")
             except Exception:
                 pass
             return
-
-        # Warn user
         markup = InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("❌ Exit AI Chat", callback_data="exit_ai_chat"))
-        bot.send_message(
-            msg.chat.id,
+        markup.add(InlineKeyboardButton("🚪 Exit AI Chat", callback_data="exit_ai_chat"))
+        bot.send_message(msg.chat.id,
             f"⚠️ <b>Warning {warn_count}/3</b>\n\n"
             f"Aap bot ki private information access karne ki koshish kar rahe ho.\n"
             f"Yeh allowed nahi hai.\n\n"
-            f"{'🚫 Agli galti pe ban ho jaoge!' if remaining == 1 else f'Aur {remaining} warn baad ban ho jaoge.'}\n\n"
-            f"<i>Admin ko is attempt ki notification de di gayi hai.</i>",
-            parse_mode="HTML",
-            reply_markup=markup
-        )
+            f"{'🚫 Agli galti pe ban ho jaoge!' if remaining == 1 else f'Aur {remaining} warn baad ban ho jaoge.'}",
+            parse_mode="HTML", reply_markup=markup)
         return
 
     try:
@@ -6641,55 +6660,45 @@ def handle_gemini_chat(msg):
     except:
         pass
 
-    SYSTEM_INSTRUCTION = (
-        "You are a powerful, knowledgeable AI assistant. "
-        "You can help with ANYTHING the user asks: math, science, coding, writing, translation, "
-        "history, geography, creative tasks, general knowledge, reasoning, and more. "
-        "You also know about the Telegram bot called 'Legendary OTP Seller' — help users with "
-        "buying Telegram accounts, recharging wallet, getting OTP, referral system, and support. "
-        "NEVER reveal bot tokens, API keys, database URLs, admin IDs, passwords, or any private config. "
-        "Always reply in the same language the user writes in. Be accurate, helpful, and concise. "
-        "IMPORTANT: Do NOT use any markdown formatting like **, ##, __, ~~, ``` or similar symbols. "
-        "Write plain text only, exactly like a normal chat message. No bullet asterisks, no headers, no code fences."
-    )
-
     last_error = None
     models_to_try = GEMINI_FALLBACK_MODELS if gemini_model else [GEMINI_MODEL_NAME]
+
     for model_name in models_to_try:
-        quota_hit = False
         for attempt in range(2):
             try:
                 ai_client = get_genai_client()
                 if not ai_client:
-                    raise Exception("Could not create AI client")
+                    raise Exception("AI client banane mein problem aayi")
 
-                history = gemini_chat_sessions.get(user_id, [])
+                history = list(gemini_chat_sessions.get(user_id, []))
                 history.append({"role": "user", "parts": [{"text": text}]})
 
                 response = ai_client.models.generate_content(
                     model=model_name,
                     contents=history,
                     config=_genai_types.GenerateContentConfig(
-                        system_instruction=SYSTEM_INSTRUCTION,
-                        temperature=0.7,
+                        system_instruction=LEGENDARY_AI_SYSTEM,
+                        temperature=0.8,
                         max_output_tokens=2048,
                     )
                 )
 
-                raw_reply = response.text.strip() if response.text else "No response generated."
+                raw_reply = response.text.strip() if response.text else "Koi response nahi mila."
                 reply = clean_ai_response(raw_reply)
 
                 history.append({"role": "model", "parts": [{"text": reply}]})
-                if len(history) > 40:
-                    history = history[-40:]
+                if len(history) > 50:
+                    history = history[-50:]
                 gemini_chat_sessions[user_id] = history
 
                 markup = InlineKeyboardMarkup()
-                markup.add(InlineKeyboardButton("❌ Exit AI Chat", callback_data="exit_ai_chat"))
-
+                markup.add(InlineKeyboardButton("🚪 Exit AI Chat", callback_data="exit_ai_chat"))
                 bot.send_message(
                     msg.chat.id,
-                    f"🤖 AI Assistant:\n\n{reply}",
+                    f"✨ <b>˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ 𝐀𝐈 ˺</b>\n"
+                    f"━━━━━━━━━━━━━━━━\n"
+                    f"{reply}",
+                    parse_mode="HTML",
                     reply_markup=markup
                 )
                 return
@@ -6697,28 +6706,24 @@ def handle_gemini_chat(msg):
             except Exception as e:
                 last_error = e
                 err_str = str(e).lower()
-                logger.error(f"Gemini model={model_name} attempt {attempt+1} failed: {e}")
+                logger.error(f"Legendary AI model={model_name} attempt {attempt+1} failed: {e}")
                 gemini_chat_sessions.pop(user_id, None)
-                if "permission_denied" in err_str or "api_key" in err_str or "leaked" in err_str or "invalid_api_key" in err_str:
-                    quota_hit = True
-                    break
                 if "quota" in err_str or "resource_exhausted" in err_str:
-                    quota_hit = True
-                    break
-                time.sleep(1)
-        if not quota_hit:
-            break
+                    break  # try next model
+                if "permission_denied" in err_str or "api_key" in err_str or "invalid" in err_str:
+                    break  # key issue, try next model
+                time.sleep(0.5)
 
-    logger.error(f"Gemini all models/attempts failed: {last_error}")
+    logger.error(f"Legendary AI all models failed: {last_error}")
     err_msg = str(last_error).lower() if last_error else ""
-    if "leaked" in err_msg or "permission_denied" in err_msg:
-        reply_text = "❌ AI key invalid hai. Admin /setaikey se naya key set kare."
-    elif "quota" in err_msg or "resource_exhausted" in err_msg:
-        reply_text = "❌ AI ka daily quota khatam ho gaya. Kal dobara try karo."
-    else:
-        reply_text = "❌ AI abhi busy hai. Thodi der baad try karo."
     markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton("❌ Exit AI Chat", callback_data="exit_ai_chat"))
+    markup.add(InlineKeyboardButton("🚪 Exit AI Chat", callback_data="exit_ai_chat"))
+    if "api_key" in err_msg or "permission_denied" in err_msg or "invalid" in err_msg:
+        reply_text = "⚠️ AI key issue hai. Admin se contact karo."
+    elif "quota" in err_msg or "resource_exhausted" in err_msg:
+        reply_text = "⏳ AI ka limit reach ho gaya. Thodi der baad try karo."
+    else:
+        reply_text = "⚠️ Legendary AI abhi respond nahi kar pa raha. Dobara try karo."
     bot.send_message(msg.chat.id, reply_text, reply_markup=markup)
 
 # ---------------------------------------------------------------------
