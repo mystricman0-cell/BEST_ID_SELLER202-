@@ -157,6 +157,24 @@ def _connect_mongo():
 
 _connect_mongo()
 
+_BSON_MAX_BYTES = 16 * 1024 * 1024  # 16 MB MongoDB document limit
+
+def check_doc_size(doc: dict, label: str = "document") -> bool:
+    """Return True if document is within BSON 16 MB limit, False otherwise."""
+    try:
+        import bson
+        size = len(bson.encode(doc))
+        if size > _BSON_MAX_BYTES:
+            logger.error(
+                f"BSON size check FAILED for {label}: {size} bytes "
+                f"(limit {_BSON_MAX_BYTES}). Insert skipped."
+            )
+            return False
+        return True
+    except Exception as _e:
+        logger.warning(f"BSON size check error for {label}: {_e}")
+        return True  # allow insert if size check itself fails
+
 def safe_db_op(fn, *args, default=None, **kwargs):
     """Wrap any MongoDB call — auto-reconnect on connection error, never crash."""
     for _attempt in range(3):
@@ -171,6 +189,9 @@ def safe_db_op(fn, *args, default=None, **kwargs):
                 except Exception:
                     pass
                 time.sleep(1)
+            elif any(k in err for k in ("bson", "document too large", "object size", "invaliddocument", "exceeds")):
+                logger.error(f"MongoDB BSON size error (document too large): {_e}")
+                return default
             else:
                 logger.error(f"MongoDB op error: {_e}")
                 return default

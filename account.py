@@ -283,7 +283,17 @@ async def verify_otp_and_save_async(login_states, accounts_col, user_id, otp_cod
             "api_id": api_id,
             "api_hash": api_hash
         }
-        
+
+        # BSON size guard — skip insert if document exceeds 16 MB
+        try:
+            import bson as _bson
+            _doc_size = len(_bson.encode(account_data))
+            if _doc_size > 16 * 1024 * 1024:
+                logger.error(f"Account document too large ({_doc_size} bytes), skipping insert for {state['phone']}")
+                return False, "Account data too large to save"
+        except Exception:
+            pass
+
         # Insert account
         if accounts_col is not None:
             result = accounts_col.insert_one(account_data)
@@ -346,7 +356,17 @@ async def verify_2fa_password_async(login_states, accounts_col, user_id, passwor
             "api_id": api_id,
             "api_hash": api_hash
         }
-        
+
+        # BSON size guard
+        try:
+            import bson as _bson
+            _doc_size = len(_bson.encode(account_data))
+            if _doc_size > 16 * 1024 * 1024:
+                logger.error(f"2FA account document too large ({_doc_size} bytes), skipping insert for {state['phone']}")
+                return False, "Account data too large to save"
+        except Exception:
+            pass
+
         # Insert account
         if accounts_col is not None:
             result = accounts_col.insert_one(account_data)
@@ -452,7 +472,17 @@ async def bulk_save_account_async(client, phone_number, country, user_id, manage
             "api_id": manager.api_id,
             "api_hash": manager.api_hash
         }
-        
+
+        # BSON size guard
+        try:
+            import bson as _bson
+            _doc_size = len(_bson.encode(account_data))
+            if _doc_size > 16 * 1024 * 1024:
+                logger.error(f"Bulk account document too large ({_doc_size} bytes), skipping insert for {phone_number}")
+                return False, "Account data too large to save"
+        except Exception:
+            pass
+
         # Insert account
         if accounts_col is not None:
             result = accounts_col.insert_one(account_data)
