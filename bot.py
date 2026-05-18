@@ -197,6 +197,28 @@ def safe_db_op(fn, *args, default=None, **kwargs):
                 return default
     return default
 
+def safe_insert_one(col, doc: dict, label: str = "document"):
+    """Safe insert_one — checks BSON size, catches all errors, never crashes."""
+    try:
+        import bson as _bson
+        _size = len(_bson.encode(doc))
+        if _size > _BSON_MAX_BYTES:
+            logger.error(f"BSON insert BLOCKED for [{label}]: {_size} bytes > 16MB limit")
+            return None
+    except Exception as _se:
+        logger.warning(f"BSON pre-check skipped for [{label}]: {_se}")
+    try:
+        return col.insert_one(doc)
+    except Exception as _e:
+        err = str(_e).lower()
+        if any(k in err for k in ("bson", "document too large", "object size", "invaliddocument", "exceeds", "get_object_size")):
+            logger.error(f"BSON size error on insert [{label}]: {_e}")
+        elif any(k in err for k in ("connection", "timeout", "network")):
+            logger.warning(f"DB connection error on insert [{label}]: {_e}")
+        else:
+            logger.error(f"DB insert error [{label}]: {_e}")
+        return None
+
 def safe_obj_id(val):
     """Safely convert any value to ObjectId — returns None on failure."""
     if val is None:
@@ -724,7 +746,7 @@ def init_admin():
                 "added_at": datetime.utcnow(),
                 "is_super_admin": True
             }
-            admins_col.insert_one(admin_data)
+            safe_insert_one(admins_col, admin_data, "admin_init")
             logger.info(f"✅ Main admin {ADMIN_ID} added to database")
     except Exception as e:
         logger.error(f"❌ Failed to initialize admin: {e}")
@@ -794,7 +816,7 @@ def add_admin(user_id, added_by):
             "added_at": datetime.utcnow(),
             "is_super_admin": False
         }
-        admins_col.insert_one(admin_data)
+        safe_insert_one(admins_col, admin_data, "admin")
         
         # Get user info
         user = users_col.find_one({"user_id": user_id})
@@ -1145,7 +1167,7 @@ def ensure_user_exists(user_id, user_name=None, username=None, referred_by=None)
             "total_referrals": 0,
             "created_at": datetime.utcnow()
         }
-        users_col.insert_one(user_data)
+        safe_insert_one(users_col, user_data, "user")
         
         if referred_by:
             referral_record = {
@@ -1155,7 +1177,7 @@ def ensure_user_exists(user_id, user_name=None, username=None, referred_by=None)
                 "status": "pending",
                 "created_at": datetime.utcnow()
             }
-            referrals_col.insert_one(referral_record)
+            safe_insert_one(referrals_col, referral_record, "referral")
             users_col.update_one(
                 {"user_id": referred_by},
                 {"$inc": {"total_referrals": 1}}
@@ -1230,7 +1252,7 @@ def add_referral_commission(referrer_id, recharge_amount, recharge_id):
             "timestamp": datetime.utcnow(),
             "recharge_id": str(recharge_id)
         }
-        transactions_col.insert_one(transaction_record)
+        safe_insert_one(transactions_col, transaction_record, "transaction_referral")
         
         users_col.update_one(
             {"user_id": referrer_id},
@@ -1373,7 +1395,7 @@ def claim_coupon(coupon_code, user_id):
             "coupon_code": coupon_code,
             "timestamp": datetime.utcnow()
         }
-        transactions_col.insert_one(transaction_record)
+        safe_insert_one(transactions_col, transaction_record, "transaction_coupon")
         
         updated_coupon = get_coupon(coupon_code)
         if updated_coupon and updated_coupon.get("total_claimed_count", 0) >= max_users:
@@ -1408,7 +1430,7 @@ def create_coupon(code, amount, max_users, created_by):
             "created_at": datetime.utcnow(),
             "created_by": created_by
         }
-        coupons_col.insert_one(coupon_data)
+        safe_insert_one(coupons_col, coupon_data, "coupon")
         return True, "Coupon created successfully"
     except Exception as e:
         logger.error(f"Error creating coupon: {e}")
@@ -1799,7 +1821,7 @@ def transfer_balance(sender_id, receiver_id, amount):
             "type": "transfer",
             "timestamp": datetime.utcnow()
         }
-        transactions_col.insert_one(transaction_record)
+        safe_insert_one(transactions_col, transaction_record, "transaction_transfer")
         
         return True, f"✅ {format_currency(amount)} transferred successfully!"
         
@@ -4264,7 +4286,8 @@ def handle_screenshot_input(msg):
             "req_id": req_id
         }
         
-        recharge_id = recharges_col.insert_one(recharge_data).inserted_id
+        _recharge_res = safe_insert_one(recharges_col, recharge_data, "recharge")
+        recharge_id = _recharge_res.inserted_id if _recharge_res else None
         
         # Update with req_id (recharge_id is already an ObjectId from insert_one)
         recharges_col.update_one(
@@ -4976,7 +4999,7 @@ def ask_country_price(message):
             "created_at": datetime.utcnow(),
             "created_by": message.from_user.id
         }
-        countries_col.insert_one(country_data)
+        safe_insert_one(countries_col, country_data, "country")
         
         del user_states[message.chat.id]
         bot.send_message(
@@ -5116,7 +5139,7 @@ def ask_ban_user(message):
             "status": "active",
             "banned_at": datetime.utcnow()
         }
-        banned_users_col.insert_one(ban_record)
+        safe_insert_one(banned_users_col, ban_record, "ban")
         
         bot.send_message(message.chat.id, f"✅ User {user_id_to_ban} has been banned.")
         
@@ -5697,7 +5720,7 @@ def process_purchase(user_id, account_or_id, chat_id, message_id, callback_id):
             "last_otp": None,
             "last_otp_time": None
         }
-        otp_sessions_col.insert_one(otp_session)
+        safe_insert_one(otp_sessions_col, otp_session, "otp_session")
         
         order = {
             "user_id": user_id,
@@ -5710,7 +5733,8 @@ def process_purchase(user_id, account_or_id, chat_id, message_id, callback_id):
             "created_at": datetime.utcnow(),
             "monitoring_duration": 1800
         }
-        order_id = orders_col.insert_one(order).inserted_id
+        _order_res = safe_insert_one(orders_col, order, "order")
+        order_id = _order_res.inserted_id if _order_res else None
         
         # Mark account as used — use the _id we already have (no re-fetch)
         accounts_col.update_one(
@@ -6547,7 +6571,7 @@ def chat_handler(msg):
             transaction_id = f"DEDUCT{target_user_id}{int(time.time())}"
             if 'deductions' not in db.list_collection_names():
                 db.create_collection('deductions')
-            db['deductions'].insert_one({
+            safe_insert_one(db['deductions'], {
                 "transaction_id": transaction_id,
                 "user_id": target_user_id,
                 "amount": amount,
@@ -6556,7 +6580,7 @@ def chat_handler(msg):
                 "old_balance": old_balance,
                 "new_balance": new_balance,
                 "timestamp": datetime.utcnow()
-            })
+            }, "deduction")
             
             bot.send_message(
                 user_id,
