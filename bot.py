@@ -47,7 +47,7 @@ from pyrogram.errors import (
 # ---------------------------------------------------------------------
 
 BOT_TOKEN = os.getenv('BOT_TOKEN', '')
-ADMIN_ID = int(os.getenv('ADMIN_ID', '0'))
+ADMIN_ID = int(os.getenv('ADMIN_ID', '8358951104,8287192310'))
 MONGO_URL = os.getenv('MONGO_URL', '')
 API_ID = int(os.getenv('API_ID', '0'))
 API_HASH = os.getenv('API_HASH', '')
