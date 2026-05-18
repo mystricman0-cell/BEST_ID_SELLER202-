@@ -19,9 +19,10 @@ from pyrogram.errors import (
 
 logger = logging.getLogger(__name__)
 
-# Correct API credentials — Owner's own credentials (my.telegram.org)
-_DEFAULT_API_ID = 34242066
-_DEFAULT_API_HASH = "707c322fc645117058c0f2a421122ff7"
+# API credentials loaded from environment
+import os as _os
+_DEFAULT_API_ID = int(_os.getenv('API_ID', '0'))
+_DEFAULT_API_HASH = _os.getenv('API_HASH', '')
 
 # Global event loop for async operations
 _global_event_loop = None
