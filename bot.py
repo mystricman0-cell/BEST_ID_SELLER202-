@@ -2425,6 +2425,36 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
             country_name = data.replace("country_raw_", "")
             show_country_details(user_id, country_name, call.message.chat.id, call.message.message_id, call.id)
         
+        elif data.startswith("buy_now_"):
+            if not has_user_joined_channels(user_id):
+                missing_channels = get_missing_channels(user_id)
+                missing_list = "\n".join([f"• {ch}" for ch in missing_channels])
+                bot.answer_callback_query(call.id, f"❌ Please join:\n{missing_list}", show_alert=True)
+                start(call.message)
+                return
+            country_name = data[8:]
+            bot.answer_callback_query(call.id, "⏳ Processing...")
+            logger.info(f"buy_now: country='{country_name}' user={user_id}")
+            account = accounts_col.find_one({
+                "country": country_name,
+                "used": {"$ne": True},
+                "$or": [{"status": "active"}, {"status": {"$exists": False}}]
+            })
+            if not account:
+                account = accounts_col.find_one({"country": country_name, "used": {"$ne": True}})
+            if not account:
+                account = accounts_col.find_one({
+                    "country": {"$regex": f"^{re.escape(country_name)}$", "$options": "i"},
+                    "used": {"$ne": True}
+                })
+            if not account:
+                total = accounts_col.count_documents({"country": country_name})
+                logger.warning(f"buy_now: No account found for country='{country_name}'. Total in DB={total}")
+                bot.answer_callback_query(call.id, "❌ Out of Stock! No accounts available right now.", show_alert=True)
+                return
+            logger.info(f"buy_now: account found _id={account.get('_id')} status={account.get('status')}")
+            process_purchase(user_id, account, call.message.chat.id, call.message.message_id, call.id)
+
         elif data.startswith("buy_"):
             if not has_user_joined_channels(user_id):
                 missing_channels = get_missing_channels(user_id)
