@@ -2996,23 +2996,30 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
         elif data.startswith("buy_now_"):
             country_name = data[8:]
             bot.answer_callback_query(call.id, "⏳ Processing...")
+            logger.info(f"buy_now: country='{country_name}' user={user_id}")
             # Match same query as get_available_accounts_count — status active OR missing
             account = accounts_col.find_one({
                 "country": country_name,
                 "used": {"$ne": True},
                 "$or": [{"status": "active"}, {"status": {"$exists": False}}]
             })
+            logger.info(f"buy_now: query1 result={'found' if account else 'None'} for country='{country_name}'")
             if not account:
                 account = accounts_col.find_one({"country": country_name, "used": {"$ne": True}})
+                logger.info(f"buy_now: query2 result={'found' if account else 'None'}")
             if not account:
                 account = accounts_col.find_one({
                     "country": {"$regex": f"^{re.escape(country_name)}$", "$options": "i"},
                     "used": {"$ne": True}
                 })
+                logger.info(f"buy_now: query3 result={'found' if account else 'None'}")
             if not account:
-                logger.warning(f"No account found for country='{country_name}'. Total in DB: {accounts_col.count_documents({'country': country_name})}")
+                total = accounts_col.count_documents({"country": country_name})
+                used = accounts_col.count_documents({"country": country_name, "used": True})
+                logger.warning(f"buy_now: No account found for country='{country_name}'. Total={total} Used={used}")
                 bot.answer_callback_query(call.id, "❌ Out of Stock! No accounts available right now.", show_alert=True)
                 return
+            logger.info(f"buy_now: account found _id={account.get('_id')} status={account.get('status')} used={account.get('used')}")
             process_purchase(user_id, account, call.message.chat.id, call.message.message_id, call.id)
 
         # ── Legacy srv1/srv2 kept for backwards compat ────────────────
@@ -5642,9 +5649,11 @@ def process_purchase(user_id, account_or_id, chat_id, message_id, callback_id):
                     pass
 
         if not account:
-            logger.error(f"process_purchase: account not found for id={account_or_id}")
+            logger.error(f"process_purchase: account not found for id={account_or_id} type={type(account_or_id)}")
             bot.answer_callback_query(callback_id, "❌ Account not available", show_alert=True)
             return
+
+        logger.info(f"process_purchase: account resolved _id={account.get('_id')} used={account.get('used')} country={account.get('country')}")
 
         if account.get('used', False):
             bot.answer_callback_query(callback_id, "❌ Account already sold out", show_alert=True)
