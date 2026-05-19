@@ -10703,7 +10703,7 @@ def cmd_mystats(msg):
         gift_sent = transactions_col.count_documents({"user_id": user_id, "type": "gift_sent"})
         gift_recv = transactions_col.count_documents({"user_id": user_id, "type": "gift_received"})
         coupon_count = transactions_col.count_documents({"user_id": user_id, "type": "coupon_redeem"})
-        streak_doc = db.get('user_streaks', db['user_streaks']).find_one({"user_id": user_id}) or {} if 'user_streaks' in db.list_collection_names() else {}
+        streak_doc = db['user_streaks'].find_one({"user_id": user_id}) or {} if 'user_streaks' in db.list_collection_names() else {}
         current_streak = streak_doc.get("current_streak", 0) if streak_doc else 0
         user_doc = users_col.find_one({"user_id": user_id}) or {}
         joined_at = user_doc.get("created_at", None)
@@ -11467,7 +11467,7 @@ def cmd_botstat(msg):
     try:
         now = datetime.utcnow()
         today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        week_start = today_start - __import__('datetime').timedelta(days=7)
+        week_start = today_start - timedelta(days=7)
         total_users = users_col.count_documents({})
         new_today = users_col.count_documents({"created_at": {"$gte": today_start}})
         new_week = users_col.count_documents({"created_at": {"$gte": week_start}})
