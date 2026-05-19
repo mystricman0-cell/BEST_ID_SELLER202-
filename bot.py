@@ -8,9 +8,48 @@ import os
 from datetime import datetime, timedelta
 from bson import ObjectId
 import asyncio
+import traceback as _traceback
 
-# Event loop — always create fresh one, auto-recreate if closed
+# ─────────────────────────────────────────────────────────────────────────────
+# ISOLATED ASYNC RUNNER — ek user ki wajah se global loop close na ho
+# Har async operation apna FRESH loop create karta hai, global loop untouched
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Global crash registry — in-memory log (MongoDB mein bhi save hoga baad mein)
+_loop_crash_log: list = []
+_loop_crash_lock = __import__('threading').Lock()
+
+def _run_async_isolated(coro):
+    """
+    Run an async coroutine in a brand-new isolated event loop (per-call).
+    NEVER touches the global asyncio event loop.
+    Safe to call from any thread — crash of one never affects others.
+    """
+    _loop = asyncio.new_event_loop()
+    try:
+        return _loop.run_until_complete(coro)
+    except Exception as _exc:
+        import logging as _log
+        _log.getLogger(__name__).warning(
+            f"[AsyncIsolated] Exception in isolated loop: {type(_exc).__name__}: {_exc}"
+        )
+        with _loop_crash_lock:
+            _loop_crash_log.append({
+                "ts": __import__('datetime').datetime.utcnow().isoformat(),
+                "exc_type": type(_exc).__name__,
+                "exc_msg": str(_exc),
+            })
+            if len(_loop_crash_log) > 100:
+                _loop_crash_log.pop(0)
+        raise
+    finally:
+        try:
+            _loop.close()
+        except Exception:
+            pass
+
 def _ensure_event_loop():
+    """Ensure the global event loop is alive; recreate if closed."""
     try:
         loop = asyncio.get_event_loop()
         if loop.is_closed():
@@ -21,6 +60,7 @@ def _ensure_event_loop():
         asyncio.set_event_loop(loop)
         return loop
 
+# Start with a fresh global loop
 asyncio.set_event_loop(asyncio.new_event_loop())
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
@@ -2483,7 +2523,12 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
                 
                 if state.get("current_client") and account_manager:
                     try:
-                        asyncio.run(account_manager.pyrogram_manager.safe_disconnect(state["current_client"]))
+                        _client_skip = state["current_client"]
+                        threading.Thread(
+                            target=lambda c=_client_skip: _run_async_isolated(
+                                account_manager.pyrogram_manager.safe_disconnect(c)
+                            ), daemon=True
+                        ).start()
                     except:
                         pass
                 
@@ -3646,7 +3691,12 @@ def bulk_number_failed(user_id, reason):
     
     if state.get("current_client") and account_manager:
         try:
-            asyncio.run(account_manager.pyrogram_manager.safe_disconnect(state["current_client"]))
+            _c_fail = state["current_client"]
+            threading.Thread(
+                target=lambda c=_c_fail: _run_async_isolated(
+                    account_manager.pyrogram_manager.safe_disconnect(c)
+                ), daemon=True
+            ).start()
         except:
             pass
     
@@ -3663,7 +3713,12 @@ def bulk_number_success(user_id):
     
     if state.get("current_client") and account_manager:
         try:
-            asyncio.run(account_manager.pyrogram_manager.safe_disconnect(state["current_client"]))
+            _c_succ = state["current_client"]
+            threading.Thread(
+                target=lambda c=_c_succ: _run_async_isolated(
+                    account_manager.pyrogram_manager.safe_disconnect(c)
+                ), daemon=True
+            ).start()
         except:
             pass
     
@@ -8169,6 +8224,7 @@ def cmd_ohelp(msg):
         "/couponlist — Coupon list\n"
         "/pendingorders — Pending orders\n"
         "/maintenance [on|off] — Maintenance mode toggle\n"
+        "/clearloop — Event loop reset + crash log clear ⚡\n"
         "/warnlist — Warned users\n"
         "/removewarn &lt;id&gt; — Warn hatao\n\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
@@ -9298,6 +9354,55 @@ def cmd_removewarn(msg):
         pass
 
 
+# /clearloop — Admin only: manual event loop reset + crash log clear
+@bot.message_handler(commands=['clearloop'])
+def cmd_clearloop(msg):
+    user_id = msg.from_user.id
+    if not is_admin(user_id):
+        bot.send_message(msg.chat.id, "❌ Admin only command.")
+        return
+    _typing(msg.chat.id)
+
+    # Count crashes before clearing
+    try:
+        db_crash_count = db['loop_crashes'].count_documents({})
+    except Exception:
+        db_crash_count = 0
+    mem_crash_count = len(_loop_crash_log)
+
+    # Clear MongoDB crash log
+    try:
+        db['loop_crashes'].delete_many({})
+        db_cleared = True
+    except Exception:
+        db_cleared = False
+
+    # Clear in-memory crash log
+    with _loop_crash_lock:
+        _loop_crash_log.clear()
+
+    # Force-recreate global event loop
+    try:
+        _old_loop = asyncio.get_event_loop()
+        if not _old_loop.is_closed():
+            _old_loop.close()
+    except Exception:
+        pass
+    _fresh_loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(_fresh_loop)
+
+    bot.send_message(
+        msg.chat.id,
+        "⚡ <b>Event Loop Cleared!</b>\n\n"
+        f"🗑 DB crash logs cleared: <b>{db_crash_count}</b> records\n"
+        f"🧹 Memory crash log cleared: <b>{mem_crash_count}</b> entries\n"
+        f"🔄 Global event loop: <b>Fresh loop created</b>\n"
+        f"✅ DB cleared: <b>{'Yes' if db_cleared else 'Error (check logs)'}</b>\n\n"
+        "<i>LoopGuardian ab bhi background mein monitor kar raha hai.</i>",
+        parse_mode="HTML"
+    )
+
+
 # /warnlist — Owner only: see all warned users
 @bot.message_handler(commands=['warnlist'])
 def cmd_warnlist(msg):
@@ -9359,6 +9464,56 @@ def handle_flask_exception(e):
 def handle_500(e):
     logger.error(f"Flask 500 error: {e}")
     return "OK", 200
+
+# ---------------------------------------------------------------------
+# LOOP GUARDIAN — global event loop monitor + auto-recreate in <60s
+# Ek user ki galti se poore bot ka loop close nahi hoga
+# ---------------------------------------------------------------------
+
+def _loop_guardian_worker():
+    """
+    Runs every 30 seconds.
+    Checks if the global asyncio event loop is alive.
+    If closed → auto-recreate it within 1 minute (30s check interval).
+    Logs every crash to MongoDB 'loop_crashes' collection for /clearloop.
+    """
+    import datetime as _dt
+    time.sleep(15)  # wait for bot to fully start
+    while True:
+        try:
+            try:
+                _gl = asyncio.get_event_loop()
+                if _gl.is_closed():
+                    raise RuntimeError("closed")
+            except RuntimeError:
+                _new_loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(_new_loop)
+                _ts = _dt.datetime.utcnow()
+                logger.warning(f"⚡ LoopGuardian: Global event loop was closed — recreated at {_ts.isoformat()}")
+                # Save to MongoDB for /clearloop history
+                try:
+                    db['loop_crashes'].insert_one({
+                        "ts": _ts,
+                        "type": "global_loop_closed",
+                        "auto_recovered": True
+                    })
+                    # Keep last 200 records only
+                    _old = list(db['loop_crashes'].find().sort("ts", 1).skip(200))
+                    if _old:
+                        db['loop_crashes'].delete_many({"_id": {"$in": [x["_id"] for x in _old]}})
+                except Exception:
+                    pass
+                # Also save in-memory crash log
+                with _loop_crash_lock:
+                    _loop_crash_log.append({
+                        "ts": _ts.isoformat(),
+                        "exc_type": "GlobalLoopClosed",
+                        "exc_msg": "Global event loop was closed, auto-recreated by LoopGuardian",
+                    })
+        except Exception as _eg:
+            logger.error(f"LoopGuardian internal error: {_eg}")
+        time.sleep(30)  # check every 30 seconds → max 60s to recover
+
 
 # ---------------------------------------------------------------------
 # HEARTBEAT SYSTEM — keeps bot alive 24x7 on Railway
@@ -9436,6 +9591,11 @@ if __name__ == "__main__":
         logger.info("✅ Admin indexes created")
     except Exception as e:
         logger.error(f"❌ Failed to create admin indexes: {e}")
+
+    # Start LoopGuardian — auto-recreates event loop if any user crashes it
+    lg_thread = threading.Thread(target=_loop_guardian_worker, daemon=True)
+    lg_thread.start()
+    logger.info("⚡ LoopGuardian started — event loop protected, auto-recover in <60s")
 
     # Start heartbeat thread — keeps bot alive 24x7
     hb_thread = threading.Thread(target=heartbeat_worker, daemon=True)
