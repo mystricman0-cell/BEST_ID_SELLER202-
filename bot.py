@@ -35,7 +35,7 @@ def _run_async_isolated(coro):
         )
         with _loop_crash_lock:
             _loop_crash_log.append({
-                "ts": __import__('datetime').datetime.utcnow().isoformat(),
+                "ts": __import__('datetime').datetime.now(__import__('datetime').timezone.utc).isoformat(),
                 "exc_type": type(_exc).__name__,
                 "exc_msg": str(_exc),
             })
@@ -60,8 +60,9 @@ def _ensure_event_loop():
         asyncio.set_event_loop(loop)
         return loop
 
-# Start with a fresh global loop
-asyncio.set_event_loop(asyncio.new_event_loop())
+# Start with a fresh global loop — store reference for LoopGuardian
+_GUARDIAN_LOOP = asyncio.new_event_loop()
+asyncio.set_event_loop(_GUARDIAN_LOOP)
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 import telebot.types
@@ -3491,15 +3492,12 @@ def handle_cancel_bulk(call):
         
         if state.get("current_client") and account_manager:
             try:
-                def _disc():
-                    import asyncio as _aio
-                    loop = _aio.new_event_loop()
-                    _aio.set_event_loop(loop)
-                    try:
-                        loop.run_until_complete(account_manager.pyrogram_manager.safe_disconnect(state["current_client"]))
-                    finally:
-                        loop.close()
-                threading.Thread(target=_disc, daemon=True).start()
+                _c_cancel = state["current_client"]
+                threading.Thread(
+                    target=lambda c=_c_cancel: _run_async_isolated(
+                        account_manager.pyrogram_manager.safe_disconnect(c)
+                    ), daemon=True
+                ).start()
             except:
                 pass
         
@@ -3973,15 +3971,11 @@ def handle_cancel_login(call):
             try:
                 if account_manager and account_manager.pyrogram_manager:
                     _client = state["client"]
-                    def _disc_login():
-                        import asyncio as _aio
-                        loop = _aio.new_event_loop()
-                        _aio.set_event_loop(loop)
-                        try:
-                            loop.run_until_complete(account_manager.pyrogram_manager.safe_disconnect(_client))
-                        finally:
-                            loop.close()
-                    threading.Thread(target=_disc_login, daemon=True).start()
+                    threading.Thread(
+                        target=lambda c=_client: _run_async_isolated(
+                            account_manager.pyrogram_manager.safe_disconnect(c)
+                        ), daemon=True
+                    ).start()
             except:
                 pass
         login_states.pop(user_id, None)
@@ -9342,7 +9336,7 @@ def show_single_admin_perms(chat_id, message_id, target_uid):
 # /setaikey command — owner only, updates Gemini API key in MongoDB
 @bot.message_handler(commands=['setaikey'])
 def cmd_setaikey(msg):
-    if msg.from_user.id != ADMIN_ID:
+    if not is_super_admin(msg.from_user.id):
         bot.send_message(msg.chat.id, "❌ Only the owner can use this command.")
         return
     parts = msg.text.strip().split(maxsplit=1)
@@ -9374,7 +9368,7 @@ def cmd_setaikey(msg):
 # /removewarn — Owner only: remove all privacy warns from a user
 @bot.message_handler(commands=['removewarn'])
 def cmd_removewarn(msg):
-    if msg.from_user.id != ADMIN_ID:
+    if not is_super_admin(msg.from_user.id):
         bot.send_message(msg.chat.id, "❌ Sirf owner hi warns hata sakta hai.")
         return
     parts = msg.text.strip().split(maxsplit=1)
@@ -9438,15 +9432,16 @@ def cmd_clearloop(msg):
     with _loop_crash_lock:
         _loop_crash_log.clear()
 
-    # Force-recreate global event loop
+    # Force-recreate global event loop using _GUARDIAN_LOOP reference
+    global _GUARDIAN_LOOP
     try:
-        _old_loop = asyncio.get_event_loop()
-        if not _old_loop.is_closed():
-            _old_loop.close()
+        if _GUARDIAN_LOOP and not _GUARDIAN_LOOP.is_closed():
+            _GUARDIAN_LOOP.close()
     except Exception:
         pass
     _fresh_loop = asyncio.new_event_loop()
     asyncio.set_event_loop(_fresh_loop)
+    _GUARDIAN_LOOP = _fresh_loop
 
     bot.send_message(
         msg.chat.id,
@@ -9463,7 +9458,7 @@ def cmd_clearloop(msg):
 # /warnlist — Owner only: see all warned users
 @bot.message_handler(commands=['warnlist'])
 def cmd_warnlist(msg):
-    if msg.from_user.id != ADMIN_ID:
+    if not is_super_admin(msg.from_user.id):
         bot.send_message(msg.chat.id, "❌ Sirf owner dekh sakta hai.")
         return
     try:
@@ -9647,7 +9642,10 @@ def cmd_spamguard(msg):
 def cmd_fraudcheck(msg):
     _sec_anim(msg.chat.id, "🕵️", "Fraud Check")
     uid = msg.from_user.id
-    purchase_count = purchase_history_col.count_documents({"user_id": uid}) if 'purchase_history_col' in dir() else 0
+    try:
+        purchase_count = orders_col.count_documents({"user_id": uid})
+    except Exception:
+        purchase_count = 0
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
     bot.send_message(msg.chat.id,
@@ -10426,46 +10424,43 @@ def handle_500(e):
 def _loop_guardian_worker():
     """
     Runs every 30 seconds.
-    Checks if the global asyncio event loop is alive.
-    If closed → auto-recreate it within 1 minute (30s check interval).
-    Logs every crash to MongoDB 'loop_crashes' collection for /clearloop.
+    Checks if the global asyncio event loop (_GUARDIAN_LOOP) is alive.
+    If closed → recreate it within 1 minute (30s check interval).
+    Uses _GUARDIAN_LOOP reference directly — no get_event_loop() false-positive
+    on Python 3.10+ daemon threads.
     """
+    global _GUARDIAN_LOOP
     import datetime as _dt
-    time.sleep(15)  # wait for bot to fully start
+    from datetime import timezone as _tz
+    time.sleep(20)  # wait for full startup before first check
     while True:
         try:
-            try:
-                _gl = asyncio.get_event_loop()
-                if _gl.is_closed():
-                    raise RuntimeError("closed")
-            except RuntimeError:
+            if _GUARDIAN_LOOP is None or _GUARDIAN_LOOP.is_closed():
                 _new_loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(_new_loop)
-                _ts = _dt.datetime.utcnow()
-                logger.warning(f"⚡ LoopGuardian: Global event loop was closed — recreated at {_ts.isoformat()}")
-                # Save to MongoDB for /clearloop history
+                _GUARDIAN_LOOP = _new_loop
+                _ts = _dt.datetime.now(_tz.utc)
+                logger.warning(f"⚡ LoopGuardian: Event loop closed — recreated at {_ts.isoformat()}")
                 try:
                     db['loop_crashes'].insert_one({
                         "ts": _ts,
                         "type": "global_loop_closed",
                         "auto_recovered": True
                     })
-                    # Keep last 200 records only
                     _old = list(db['loop_crashes'].find().sort("ts", 1).skip(200))
                     if _old:
                         db['loop_crashes'].delete_many({"_id": {"$in": [x["_id"] for x in _old]}})
                 except Exception:
                     pass
-                # Also save in-memory crash log
                 with _loop_crash_lock:
                     _loop_crash_log.append({
                         "ts": _ts.isoformat(),
                         "exc_type": "GlobalLoopClosed",
-                        "exc_msg": "Global event loop was closed, auto-recreated by LoopGuardian",
+                        "exc_msg": "Event loop was closed, auto-recreated by LoopGuardian",
                     })
         except Exception as _eg:
             logger.error(f"LoopGuardian internal error: {_eg}")
-        time.sleep(30)  # check every 30 seconds → max 60s to recover
+        time.sleep(30)  # check every 30s → max 60s recovery time
 
 
 # ---------------------------------------------------------------------
