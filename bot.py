@@ -9116,21 +9116,32 @@ def handle_gemini_chat(msg):
     # ── Try Gemini API ────────────────────────────────────────────────
     models_to_try = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-8b"]
     last_error = None
+    _stop_all = False  # flag: break outer loop too (quota/auth failures)
 
     for model_name in models_to_try:
+        if _stop_all:
+            break
         for attempt in range(2):
             try:
                 ai_client = get_genai_client()
                 if not ai_client:
                     raise Exception("AI client not available — API key missing or invalid")
 
-                # Build conversation history
-                history = list(gemini_chat_sessions.get(user_id, []))
-                history.append({"role": "user", "parts": [{"text": text}]})
+                # Build conversation history using proper Content objects
+                history_dicts = list(gemini_chat_sessions.get(user_id, []))
+                history_dicts.append({"role": "user", "parts": [{"text": text}]})
+
+                contents = [
+                    _genai_types.Content(
+                        role=h["role"],
+                        parts=[_genai_types.Part(text=p["text"]) for p in h["parts"]]
+                    )
+                    for h in history_dicts
+                ]
 
                 response = ai_client.models.generate_content(
                     model=model_name,
-                    contents=history,
+                    contents=contents,
                     config=_genai_types.GenerateContentConfig(
                         system_instruction=LEGENDARY_AI_SYSTEM,
                         temperature=0.85,
@@ -9138,24 +9149,34 @@ def handle_gemini_chat(msg):
                     )
                 )
 
-                if not response or not response.text:
+                # Safely extract text — new SDK raises on blocked content
+                try:
+                    raw_reply = response.text
+                except Exception:
+                    raw_reply = None
+
+                if not raw_reply or not raw_reply.strip():
                     raise Exception("Empty response from AI")
 
-                raw_reply = response.text.strip()
+                raw_reply = raw_reply.strip()
                 reply = clean_ai_response(raw_reply)
 
+                # Escape HTML special chars so Telegram HTML parser doesn't fail
+                import html as _html_mod
+                reply_safe = _html_mod.escape(reply)
+
                 # Save conversation (max 60 messages)
-                history.append({"role": "model", "parts": [{"text": reply}]})
-                if len(history) > 60:
-                    history = history[-60:]
-                gemini_chat_sessions[user_id] = history
+                history_dicts.append({"role": "model", "parts": [{"text": reply}]})
+                if len(history_dicts) > 60:
+                    history_dicts = history_dicts[-60:]
+                gemini_chat_sessions[user_id] = history_dicts
 
                 # Send premium response
                 bot.send_message(
                     msg.chat.id,
                     f"┌─ 🤖 <b>𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘 𝐀𝐈</b> ─────────────\n"
                     f"│\n"
-                    f"{reply}\n"
+                    f"{reply_safe}\n"
                     f"│\n"
                     f"└─────────────────────────────",
                     parse_mode="HTML",
@@ -9167,11 +9188,16 @@ def handle_gemini_chat(msg):
                 last_error = e
                 err_str = str(e).lower()
                 logger.error(f"Legendary AI model={model_name} attempt={attempt+1} error: {e}")
-                # Don't clear history on every error — only on auth failures
                 if "permission_denied" in err_str or "api_key" in err_str or "invalid_api_key" in err_str:
                     gemini_chat_sessions.pop(user_id, None)
+                    _stop_all = True
                     break
                 if "quota" in err_str or "resource_exhausted" in err_str:
+                    # quota is per-key, not per-model — stop trying all models
+                    _stop_all = True
+                    break
+                if "client not available" in err_str or "api key missing" in err_str:
+                    _stop_all = True
                     break
                 if attempt == 0:
                     time.sleep(0.5)
@@ -9179,7 +9205,7 @@ def handle_gemini_chat(msg):
     # ── All models failed ─────────────────────────────────────────────
     logger.error(f"Legendary AI — all models failed: {last_error}")
     err_msg = str(last_error).lower() if last_error else ""
-    if "api_key" in err_msg or "permission_denied" in err_msg or "invalid" in err_msg:
+    if "api_key" in err_msg or "permission_denied" in err_msg or "invalid_api_key" in err_msg:
         reply_text = (
             "⚠️ <b>AI Key Problem!</b>\n\n"
             "Gemini API key invalid ya expire ho gayi hai.\n"
@@ -9188,14 +9214,20 @@ def handle_gemini_chat(msg):
     elif "quota" in err_msg or "resource_exhausted" in err_msg:
         reply_text = (
             "⏳ <b>AI Limit Reached!</b>\n\n"
-            "Abhi bahut zyada requests aa rahi hain.\n"
-            "5-10 minute baad dobara try karo."
+            "Free quota khatam ho gayi hai.\n"
+            "Thodi der baad dobara try karo ya admin se contact karo."
         )
     elif "client not available" in err_msg or "api key missing" in err_msg:
         reply_text = (
             "🔧 <b>AI Setup Needed!</b>\n\n"
             "Admin ne abhi Gemini API key set nahi ki.\n"
             "Admin se bolo /setaikey command use kare."
+        )
+    elif "empty response" in err_msg:
+        reply_text = (
+            "🚫 <b>AI Response Blocked!</b>\n\n"
+            "Aapke sawal ka jawab safety filters ne block kar diya.\n"
+            "Koi aur sawal pucho ya differently puchho."
         )
     else:
         reply_text = (
