@@ -757,10 +757,16 @@ except ImportError as e:
     logger.error(f"❌ Failed to load account module: {e}")
     account_manager = None
 
-# Telegram channel logger disabled — logs are not sent to any channel
-def log_purchase_async(*args, **kwargs): pass
-def log_otp_received_async(*args, **kwargs): pass
-def log_recharge_approved_async(*args, **kwargs): pass
+# Import logging module
+try:
+    from logs import init_logger, log_purchase_async, log_otp_received_async, log_recharge_approved_async
+    init_logger(BOT_TOKEN, LOG_CHANNEL_ID)
+    logger.info(f"✅ Telegram logger initialized for channel: {LOG_CHANNEL_ID}")
+except ImportError as e:
+    logger.error(f"❌ Failed to load logging module: {e}")
+    def log_purchase_async(*args, **kwargs): pass
+    def log_otp_received_async(*args, **kwargs): pass
+    def log_recharge_approved_async(*args, **kwargs): pass
 
 # Async manager for background tasks
 async_manager = None
