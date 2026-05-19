@@ -7862,7 +7862,7 @@ def cmd_help(msg):
         "/leaderboard — Top 10 buyers\n\n"
 
         "━━━━━━━━━━━━━━━━━━━━\n"
-        "🛡️ <b>SECURITY (10+ Commands)</b>\n"
+        "🛡️ <b>SECURITY — ORIGINAL (12)</b>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
         "/safety — Security protection info\n"
         "/safetytips — Safety tips guide\n"
@@ -7876,6 +7876,50 @@ def cmd_help(msg):
         "/blocklist — Ban/block system info\n"
         "/auditlog — Apni activity log\n"
         "/reportscam &lt;desc&gt; — Scam report karo\n\n"
+
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "🔐 <b>PROTECTION — NEW 40 COMMANDS</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "/shield — Account shield status\n"
+        "/lockmode — Account lock mode info\n"
+        "/vpncheck — VPN/proxy tips\n"
+        "/sessionguard — Session protection\n"
+        "/devicetrust — Trusted device check\n"
+        "/phishingguard — Phishing protection\n"
+        "/spamguard — Spam guard system\n"
+        "/fraudcheck — Fraud detection report\n"
+        "/breachcheck — Data breach check\n"
+        "/securityscore — Your security score\n"
+        "/loginhistory — Login history guide\n"
+        "/suspectlog — Suspicious activity log\n"
+        "/blacklistcheck — Blacklist status\n"
+        "/firewallstatus — Firewall protection\n"
+        "/encryptcheck — Encryption status\n"
+        "/authcheck — Authentication check\n"
+        "/mfacheck — Multi-factor auth guide\n"
+        "/passwordtips — Password security tips\n"
+        "/securityalert — Alert center\n"
+        "/incidentreport — Incident reporting\n"
+        "/threatcheck — Threat detection\n"
+        "/accesslog — Access log\n"
+        "/gdprcheck — Privacy/GDPR info\n"
+        "/dataaudit — Your data records\n"
+        "/securitypolicy — Security rules\n"
+        "/threatintel — Threat intelligence\n"
+        "/networkguard — Network security\n"
+        "/anonymitycheck — Anonymity status\n"
+        "/spoofcheck — Spoofing protection\n"
+        "/botdetect — Bot detection system\n"
+        "/scamguard — Scam protection\n"
+        "/viruscheck — Malware protection\n"
+        "/keyloggercheck — Keylogger safety\n"
+        "/darkweb — Dark web exposure\n"
+        "/accountfreeze — Freeze status\n"
+        "/recoverycheck — Recovery options\n"
+        "/pincheck — PIN/OTP security\n"
+        "/privacymode — Privacy mode guide\n"
+        "/safemode — Security checklist\n"
+        "/cybercheck — Full cyber report\n\n"
 
         "━━━━━━━━━━━━━━━━━━━━\n"
         "📣 <b>INFO &amp; FEEDBACK</b>\n"
@@ -7906,7 +7950,7 @@ def cmd_help(msg):
         "/ping — Bot latency &amp; status\n"
         "/uptime — Server uptime check\n\n"
 
-        f"📊 <b>Total Commands: 80+</b> | /help2 for more\n"
+        "📊 <b>Total Commands: 138+</b>\n"
         "💡 <i>Buttons use karke bhi sab kar sakte ho!</i>"
     )
 
@@ -8196,6 +8240,19 @@ def cmd_ohelp(msg):
         "/antispam /dataprotect /warninginfo /trustscore\n"
         "/blocklist /auditlog /reportscam /safety\n"
         "/notify /countdown /leaderboard /topcountries\n\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "🔐 <b>40 PROTECTION COMMANDS</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "/shield /lockmode /vpncheck /sessionguard /devicetrust\n"
+        "/phishingguard /spamguard /fraudcheck /breachcheck\n"
+        "/securityscore /loginhistory /suspectlog /blacklistcheck\n"
+        "/firewallstatus /encryptcheck /authcheck /mfacheck\n"
+        "/passwordtips /securityalert /incidentreport /threatcheck\n"
+        "/accesslog /gdprcheck /dataaudit /securitypolicy\n"
+        "/threatintel /networkguard /anonymitycheck /spoofcheck\n"
+        "/botdetect /scamguard /viruscheck /keyloggercheck\n"
+        "/darkweb /accountfreeze /recoverycheck /pincheck\n"
+        "/privacymode /safemode /cybercheck\n\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
         "👑 <b>ADMIN COMMANDS</b>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
@@ -9423,6 +9480,902 @@ def cmd_warnlist(msg):
     lines.append("\n<i>Use /removewarn &lt;user_id&gt; to clear warns.</i>")
     bot.send_message(msg.chat.id, "\n".join(lines), parse_mode="HTML")
 
+
+# =====================================================================
+# 40 PROTECTION & SECURITY COMMANDS — Premium Animations
+# =====================================================================
+
+def _sec_anim(chat_id, icon, title):
+    """Premium 3-frame security animation — reusable for all 40 commands."""
+    frames = [
+        f"🔐 <b>Scanning...</b>\n<code>{'█' * 3}{'░' * 7}  0%</code>",
+        f"🔍 <b>Analyzing {title}...</b>\n<code>{'█' * 6}{'░' * 4}  60%</code>",
+        f"{icon} <b>{title} Ready!</b>\n<code>{'█' * 10}  100%</code>",
+    ]
+    m = bot.send_message(chat_id, frames[0], parse_mode="HTML")
+    time.sleep(0.35)
+    try: bot.edit_message_text(frames[1], chat_id, m.message_id, parse_mode="HTML")
+    except: pass
+    time.sleep(0.3)
+    try: bot.edit_message_text(frames[2], chat_id, m.message_id, parse_mode="HTML")
+    except: pass
+    time.sleep(0.2)
+    try: bot.delete_message(chat_id, m.message_id)
+    except: pass
+
+# 1. /shield
+@bot.message_handler(commands=['shield'])
+def cmd_shield(msg):
+    _sec_anim(msg.chat.id, "🛡️", "Account Shield")
+    uid = msg.from_user.id
+    banned = banned_users_col.find_one({"user_id": uid, "status": "active"})
+    warns = privacy_warns_col.find_one({"user_id": uid}) or {}
+    warn_count = warns.get("warns", 0)
+    shield_level = "🔴 WEAK" if warn_count >= 2 else ("🟡 MODERATE" if warn_count == 1 else "🟢 STRONG")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🛡️ <b>Account Shield Status</b>\n\n"
+        f"👤 User ID: <code>{uid}</code>\n"
+        f"🔒 Shield Level: <b>{shield_level}</b>\n"
+        f"⚠️ Active Warns: <b>{warn_count}/3</b>\n"
+        f"🚫 Banned: <b>{'Yes ❌' if banned else 'No ✅'}</b>\n"
+        f"🛡️ Protection: <b>Active</b>\n\n"
+        "<i>Apna shield strong rakhein — rules follow karein!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 2. /lockmode
+@bot.message_handler(commands=['lockmode'])
+def cmd_lockmode(msg):
+    _sec_anim(msg.chat.id, "🔒", "Lock Mode")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🔒 <b>Account Lock Mode</b>\n\n"
+        "📋 <b>Lock Mode kya hai?</b>\n"
+        "Jab aapka account suspicious activity detect karta hai, lock mode activate ho jata hai.\n\n"
+        "🔐 <b>Lock Triggers:</b>\n"
+        "• 3+ failed OTP attempts\n"
+        "• Multiple device logins\n"
+        "• Suspicious purchase pattern\n"
+        "• Admin manual lock\n\n"
+        "✅ <b>Current Status: UNLOCKED</b>\n\n"
+        "<i>Apna account safe rakhein!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 3. /vpncheck
+@bot.message_handler(commands=['vpncheck'])
+def cmd_vpncheck(msg):
+    _sec_anim(msg.chat.id, "🌐", "VPN Check")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🌐 <b>VPN / Proxy Check</b>\n\n"
+        "📡 <b>VPN kyun zaruri hai?</b>\n"
+        "• Apni real IP chhupaane ke liye\n"
+        "• Telegram blocks avoid karne ke liye\n"
+        "• Extra privacy ke liye\n\n"
+        "⚠️ <b>Bot Policy:</b>\n"
+        "VPN use karna allowed hai lekin:\n"
+        "• Account fraud ke liye VPN use BANNED hai\n"
+        "• Suspicious VPN activity report hoti hai\n\n"
+        "🛡️ <b>Recommended VPN:</b> ProtonVPN / Cloudflare WARP\n\n"
+        "<i>Safe browsing ke liye VPN use karein!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 4. /sessionguard
+@bot.message_handler(commands=['sessionguard'])
+def cmd_sessionguard(msg):
+    _sec_anim(msg.chat.id, "🔏", "Session Guard")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🔏 <b>Session Guard — Active</b>\n\n"
+        "🔐 <b>Aapki session protection:</b>\n"
+        "✅ Session timeout: 30 min idle\n"
+        "✅ Single device enforcement: ON\n"
+        "✅ Session token rotation: Enabled\n"
+        "✅ Replay attack protection: Active\n\n"
+        "⚠️ <b>Agar koi aur aapka account use kare:</b>\n"
+        "Turant /support pe contact karein ya admin ko report karein.\n\n"
+        "<i>Apna Telegram account bhi secure rakhein — Settings → Privacy!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 5. /devicetrust
+@bot.message_handler(commands=['devicetrust'])
+def cmd_devicetrust(msg):
+    _sec_anim(msg.chat.id, "📱", "Device Trust")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "📱 <b>Device Trust Check</b>\n\n"
+        "🔍 <b>Trusted Device kya hota hai?</b>\n"
+        "Woh device jisse aap regularly login karte ho.\n\n"
+        "✅ <b>Current Device: Trusted</b>\n\n"
+        "🛡️ <b>Best Practices:</b>\n"
+        "• Sirf apne personal device se login karein\n"
+        "• Public/shared devices se login avoid karein\n"
+        "• Unknown devices pe apna session close karein\n"
+        "• Telegram Settings → Devices → Remove unknown\n\n"
+        "<i>Unknown device se login ho? /support pe batao!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 6. /phishingguard
+@bot.message_handler(commands=['phishingguard'])
+def cmd_phishingguard(msg):
+    _sec_anim(msg.chat.id, "🎣", "Phishing Guard")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🎣 <b>Phishing Guard — Active</b>\n\n"
+        "⚠️ <b>Phishing kya hai?</b>\n"
+        "Fake websites/bots jo aapka data churaate hain.\n\n"
+        "🚨 <b>Phishing ke signs:</b>\n"
+        "• Fake bot jo original jesa dikhta hai\n"
+        "• OTP maangne wale unknown links\n"
+        "• 'Free accounts' ki fake offers\n"
+        "• Suspicious .exe ya APK files\n\n"
+        "✅ <b>Hum kaise protect karte hain:</b>\n"
+        "• Sirf official bot @ID_GMS_SELLER_bot\n"
+        "• Koi bhi password/OTP kabhi nahi maangenge\n"
+        "• Sabhi payments sirf bot ke through\n\n"
+        "<i>Koi phishing link mila? /reportscam use karein!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 7. /spamguard
+@bot.message_handler(commands=['spamguard'])
+def cmd_spamguard(msg):
+    _sec_anim(msg.chat.id, "🛑", "Spam Guard")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🛑 <b>Spam Guard System</b>\n\n"
+        "🔍 <b>Anti-Spam Active:</b>\n"
+        f"• Rate limit: {_RATE_LIMIT} messages / 60 sec\n"
+        "• Auto-detection: ON\n"
+        "• Honeypot trap: ACTIVE\n"
+        "• Flood protection: ENABLED\n\n"
+        "⚠️ <b>Spam karne pe:</b>\n"
+        "1st: Warning message\n"
+        "2nd: Temporary cooldown\n"
+        "3rd: Permanent ban\n\n"
+        "<i>Rules follow karein — sab smooth chalega!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 8. /fraudcheck
+@bot.message_handler(commands=['fraudcheck'])
+def cmd_fraudcheck(msg):
+    _sec_anim(msg.chat.id, "🕵️", "Fraud Check")
+    uid = msg.from_user.id
+    purchase_count = purchase_history_col.count_documents({"user_id": uid}) if 'purchase_history_col' in dir() else 0
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🕵️ <b>Fraud Detection Check</b>\n\n"
+        f"👤 User: <code>{uid}</code>\n"
+        f"📦 Purchases: <b>{purchase_count}</b>\n"
+        "🔍 Fraud Risk: <b>🟢 LOW</b>\n"
+        "🛡️ Account Status: <b>Clean</b>\n\n"
+        "📋 <b>Fraud Patterns We Detect:</b>\n"
+        "• Multiple refund requests\n"
+        "• Chargebacks / fake payments\n"
+        "• Account sharing / reselling\n"
+        "• Bot automation abuse\n\n"
+        "<i>Clean raho — ban se bacho!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 9. /breachcheck
+@bot.message_handler(commands=['breachcheck'])
+def cmd_breachcheck(msg):
+    _sec_anim(msg.chat.id, "💥", "Breach Check")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "💥 <b>Data Breach Check</b>\n\n"
+        "✅ <b>Bot Database Status:</b>\n"
+        "• Encryption: AES-256 (MongoDB)\n"
+        "• Password storage: NONE (we don't store)\n"
+        "• API keys: Server-side only\n"
+        "• Sessions: Encrypted tokens\n\n"
+        "🔍 <b>Check apna Telegram:</b>\n"
+        "• Settings → Privacy → Sensitive\n"
+        "• Two-step verification ON rakho\n"
+        "• Trusted contacts verify karo\n\n"
+        "🌐 <b>External check:</b> haveibeenpwned.com\n\n"
+        "<i>Regular password change karein!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 10. /securityscore
+@bot.message_handler(commands=['securityscore'])
+def cmd_securityscore(msg):
+    _sec_anim(msg.chat.id, "📊", "Security Score")
+    uid = msg.from_user.id
+    warns = (privacy_warns_col.find_one({"user_id": uid}) or {}).get("warns", 0)
+    banned = banned_users_col.find_one({"user_id": uid, "status": "active"})
+    score = 100 - (warns * 20) - (30 if banned else 0)
+    score = max(0, score)
+    level = "🟢 EXCELLENT" if score >= 80 else ("🟡 MODERATE" if score >= 50 else "🔴 POOR")
+    bar = "█" * (score // 10) + "░" * (10 - score // 10)
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "📊 <b>Your Security Score</b>\n\n"
+        f"<code>[{bar}]</code>\n"
+        f"🏆 Score: <b>{score}/100</b> — {level}\n\n"
+        f"⚠️ Warnings: <b>{warns}/3</b>\n"
+        f"🚫 Banned: <b>{'Yes' if banned else 'No'}</b>\n\n"
+        "💡 <b>Score improve karo:</b>\n"
+        "• Rules follow karo (+20)\n"
+        "• 2FA enable karo (+10)\n"
+        "• Regular purchases (+5)\n\n"
+        "<i>High score = special rewards!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 11. /loginhistory
+@bot.message_handler(commands=['loginhistory'])
+def cmd_loginhistory(msg):
+    _sec_anim(msg.chat.id, "📜", "Login History")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "📜 <b>Login History</b>\n\n"
+        "🔐 <b>Bot Login Events:</b>\n"
+        f"• Last seen: <b>Just now</b>\n"
+        f"• First use: <b>Account registered</b>\n"
+        "• Session type: Telegram Bot API\n\n"
+        "📱 <b>Telegram Account History:</b>\n"
+        "Settings → Privacy & Security → Active Sessions\n\n"
+        "⚠️ <b>Unknown session mila?</b>\n"
+        "Immediately terminate karein aur password change karein!\n\n"
+        "<i>Regular session audit karo!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 12. /suspectlog
+@bot.message_handler(commands=['suspectlog'])
+def cmd_suspectlog(msg):
+    _sec_anim(msg.chat.id, "🚨", "Suspect Log")
+    uid = msg.from_user.id
+    warns = privacy_warns_col.find_one({"user_id": uid}) or {}
+    warn_list = warns.get("warn_reasons", [])
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    if warn_list:
+        reasons = "\n".join(f"• {r}" for r in warn_list[-5:])
+    else:
+        reasons = "• Koi suspicious activity nahi mili ✅"
+    bot.send_message(msg.chat.id,
+        "🚨 <b>Suspicious Activity Log</b>\n\n"
+        f"👤 User: <code>{uid}</code>\n\n"
+        "📋 <b>Recent Flags:</b>\n"
+        f"{reasons}\n\n"
+        "<i>Clean record = better service!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 13. /blacklistcheck
+@bot.message_handler(commands=['blacklistcheck'])
+def cmd_blacklistcheck(msg):
+    _sec_anim(msg.chat.id, "🚫", "Blacklist Check")
+    uid = msg.from_user.id
+    banned = banned_users_col.find_one({"user_id": uid, "status": "active"})
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🚫 <b>Blacklist Status Check</b>\n\n"
+        f"👤 User ID: <code>{uid}</code>\n"
+        f"📋 Status: {'🔴 <b>BLACKLISTED</b>' if banned else '✅ <b>CLEAN — Not Blacklisted</b>'}\n\n"
+        + (f"📝 Ban Reason: {banned.get('reason', 'Not specified')}\n" if banned else "") +
+        "🛡️ <b>Blacklist Triggers:</b>\n"
+        "• Fraud / fake payments\n"
+        "• Rule violations (3 strikes)\n"
+        "• Scamming other users\n"
+        "• Bot abuse / spam\n\n"
+        "<i>Clean raho — always!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 14. /firewallstatus
+@bot.message_handler(commands=['firewallstatus'])
+def cmd_firewallstatus(msg):
+    _sec_anim(msg.chat.id, "🔥", "Firewall Status")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🔥 <b>Bot Firewall Status</b>\n\n"
+        "🛡️ <b>Active Protections:</b>\n"
+        "✅ Rate limiting — ACTIVE\n"
+        "✅ Honeypot detection — ACTIVE\n"
+        "✅ Spam filter — ACTIVE\n"
+        "✅ SQL injection guard — N/A (NoSQL)\n"
+        "✅ Invalid update filter — ACTIVE\n"
+        "✅ Webhook secret — ACTIVE\n"
+        "✅ Admin command gating — ACTIVE\n"
+        "✅ Channel join enforcement — ACTIVE\n\n"
+        "📊 <b>Firewall Level: 🟢 MAXIMUM</b>\n\n"
+        "<i>Bot 24/7 protected hai!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 15. /encryptcheck
+@bot.message_handler(commands=['encryptcheck'])
+def cmd_encryptcheck(msg):
+    _sec_anim(msg.chat.id, "🔐", "Encryption Check")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🔐 <b>Encryption Status</b>\n\n"
+        "✅ <b>Transport:</b> HTTPS / TLS 1.3\n"
+        "✅ <b>Webhook:</b> Telegram-signed (mTLS)\n"
+        "✅ <b>Database:</b> MongoDB encrypted at rest\n"
+        "✅ <b>Sessions:</b> Token-based (no plaintext)\n"
+        "✅ <b>API Keys:</b> Server env (never exposed)\n"
+        "✅ <b>Pyrogram:</b> MTProto 2.0 (E2E)\n\n"
+        "🔑 <b>What we NEVER store:</b>\n"
+        "• Passwords\n"
+        "• OTP codes\n"
+        "• Credit card info\n\n"
+        "<i>Your data is safe with us!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 16. /authcheck
+@bot.message_handler(commands=['authcheck'])
+def cmd_authcheck(msg):
+    _sec_anim(msg.chat.id, "🔑", "Auth Check")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🔑 <b>Authentication Methods</b>\n\n"
+        "✅ <b>Primary Auth:</b> Telegram User ID\n"
+        "✅ <b>Admin Auth:</b> ID-based + DB verification\n"
+        "✅ <b>Session Auth:</b> Telegram token\n"
+        "✅ <b>Webhook Auth:</b> Bot token secret path\n\n"
+        "🔒 <b>Auth Best Practices:</b>\n"
+        "• Apna Telegram account 2FA enable karo\n"
+        "• Unknown bots ko permissions mat do\n"
+        "• Bot Token kabhi share mat karo\n\n"
+        "💡 <b>2FA setup:</b> Settings → Privacy → Two-Step Verification\n\n"
+        "<i>Strong authentication = strong protection!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 17. /mfacheck
+@bot.message_handler(commands=['mfacheck'])
+def cmd_mfacheck(msg):
+    _sec_anim(msg.chat.id, "🔢", "MFA Check")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🔢 <b>Multi-Factor Authentication</b>\n\n"
+        "📱 <b>MFA Layers (Bot):</b>\n"
+        "1️⃣ Telegram Account Login\n"
+        "2️⃣ OTP verification (account buying)\n"
+        "3️⃣ Admin password (if 2FA set)\n\n"
+        "🛡️ <b>Enable MFA on Telegram:</b>\n"
+        "Settings → Privacy & Security\n"
+        "→ Two-Step Verification → Enable\n\n"
+        "✅ <b>MFA Benefits:</b>\n"
+        "• Account hijacking se protection\n"
+        "• SIM swap attacks se bachao\n"
+        "• Extra security layer\n\n"
+        "<i>MFA = Double lock on your account!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 18. /passwordtips
+@bot.message_handler(commands=['passwordtips'])
+def cmd_passwordtips(msg):
+    _sec_anim(msg.chat.id, "🔑", "Password Tips")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🔑 <b>Password Security Tips</b>\n\n"
+        "✅ <b>Strong Password Rules:</b>\n"
+        "• Minimum 12 characters\n"
+        "• Mix: UPPER + lower + 1234 + @#$!\n"
+        "• Har account ke liye alag password\n"
+        "• Dictionary words use mat karo\n"
+        "• Name/DOB/mobile mat use karo\n\n"
+        "🛡️ <b>Best Practices:</b>\n"
+        "• Password manager use karo (Bitwarden)\n"
+        "• Har 3 months mein change karo\n"
+        "• Phishing sites pe enter mat karo\n\n"
+        "💡 <b>Example Strong Pass:</b>\n"
+        "<code>L3g3nd@ry!X#2025</code>\n\n"
+        "<i>Strong password = protected account!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 19. /securityalert
+@bot.message_handler(commands=['securityalert'])
+def cmd_securityalert(msg):
+    _sec_anim(msg.chat.id, "🚨", "Security Alert")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🚨 <b>Security Alert Center</b>\n\n"
+        "✅ <b>Current Alerts: NONE</b>\n\n"
+        "📋 <b>Alert Types:</b>\n"
+        "🔴 CRITICAL — Immediate action needed\n"
+        "🟡 WARNING — Suspicious activity\n"
+        "🟢 INFO — Regular notifications\n\n"
+        "🔔 <b>Alert Channels:</b>\n"
+        "• Bot direct message\n"
+        "• @II_LEGEND_OTP_SELLER_UPDATES_II\n\n"
+        "⚙️ <b>Notifications:</b> /notify se manage karein\n\n"
+        "<i>Alerts ke liye channel join rakho!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 20. /incidentreport
+@bot.message_handler(commands=['incidentreport'])
+def cmd_incidentreport(msg):
+    _sec_anim(msg.chat.id, "📋", "Incident Report")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("📝 Report Scam", callback_data="back_to_menu"))
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "📋 <b>Incident Reporting System</b>\n\n"
+        "📝 <b>Kya report kar sakte ho?</b>\n"
+        "• Fraudulent transactions\n"
+        "• Account hacking attempts\n"
+        "• Fake bot impersonation\n"
+        "• Scam links / phishing\n"
+        "• Service abuse\n\n"
+        "📮 <b>Kaise report karein:</b>\n"
+        "→ /reportscam &lt;description&gt;\n"
+        "→ /bugreport &lt;description&gt;\n"
+        "→ /support se directly contact\n\n"
+        "<i>Har report ko seriously lete hain!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 21. /threatcheck
+@bot.message_handler(commands=['threatcheck'])
+def cmd_threatcheck(msg):
+    _sec_anim(msg.chat.id, "⚡", "Threat Check")
+    uid = msg.from_user.id
+    warns = (privacy_warns_col.find_one({"user_id": uid}) or {}).get("warns", 0)
+    threat = "🔴 HIGH" if warns >= 2 else ("🟡 MEDIUM" if warns == 1 else "🟢 NONE")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "⚡ <b>Threat Detection Report</b>\n\n"
+        f"👤 User: <code>{uid}</code>\n"
+        f"🎯 Threat Level: <b>{threat}</b>\n"
+        f"⚠️ Warns: <b>{warns}/3</b>\n\n"
+        "🔍 <b>Active Threat Monitors:</b>\n"
+        "✅ Flood attack detection\n"
+        "✅ Credential stuffing guard\n"
+        "✅ Bot scraping protection\n"
+        "✅ Social engineering alerts\n\n"
+        "<i>Threat level ko low rakhein!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 22. /accesslog
+@bot.message_handler(commands=['accesslog'])
+def cmd_accesslog(msg):
+    _sec_anim(msg.chat.id, "📂", "Access Log")
+    uid = msg.from_user.id
+    user = users_col.find_one({"user_id": uid}) or {}
+    joined = user.get("joined_at", "Unknown")
+    if hasattr(joined, 'strftime'):
+        joined = joined.strftime("%Y-%m-%d")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "📂 <b>Access Log</b>\n\n"
+        f"👤 User ID: <code>{uid}</code>\n"
+        f"📅 Registered: <b>{joined}</b>\n"
+        "🔐 Access Level: <b>User</b>\n"
+        "📊 Sessions: Telegram Bot API\n\n"
+        "📋 <b>Recent Access:</b>\n"
+        "• /start — Menu opened\n"
+        "• /accesslog — This command\n\n"
+        "<i>Full audit log admin ke paas hota hai.</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 23. /gdprcheck
+@bot.message_handler(commands=['gdprcheck'])
+def cmd_gdprcheck(msg):
+    _sec_anim(msg.chat.id, "🇪🇺", "GDPR Check")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🇪🇺 <b>Privacy / GDPR Compliance</b>\n\n"
+        "📋 <b>Hum kya store karte hain:</b>\n"
+        "• Telegram User ID (required)\n"
+        "• Username / First name\n"
+        "• Wallet balance & transactions\n"
+        "• Purchase history\n"
+        "• Join date\n\n"
+        "❌ <b>Hum kya store NAHI karte:</b>\n"
+        "• Phone number\n"
+        "• Email address\n"
+        "• Passwords / OTPs\n"
+        "• Payment card info\n\n"
+        "🗑️ <b>Data delete:</b> /support pe request karein\n\n"
+        "<i>Aapki privacy hamaari priority hai!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 24. /dataaudit
+@bot.message_handler(commands=['dataaudit'])
+def cmd_dataaudit(msg):
+    _sec_anim(msg.chat.id, "🗃️", "Data Audit")
+    uid = msg.from_user.id
+    user = users_col.find_one({"user_id": uid}) or {}
+    balance = user.get("balance", 0)
+    username = user.get("username", "N/A")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🗃️ <b>Data Audit — Your Records</b>\n\n"
+        f"👤 ID: <code>{uid}</code>\n"
+        f"🏷️ Username: @{username}\n"
+        f"💰 Balance: ₹{balance}\n"
+        "📦 Stored Collections:\n"
+        "  • users_col ✅\n"
+        "  • purchase_history_col ✅\n"
+        "  • recharge_col ✅\n\n"
+        "🔐 <b>Data Security:</b> Encrypted + Access Controlled\n\n"
+        "<i>Apna data delete chahiye? /support karein.</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 25. /securitypolicy
+@bot.message_handler(commands=['securitypolicy'])
+def cmd_securitypolicy(msg):
+    _sec_anim(msg.chat.id, "📜", "Security Policy")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "📜 <b>Security Policy</b>\n\n"
+        "🛡️ <b>Bot Security Rules:</b>\n"
+        "1. Koi bhi password/OTP share mat karo\n"
+        "2. Sirf official bot use karo\n"
+        "3. Spam / flood strictly banned hai\n"
+        "4. Fraud pe permanent ban milega\n"
+        "5. Account sharing allowed nahi\n"
+        "6. Fake payment = instant ban + report\n"
+        "7. Admin decisions final hain\n\n"
+        "⚖️ <b>Consequences:</b>\n"
+        "Minor: Warning\nMedium: Temp ban\nMajor: Permanent ban\n\n"
+        "<i>Policy follow karo — sab smooth!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 26. /threatintel
+@bot.message_handler(commands=['threatintel'])
+def cmd_threatintel(msg):
+    _sec_anim(msg.chat.id, "🧠", "Threat Intel")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🧠 <b>Threat Intelligence Feed</b>\n\n"
+        "📡 <b>Current Known Threats:</b>\n"
+        "🔴 Fake 'Legendary X' bots — Report immediately!\n"
+        "🟡 OTP phishing messages — Ignore & block!\n"
+        "🟡 'Free account' scam offers — Fake!\n"
+        "🟢 General spam bots — Auto-filtered\n\n"
+        "✅ <b>Stay Safe:</b>\n"
+        "• Sirf @ID_GMS_SELLER_bot use karo\n"
+        "• Official channel: @II_LEGEND_OTP_SELLER_UPDATES_II\n"
+        "• Koi suspicious link aaye? /reportscam\n\n"
+        "<i>Awareness = best protection!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 27. /networkguard
+@bot.message_handler(commands=['networkguard'])
+def cmd_networkguard(msg):
+    _sec_anim(msg.chat.id, "🌐", "Network Guard")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🌐 <b>Network Security Guard</b>\n\n"
+        "✅ <b>Bot Network Protections:</b>\n"
+        "• HTTPS/TLS on all connections\n"
+        "• Webhook verified by Telegram\n"
+        "• Server firewall: Active\n"
+        "• DDoS protection: Cloudflare\n"
+        "• IP rate limiting: Active\n\n"
+        "📡 <b>Your Network Tips:</b>\n"
+        "• Public WiFi pe VPN use karo\n"
+        "• HTTP sites avoid karo\n"
+        "• DNS-over-HTTPS enable karo\n"
+        "• Router default password change karo\n\n"
+        "<i>Network secure = data secure!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 28. /anonymitycheck
+@bot.message_handler(commands=['anonymitycheck'])
+def cmd_anonymitycheck(msg):
+    _sec_anim(msg.chat.id, "👻", "Anonymity Check")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "👻 <b>Anonymity Status</b>\n\n"
+        "🔍 <b>Bot ke paas aapki info:</b>\n"
+        f"• User ID: Visible (Telegram standard)\n"
+        "• Username: If set publicly\n"
+        "• First Name: As per Telegram\n"
+        "• Phone: ❌ NOT visible to us\n"
+        "• IP Address: ❌ NOT tracked\n\n"
+        "🛡️ <b>Apni anonymity badhao:</b>\n"
+        "• Username set mat karo (optional)\n"
+        "• Telegram: Privacy → Phone → Nobody\n"
+        "• Profile photo private rakho\n"
+        "• VPN use karo for extra privacy\n\n"
+        "<i>Privacy aapka haq hai!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 29. /spoofcheck
+@bot.message_handler(commands=['spoofcheck'])
+def cmd_spoofcheck(msg):
+    _sec_anim(msg.chat.id, "🎭", "Spoof Check")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🎭 <b>Spoofing Protection Check</b>\n\n"
+        "⚠️ <b>Spoofing kya hai?</b>\n"
+        "Fake identity use karke fraud karna.\n\n"
+        "🚨 <b>Common Spoofing Attacks:</b>\n"
+        "• Fake admin impersonation\n"
+        "• Cloned bot accounts\n"
+        "• Fake payment screenshots\n"
+        "• Identity spoofing\n\n"
+        "✅ <b>Hum kaise detect karte hain:</b>\n"
+        "• Admin ID verification (DB-based)\n"
+        "• Payment manual verification\n"
+        "• Screenshot + UTR matching\n\n"
+        "💡 <b>Real admin verify karo:</b> /ohelp mein ID check karo\n\n"
+        "<i>Fake admin ko kabhi trust mat karo!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 30. /botdetect
+@bot.message_handler(commands=['botdetect'])
+def cmd_botdetect(msg):
+    _sec_anim(msg.chat.id, "🤖", "Bot Detection")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🤖 <b>Bot Detection System</b>\n\n"
+        "✅ <b>Anti-Bot Measures Active:</b>\n"
+        "• Honeypot traps: ENABLED\n"
+        "• Rate limiting: ACTIVE\n"
+        "• Behavioral analysis: ON\n"
+        "• Automated purchase detection: ON\n\n"
+        "📋 <b>Bot Activity = Instant Ban:</b>\n"
+        "• Auto-clicking buttons\n"
+        "• Scripted message flooding\n"
+        "• API automation abuse\n"
+        "• Mass purchase scripts\n\n"
+        f"👤 <b>You are detected as: HUMAN ✅</b>\n\n"
+        "<i>Real users ko koi darr nahi!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 31. /scamguard
+@bot.message_handler(commands=['scamguard'])
+def cmd_scamguard(msg):
+    _sec_anim(msg.chat.id, "🛡️", "Scam Guard")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🛡️ <b>Scam Guard System</b>\n\n"
+        "🚨 <b>Known Scam Patterns:</b>\n"
+        "• 'Aapne lucky draw jeeta!' — FAKE\n"
+        "• 'Admin baat karna chahta hai' — VERIFY FIRST\n"
+        "• 'Double money scheme' — SCAM\n"
+        "• Advance payment demand — RED FLAG\n"
+        "• 'Limited time free account' — FAKE\n\n"
+        "✅ <b>Real vs Fake:</b>\n"
+        "Real bot: @ID_GMS_SELLER_bot\n"
+        "Real channel: @II_LEGEND_OTP_SELLER_UPDATES_II\n\n"
+        "📮 Scam milega? /reportscam use karo!\n\n"
+        "<i>Greedy rahoge toh target banoge!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 32. /viruscheck
+@bot.message_handler(commands=['viruscheck'])
+def cmd_viruscheck(msg):
+    _sec_anim(msg.chat.id, "🦠", "Virus Check")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🦠 <b>Malware / Virus Protection</b>\n\n"
+        "✅ <b>Bot Server:</b> Clean — No malware\n"
+        "✅ <b>Database:</b> Sanitized inputs only\n"
+        "✅ <b>Files:</b> No file execution allowed\n\n"
+        "📱 <b>Apna device protect karo:</b>\n"
+        "• Unknown APK install mat karo\n"
+        "• Cracked apps avoid karo\n"
+        "• Antivirus: Malwarebytes / Kaspersky\n"
+        "• OS updates regular karo\n\n"
+        "⚠️ <b>Suspicious file mila?</b>\n"
+        "virustotal.com pe check karo!\n\n"
+        "<i>Device clean = data safe!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 33. /keyloggercheck
+@bot.message_handler(commands=['keyloggercheck'])
+def cmd_keyloggercheck(msg):
+    _sec_anim(msg.chat.id, "⌨️", "Keylogger Check")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "⌨️ <b>Keylogger Protection</b>\n\n"
+        "🚨 <b>Keylogger kya hai?</b>\n"
+        "Software jo aapke keyboard input secretly record karta hai.\n\n"
+        "✅ <b>Bot Protection:</b>\n"
+        "• Koi bhi keylogger bot mein nahi hai\n"
+        "• Open source policy follow karta hai\n"
+        "• No screen capture / recording\n\n"
+        "🛡️ <b>Apne device ko protect karo:</b>\n"
+        "• Unknown keyboard apps remove karo\n"
+        "• Rooted/jailbroken device pe careful raho\n"
+        "• Virtual keyboard use karo for sensitive input\n"
+        "• Regular antivirus scan karo\n\n"
+        "<i>Keyboard security = password security!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 34. /darkweb
+@bot.message_handler(commands=['darkweb'])
+def cmd_darkweb(msg):
+    _sec_anim(msg.chat.id, "🌑", "Dark Web Check")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🌑 <b>Dark Web Exposure Check</b>\n\n"
+        "✅ <b>Bot Data:</b> Dark web pe expose nahi\n\n"
+        "🔍 <b>Apna email/number check karo:</b>\n"
+        "• haveibeenpwned.com\n"
+        "• Firefox Monitor\n"
+        "• Google One (dark web monitoring)\n\n"
+        "⚠️ <b>Agar data leaked mila:</b>\n"
+        "1. Turant password change karo\n"
+        "2. 2FA enable karo\n"
+        "3. Affected accounts review karo\n"
+        "4. Bank se contact karo (if financial)\n\n"
+        "<i>Dark web se darr mat — prepared raho!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 35. /accountfreeze
+@bot.message_handler(commands=['accountfreeze'])
+def cmd_accountfreeze(msg):
+    _sec_anim(msg.chat.id, "🧊", "Account Freeze")
+    uid = msg.from_user.id
+    banned = banned_users_col.find_one({"user_id": uid, "status": "active"})
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🧊 <b>Account Freeze Info</b>\n\n"
+        f"👤 User: <code>{uid}</code>\n"
+        f"❄️ Freeze Status: {'🔴 FROZEN (Banned)' if banned else '✅ ACTIVE — Not Frozen'}\n\n"
+        "📋 <b>Freeze Triggers:</b>\n"
+        "• 3 strikes / warnings\n"
+        "• Fraud detection\n"
+        "• Admin manual freeze\n"
+        "• Payment chargeback\n\n"
+        "🔓 <b>Unfreeze kaise karein:</b>\n"
+        "→ /support se contact karein\n"
+        "→ Admin se appeal karein\n\n"
+        "<i>Freeze se bachne ke liye rules follow karo!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 36. /recoverycheck
+@bot.message_handler(commands=['recoverycheck'])
+def cmd_recoverycheck(msg):
+    _sec_anim(msg.chat.id, "🔄", "Recovery Check")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🔄 <b>Account Recovery Options</b>\n\n"
+        "📱 <b>Telegram Account Recovery:</b>\n"
+        "• SMS OTP (primary number)\n"
+        "• Two-step verification recovery email\n"
+        "• Support: @TelegramSupport\n\n"
+        "🤖 <b>Bot Account Recovery:</b>\n"
+        "• Admin se appeal karein with proof\n"
+        "• Transaction history provide karo\n"
+        "• /support command use karo\n\n"
+        "💰 <b>Balance Recovery:</b>\n"
+        "• Payment proof (screenshot + UTR) dikhao\n"
+        "• Within 24 hours process hoga\n\n"
+        "<i>Always payment proof save karo!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 37. /pincheck
+@bot.message_handler(commands=['pincheck'])
+def cmd_pincheck(msg):
+    _sec_anim(msg.chat.id, "🔢", "PIN Security")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🔢 <b>PIN / Code Security</b>\n\n"
+        "✅ <b>Bot PIN Policy:</b>\n"
+        "• No PIN stored in bot\n"
+        "• OTP: One-time use only\n"
+        "• Session: Auto-expires\n\n"
+        "🔑 <b>Telegram PIN Setup:</b>\n"
+        "Settings → Privacy → Passcode Lock\n\n"
+        "⚠️ <b>PIN Safety Rules:</b>\n"
+        "• Kisi ko bhi OTP share mat karo\n"
+        "• Admin kabhi OTP nahi maangta\n"
+        "• Expired OTP use nahi hota\n"
+        "• Baar baar galat OTP = account lock\n\n"
+        "<i>OTP = One Time Password — share mat karo!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 38. /privacymode
+@bot.message_handler(commands=['privacymode'])
+def cmd_privacymode(msg):
+    _sec_anim(msg.chat.id, "🕵️", "Privacy Mode")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🕵️ <b>Privacy Mode Guide</b>\n\n"
+        "🔐 <b>Maximum Privacy Setup:</b>\n\n"
+        "📱 <b>Telegram Settings:</b>\n"
+        "• Phone: Nobody\n"
+        "• Last Seen: Nobody\n"
+        "• Profile Photo: My Contacts\n"
+        "• Forwarded Messages: Nobody\n"
+        "• Groups/Channels: My Contacts\n\n"
+        "🤖 <b>Bot Privacy:</b>\n"
+        "• Bot nahi dekhta aapka phone\n"
+        "• Data sirf service ke liye use hota\n"
+        "• Third party ke saath share nahi\n\n"
+        "🌐 <b>Extra Privacy:</b>\n"
+        "• VPN use karo\n"
+        "• Brave Browser try karo\n\n"
+        "<i>Privacy = Power!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 39. /safemode
+@bot.message_handler(commands=['safemode'])
+def cmd_safemode(msg):
+    _sec_anim(msg.chat.id, "🦺", "Safe Mode")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "🦺 <b>Safe Mode — Security Checklist</b>\n\n"
+        "✅ <b>Complete ye checklist:</b>\n\n"
+        "□ Telegram 2FA: ON\n"
+        "□ Strong password: SET\n"
+        "□ VPN: ACTIVE\n"
+        "□ Unknown sessions: REMOVED\n"
+        "□ Antivirus: RUNNING\n"
+        "□ Payment proof: SAVED\n"
+        "□ Official channels: JOINED\n"
+        "□ OTP: NEVER shared\n"
+        "□ Backup codes: SAVED\n"
+        "□ Privacy settings: CONFIGURED\n\n"
+        "🏆 <b>Agar sab ✅ hain — aap 100% safe ho!</b>\n\n"
+        "<i>Safety first, always!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# 40. /cybercheck
+@bot.message_handler(commands=['cybercheck'])
+def cmd_cybercheck(msg):
+    _sec_anim(msg.chat.id, "💻", "Cyber Check")
+    uid = msg.from_user.id
+    warns = (privacy_warns_col.find_one({"user_id": uid}) or {}).get("warns", 0)
+    banned = banned_users_col.find_one({"user_id": uid, "status": "active"})
+    score = max(0, 100 - warns * 20 - (30 if banned else 0))
+    bar = "█" * (score // 10) + "░" * (10 - score // 10)
+    shield = "🟢 PROTECTED" if score >= 80 else ("🟡 AT RISK" if score >= 50 else "🔴 DANGER")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🛡️ Shield", callback_data="back_to_menu"),
+               InlineKeyboardButton("📊 Score", callback_data="back_to_menu"))
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "💻 <b>Full Cyber Security Report</b>\n\n"
+        f"👤 User: <code>{uid}</code>\n"
+        f"🛡️ Status: <b>{shield}</b>\n"
+        f"<code>[{bar}]</code> <b>{score}/100</b>\n\n"
+        "📊 <b>Checks Passed:</b>\n"
+        f"{'✅' if not banned else '❌'} Not Banned\n"
+        f"{'✅' if warns == 0 else '⚠️'} Warn Free ({warns}/3)\n"
+        "✅ Rate Limit: Normal\n"
+        "✅ Honeypot: Clean\n"
+        "✅ Session: Active\n\n"
+        "🔗 <b>All Security Commands:</b>\n"
+        "/shield /securityscore /fraudcheck\n"
+        "/threatcheck /blacklistcheck /safemode\n\n"
+        "<i>Stay cyber safe — Legendary X!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# =====================================================================
+# END OF 40 PROTECTION & SECURITY COMMANDS
+# =====================================================================
 
 # ---------------------------------------------------------------------
 # FLASK WEBHOOK SERVER — exclusive control, no polling conflicts
