@@ -306,7 +306,7 @@ class TelegramLogger:
 # Create global instance
 telegram_logger = None
 
-def init_logger(bot_token: str, log_channel_id: str, support_link: str = "https://t.me/TmStocks_Support", buy_link: str = "https://t.me/TmOtpSell_bot"):
+def init_logger(bot_token: str, log_channel_id: str, support_link: str = "https://t.me/rchiex", buy_link: str = "https://t.me/rchiex"):
     """Initialize the global telegram logger"""
     global telegram_logger
     telegram_logger = TelegramLogger(bot_token, log_channel_id, support_link, buy_link)
