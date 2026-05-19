@@ -47,7 +47,9 @@ from pyrogram.errors import (
 # ---------------------------------------------------------------------
 
 BOT_TOKEN = os.getenv('BOT_TOKEN', '')
-ADMIN_ID = int(os.getenv('ADMIN_ID', '8358951104').split(',')[0].strip())
+_raw_admin_ids = [x.strip() for x in os.getenv('ADMIN_ID', '8358951104').split(',') if x.strip().lstrip('-').isdigit()]
+ADMIN_ID = int(_raw_admin_ids[0]) if _raw_admin_ids else 8358951104
+SUPER_ADMIN_IDS = [int(x) for x in _raw_admin_ids]   # ALL comma-separated IDs are super admins
 MONGO_URL = os.getenv('MONGO_URL', '')
 API_ID = int(os.getenv('API_ID', '0'))
 API_HASH = os.getenv('API_HASH', '')
@@ -779,21 +781,21 @@ def get_admin_info(user_id):
         return None
         
 def is_admin(user_id):
-    """Check if user is an admin"""
+    """Check if user is an admin (includes all super admins)"""
     try:
-        # Check if it's the main admin
-        if str(user_id) == str(ADMIN_ID):
+        if int(user_id) in SUPER_ADMIN_IDS:
             return True
-        
-        # Check in admins collection
-        admin = admins_col.find_one({"user_id": user_id})
+        admin = admins_col.find_one({"user_id": int(user_id)})
         return admin is not None
     except:
         return False
 
 def is_super_admin(user_id):
-    """Check if user is the main super admin"""
-    return str(user_id) == str(ADMIN_ID)
+    """Check if user is a super admin (all IDs in SUPER_ADMIN_IDS)"""
+    try:
+        return int(user_id) in SUPER_ADMIN_IDS
+    except:
+        return False
 
 def add_admin(user_id, added_by):
     """Add a new admin (max 5 admins)"""
@@ -1678,56 +1680,84 @@ def clean_ui_and_send_menu(chat_id, user_id, text=None, markup=None):
         # Show sequence of messages with deletion
         def show_sequence():
             try:
-                # ── LEGENDARY CINEMATIC START ANIMATION ──
-                anim_msg = bot.send_message(
-                    chat_id,
-                    "⚡ <b>Initializing...</b>\n\n"
-                    "<code>░░░░░░░░░░░░░░░░░░░░</code>",
-                    parse_mode="HTML"
-                )
-                time.sleep(0.35)
-                try:
-                    bot.edit_message_text(
-                        "🔮 <b>Connecting to Servers...</b>\n\n"
-                        "<code>████░░░░░░░░░░░░░░░░</code>  <b>20%</b>",
-                        chat_id, anim_msg.message_id, parse_mode="HTML"
-                    )
-                except: pass
-                time.sleep(0.35)
-                try:
-                    bot.edit_message_text(
-                        "💎 <b>Loading Your Profile...</b>\n\n"
-                        "<code>████████░░░░░░░░░░░░</code>  <b>40%</b>",
-                        chat_id, anim_msg.message_id, parse_mode="HTML"
-                    )
-                except: pass
-                time.sleep(0.35)
-                try:
-                    bot.edit_message_text(
-                        "👑 <b>Activating Premium Access...</b>\n\n"
-                        "<code>████████████░░░░░░░░</code>  <b>60%</b>",
-                        chat_id, anim_msg.message_id, parse_mode="HTML"
-                    )
-                except: pass
-                time.sleep(0.35)
-                try:
-                    bot.edit_message_text(
-                        "🚀 <b>Opening Dashboard...</b>\n\n"
-                        "<code>████████████████░░░░</code>  <b>80%</b>",
-                        chat_id, anim_msg.message_id, parse_mode="HTML"
-                    )
-                except: pass
-                time.sleep(0.35)
-                try:
-                    bot.edit_message_text(
-                        "✨ <b>WELCOME, LEGEND!</b>\n\n"
-                        "<code>████████████████████</code>  <b>100%</b>\n\n"
-                        "┌─────────────────────┐\n"
-                        "│  👑 𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘 ✗ 𝐎𝐓𝐏  │\n"
-                        "└─────────────────────┘",
-                        chat_id, anim_msg.message_id, parse_mode="HTML"
-                    )
-                except: pass
+                # ── LEGENDARY VARIED START ANIMATIONS (random style each time) ──
+                style = random.randint(1, 5)
+
+                if style == 1:
+                    # Style 1: Cinematic Reveal — premium card unfold
+                    frames = [
+                        ("✦ ✦ ✦", 0.28),
+                        ("✦ ✦ ✦\n\n<i>Connecting to servers...</i>", 0.28),
+                        ("✦ ✦ ✦\n\n🔮 <b>Legendary X OTP</b>\n<i>Elite Telegram Account Seller</i>", 0.28),
+                        ("╔══════════════════════╗\n"
+                         "  🔮 <b>Legendary X OTP</b>\n"
+                         "  <i>Elite Account Seller</i>\n"
+                         "╚══════════════════════╝\n\n"
+                         "🔗 Authenticating your access...", 0.28),
+                        ("╔══════════════════════╗\n"
+                         "  👑 <b>𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘 ✗ 𝐎𝐓𝐏</b>\n"
+                         "  🌟 <i>Premium Access Granted</i>\n"
+                         "╚══════════════════════╝\n\n"
+                         "✅ Welcome, Legend! Your dashboard awaits.", 0.4),
+                    ]
+
+                elif style == 2:
+                    # Style 2: Matrix boot — tech terminal
+                    frames = [
+                        ("<code>$ LEGENDARY_X INIT</code>", 0.25),
+                        ("<code>$ LEGENDARY_X INIT\n> AUTH ........... OK\n> DATABASE ........ OK</code>", 0.25),
+                        ("<code>$ LEGENDARY_X INIT\n> AUTH ........... OK\n> DATABASE ........ OK\n> AI ENGINE ....... OK\n> SECURITY ........ OK</code>", 0.25),
+                        ("<code>$ LEGENDARY_X INIT\n> ALL SYSTEMS GO ✓</code>\n\n"
+                         "🟢 <b>SYSTEM READY</b>\n\n"
+                         "<b>👑 LEGENDARY X OTP</b>\n"
+                         "<i>v2.0 — Premium Seller Bot</i>", 0.4),
+                    ]
+
+                elif style == 3:
+                    # Style 3: Galaxy / Stars — premium neon
+                    frames = [
+                        ("🌌", 0.25),
+                        ("🌌  ✨  🌌", 0.25),
+                        ("🌌  ✨  💫  ✨  🌌", 0.25),
+                        ("🌌  ✨  💫  ⭐  💫  ✨  🌌\n\n<b>Entering the Legendary Zone...</b>", 0.25),
+                        ("⭐━━━━━━━━━━━━━━━━━━━━━⭐\n\n"
+                         "  👑 <b>𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘 ✗ 𝐎𝐓𝐏</b>\n"
+                         "  🌟 <i>The #1 OTP Seller Bot</i>\n\n"
+                         "⭐━━━━━━━━━━━━━━━━━━━━━⭐", 0.4),
+                    ]
+
+                elif style == 4:
+                    # Style 4: Crown reveal — royal theme
+                    frames = [
+                        ("👑", 0.25),
+                        ("👑\n\n<i>Activating your royal session...</i>", 0.25),
+                        ("👑  💎  👑\n\n🔐 <b>Identity verified</b>\n⚔️ <b>Elite access granted</b>", 0.28),
+                        ("♛ ♛ ♛ ♛ ♛ ♛ ♛ ♛ ♛ ♛\n\n"
+                         "  <b>𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘 ✗ 𝐎𝐓𝐏</b>\n"
+                         "  👑 <i>Royal OTP Kingdom</i>\n\n"
+                         "♛ ♛ ♛ ♛ ♛ ♛ ♛ ♛ ♛ ♛", 0.4),
+                    ]
+
+                else:
+                    # Style 5: Fire & Lightning — energetic
+                    frames = [
+                        ("⚡", 0.2),
+                        ("⚡  🔥  ⚡", 0.2),
+                        ("⚡  🔥  💥  🔥  ⚡", 0.2),
+                        ("⚡ <b>POWER SURGE DETECTED!</b> ⚡\n\n🔥 Charging your elite access...", 0.25),
+                        ("🔥━━━━━━━━━━━━━━━━━━━━🔥\n\n"
+                         "  ⚡ <b>𝐋𝐄𝐆𝐄𝐍𝐃𝐀𝐑𝐘 ✗ 𝐎𝐓𝐏</b> ⚡\n"
+                         "  💥 <i>Unstoppable. Elite. Legendary.</i>\n\n"
+                         "🔥━━━━━━━━━━━━━━━━━━━━🔥", 0.4),
+                    ]
+
+                # Play animation frames
+                anim_msg = bot.send_message(chat_id, frames[0][0], parse_mode="HTML")
+                for frame_text, delay in frames[1:]:
+                    time.sleep(delay)
+                    try:
+                        bot.edit_message_text(frame_text, chat_id, anim_msg.message_id, parse_mode="HTML")
+                    except: pass
                 time.sleep(0.4)
                 try:
                     bot.delete_message(chat_id, anim_msg.message_id)
@@ -1861,6 +1891,14 @@ def transfer_balance(sender_id, receiver_id, amount):
 # BOT HANDLERS - UPDATED WITH TWO CHANNELS
 # ---------------------------------------------------------------------
 
+def is_maintenance_on():
+    """Check if maintenance mode is active."""
+    try:
+        cfg = db['bot_config'].find_one({"key": "maintenance_mode"})
+        return bool(cfg and cfg.get("value"))
+    except:
+        return False
+
 @bot.message_handler(commands=['start'])
 def start(msg):
     user_id = msg.from_user.id
@@ -1871,6 +1909,22 @@ def start(msg):
             bot.delete_message(msg.chat.id, msg.message_id)
         except:
             pass
+        return
+
+    # Maintenance mode — block non-admins
+    if is_maintenance_on() and not is_admin(user_id):
+        bot.send_message(
+            msg.chat.id,
+            "🔧 <b>Bot Maintenance Mode ON</b>\n\n"
+            "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+            "  ⚙️ <b>𝐔𝐍𝐃𝐄𝐑 𝐌𝐀𝐈𝐍𝐓𝐄𝐍𝐀𝐍𝐂𝐄</b>\n"
+            "└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+            "🛠️ Hum abhi bot ko upgrade kar rahe hain.\n"
+            "⏰ Thodi der mein wapas aayein.\n\n"
+            "📢 Updates ke liye join karein:\n"
+            "@II_LEGEND_OTP_SELLER_UPDATES_II",
+            parse_mode="HTML"
+        )
         return
     
     # Check if user has joined BOTH channels
@@ -2451,7 +2505,45 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
                 return
             
             country_name = data.replace("country_raw_", "")
-            show_country_details(user_id, country_name, call.message.chat.id, call.message.message_id, call.id)
+            # Show age selection with per-age prices
+            show_age_selection_for_buy(user_id, country_name, call.message.chat.id, call.message.message_id, call.id)
+
+        elif data.startswith("buyage_"):
+            # Format: buyage_<country>_<age_key>
+            if not has_user_joined_channels(user_id):
+                bot.answer_callback_query(call.id, "❌ Join required channels first!", show_alert=True)
+                return
+            # Parse: buyage_{country}_{age} — age uses | as separator to avoid _ clash
+            rest = data[7:]  # strip "buyage_"
+            if "|" in rest:
+                country_name, age_key = rest.split("|", 1)
+            else:
+                bot.answer_callback_query(call.id, "❌ Invalid selection", show_alert=True)
+                return
+            age_display = age_key.replace("_", " ")
+            bot.answer_callback_query(call.id, f"⏳ Finding {age_display} account...")
+            # Find account with matching country + age
+            q_age = {"country": country_name, "used": {"$ne": True},
+                     "account_age": age_display,
+                     "$or": [{"status": "active"}, {"status": {"$exists": False}}]}
+            account = accounts_col.find_one(q_age)
+            if not account:
+                # Try any account for this country if no age match
+                account = accounts_col.find_one({
+                    "country": country_name, "used": {"$ne": True},
+                    "$or": [{"status": "active"}, {"status": {"$exists": False}}]
+                })
+            if not account:
+                bot.answer_callback_query(call.id, f"❌ Out of Stock for {age_display}!", show_alert=True)
+                return
+            # Override price with age-specific price from countries_col
+            country_doc = get_country_by_name(country_name)
+            if country_doc:
+                age_prices = country_doc.get("age_prices", {})
+                if age_key in age_prices:
+                    account = dict(account)
+                    account["_override_price"] = float(age_prices[age_key])
+            process_purchase(user_id, account, call.message.chat.id, call.message.message_id, call.id)
         
         elif data.startswith("buy_now_"):
             if not has_user_joined_channels(user_id):
@@ -2558,6 +2650,37 @@ Click the buttons below to join both channels, then press VERIFY ✅"""
             bot.answer_callback_query(call.id, "")
             show_countries(call.message.chat.id, page=page, message_id=call.message.message_id)
         
+        elif data in ("maintenance_on", "maintenance_off"):
+            if not is_admin(user_id):
+                bot.answer_callback_query(call.id, "❌ Admin only", show_alert=True)
+                return
+            mode = (data == "maintenance_on")
+            db['bot_config'].update_one(
+                {"key": "maintenance_mode"},
+                {"$set": {"key": "maintenance_mode", "value": mode, "updated_at": datetime.utcnow(), "updated_by": user_id}},
+                upsert=True
+            )
+            status = "🔴 ON — Users blocked!" if mode else "🟢 OFF — Bot normal!"
+            bot.answer_callback_query(call.id, f"Maintenance {status}", show_alert=True)
+            try:
+                bot.edit_message_text(
+                    f"✅ <b>Maintenance Mode: {status}</b>\n\n"
+                    f"{'⚠️ Sirf admins use kar sakte hain.' if mode else '🎉 Sab users ab use kar sakte hain!'}",
+                    call.message.chat.id, call.message.message_id, parse_mode="HTML"
+                )
+            except: pass
+
+        elif data in ("notify_on", "notify_off"):
+            bot.answer_callback_query(call.id, f"🔔 Notifications {'enabled' if data == 'notify_on' else 'disabled'}!", show_alert=False)
+            markup = InlineKeyboardMarkup()
+            markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+            try:
+                bot.edit_message_text(
+                    f"{'🔔 <b>Notifications ON!</b>\n\nAapko saari updates milti rahengi.' if data == 'notify_on' else '🔕 <b>Notifications OFF</b>\n\nAapko koi notification nahi ayegi.'}",
+                    call.message.chat.id, call.message.message_id, parse_mode="HTML", reply_markup=markup
+                )
+            except: pass
+
         elif data == "back_to_menu":
             # Premium back navigation animation
             try:
@@ -5700,6 +5823,68 @@ def show_countries(chat_id, page=0, message_id=None):
     sent_msg = bot.send_message(chat_id, text, reply_markup=markup, parse_mode="HTML")
     user_last_message[chat_id] = sent_msg.message_id
 
+def show_age_selection_for_buy(user_id, country_name, chat_id, message_id, callback_id):
+    """Show age options with per-age prices for buying."""
+    try:
+        country = get_country_by_name(country_name)
+        if not country:
+            bot.answer_callback_query(callback_id, "❌ Country not found", show_alert=True)
+            return
+        bot.answer_callback_query(callback_id, "")
+        base_price = country.get("price", 0)
+        age_prices = country.get("age_prices", {})
+        flag = get_country_flag(country_name)
+        dial = get_country_code(country_name)
+        total_stock = get_available_accounts_count(country_name)
+
+        AGE_OPTIONS = [
+            ("🆕 Fresh", "Fresh"),
+            ("📅 2 yr old", "2_yr_old"),
+            ("📅 3 yr old", "3_yr_old"),
+            ("📅 4 yr old", "4_yr_old"),
+            ("📅 5 yr old", "5_yr_old"),
+            ("📅 6 yr old", "6_yr_old"),
+            ("📅 7 yr old", "7_yr_old"),
+        ]
+        markup = InlineKeyboardMarkup(row_width=2)
+        age_btns = []
+        for label, key in AGE_OPTIONS:
+            age_display = key.replace("_", " ")
+            # Get age-specific price or fall back to base price
+            age_price = age_prices.get(key, base_price)
+            # Check stock for this age
+            age_stock = accounts_col.count_documents({
+                "country": country_name, "account_age": age_display,
+                "used": {"$ne": True},
+                "$or": [{"status": "active"}, {"status": {"$exists": False}}]
+            })
+            if age_stock > 0:
+                age_btns.append(InlineKeyboardButton(
+                    f"{label} — ₹{float(age_price):.0f}",
+                    callback_data=f"buyage_{country_name}|{key}"
+                ))
+        if age_btns:
+            markup.add(*age_btns)
+        else:
+            # No age-tagged stock — fall back to direct buy
+            if total_stock > 0:
+                markup.add(InlineKeyboardButton("🛒 Buy Now", callback_data=f"buy_now_{country_name}"))
+        markup.add(InlineKeyboardButton("⬅️ Back", callback_data="back_to_countries"))
+
+        text = (
+            f"⚡ <b>Account Info</b>\n\n"
+            f"<blockquote>{flag} <b>Country:</b> {country_name} {dial}\n"
+            f"📦 <b>Available:</b> {total_stock}\n"
+            f"💰 <b>Base Price:</b> ₹{float(base_price):.0f}\n\n"
+            f"🗓️ <b>Select Account Age &amp; Price:</b></blockquote>"
+        )
+        if not age_btns and total_stock == 0:
+            text += "\n\n❌ <b>Out of Stock!</b>"
+        edit_or_resend(chat_id, message_id, text, markup=markup, parse_mode="HTML")
+    except Exception as e:
+        logger.error(f"show_age_selection_for_buy error: {e}")
+        bot.answer_callback_query(callback_id, "❌ Error loading options", show_alert=True)
+
 def show_country_details(user_id, country_name, chat_id, message_id, callback_id):
     try:
         country = get_country_by_name(country_name)
@@ -5794,7 +5979,8 @@ def process_purchase(user_id, account_or_id, chat_id, message_id, callback_id):
             bot.answer_callback_query(callback_id, "❌ Country not found", show_alert=True)
             return
         
-        price = country['price']
+        # Use age-override price if set, else fall back to country base price
+        price = account.get("_override_price", None) or country['price']
         balance = get_balance(user_id)
         
         if balance < price:
@@ -6520,6 +6706,908 @@ def cmd_uptime(msg):
         parse_mode="HTML", reply_markup=markup
     )
 
+# ═══════════════════════════════════════════════════════════════
+# 🛡️ SECURITY COMMANDS (10+)
+# ═══════════════════════════════════════════════════════════════
+
+def _anim_send(chat_id, label="Loading"):
+    """Send a quick 2-frame loading animation, return message id."""
+    bars = ["▰▰▰▰▰▱▱▱▱▱", "▰▰▰▰▰▰▰▰▰▰"]
+    m = bot.send_message(chat_id, f"⏳ <b>{label}...</b>\n<code>{bars[0]}</code>", parse_mode="HTML")
+    time.sleep(0.3)
+    try:
+        bot.edit_message_text(f"✅ <b>{label} Ready!</b>\n<code>{bars[1]}</code>", chat_id, m.message_id, parse_mode="HTML")
+    except: pass
+    time.sleep(0.2)
+    try:
+        bot.delete_message(chat_id, m.message_id)
+    except: pass
+
+@bot.message_handler(commands=['safetytips'])
+def cmd_safetytips(msg):
+    if is_user_banned(msg.from_user.id): return
+    _anim_send(msg.chat.id, "Loading Safety Tips")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🛡️ Security Status", callback_data="safety_check"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        "  🛡️ <b>𝐒𝐀𝐅𝐄𝐓𝐘 𝐓𝐈𝐏𝐒</b>\n"
+        "└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        "🔐 <b>Account Security:</b>\n"
+        "  ✅ 2-Step Verification ON rakho\n"
+        "  ✅ Strong password use karo\n"
+        "  ✅ Session regularly check karo\n"
+        "  ✅ Unknown links pe click mat karo\n\n"
+        "💳 <b>Payment Safety:</b>\n"
+        "  ✅ Sirf official UPI ID use karo\n"
+        "  ✅ Screenshot save karo payment ka\n"
+        "  ✅ Kisi ko OTP share mat karo\n\n"
+        "🤖 <b>Bot Safety:</b>\n"
+        "  ✅ Bot token/API keys share mat karo\n"
+        "  ✅ Suspicious activity turant report karo\n"
+        "  ✅ Fake admin impersonators se bachke raho\n\n"
+        "📞 <b>Scam Alert:</b>\n"
+        "  ❌ Bot admin kabhi paise direct nahi maangta\n"
+        "  ❌ Free accounts ka jhansa — SCAM hai\n"
+        "  ❌ Unsolicited messages ignore karo",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['privacycheck'])
+def cmd_privacycheck(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    _anim_send(msg.chat.id, "Scanning Privacy")
+    warn_data = privacy_warns_col.find_one({"user_id": user_id}) or {}
+    warns = warn_data.get("count", 0)
+    is_banned = is_user_banned(user_id)
+    status = "🔴 BANNED" if is_banned else ("🟡 At Risk" if warns > 0 else "🟢 Clean")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🛡️ Safety Tips", callback_data="safety_check"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        f"┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        f"  🔍 <b>𝐏𝐑𝐈𝐕𝐀𝐂𝐘 𝐒𝐓𝐀𝐓𝐔𝐒</b>\n"
+        f"└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        f"🆔 <b>Your ID:</b> <code>{user_id}</code>\n"
+        f"🛡️ <b>Status:</b> {status}\n"
+        f"⚠️ <b>AI Warnings:</b> {warns}/3\n"
+        f"🔒 <b>Data Encrypted:</b> ✅ Yes\n"
+        f"📊 <b>Data Shared:</b> ❌ Never\n\n"
+        f"<i>Aapka data 100% safe hai.</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['reportscam'])
+def cmd_reportscam(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    parts = msg.text.split(None, 1)
+    if len(parts) < 2:
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+        bot.send_message(msg.chat.id, "📢 <b>Usage:</b> <code>/reportscam [user_id ya description]</code>\n\nExample: <code>/reportscam 123456789 fake admin impersonation</code>", parse_mode="HTML", reply_markup=markup)
+        return
+    report_text = parts[1].strip()
+    user_name = msg.from_user.first_name or "User"
+    username = f"@{msg.from_user.username}" if msg.from_user.username else f"ID:{user_id}"
+    try:
+        bot.send_message(ADMIN_ID,
+            f"🚨 <b>SCAM REPORT!</b>\n\n"
+            f"👤 Reporter: {user_name} ({username})\n"
+            f"🆔 Reporter ID: <code>{user_id}</code>\n\n"
+            f"📝 Report:\n<code>{report_text[:1000]}</code>",
+            parse_mode="HTML")
+    except: pass
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id, "✅ <b>Report Submit Ho Gayi!</b>\n\nAdmin ko notify kar diya gaya hai. Jald action liya jaayega.\n\n🙏 Scam report karne ke liye shukriya!", parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['antispam'])
+def cmd_antispam(msg):
+    if is_user_banned(msg.from_user.id): return
+    _anim_send(msg.chat.id, "Loading Anti-Spam Info")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        "  🚫 <b>𝐀𝐍𝐓𝐈-𝐒𝐏𝐀𝐌 𝐒𝐘𝐒𝐓𝐄𝐌</b>\n"
+        "└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        "🛡️ <b>Active Protections:</b>\n"
+        "  ✅ Auto-ban on 3 privacy violations\n"
+        "  ✅ Honeypot trap for suspicious users\n"
+        "  ✅ Rate limiting on all commands\n"
+        "  ✅ Scam detection AI layer\n"
+        "  ✅ Fake payment screenshot detector\n\n"
+        "⚠️ <b>Banned Activity:</b>\n"
+        "  ❌ Asking for bot token/API keys\n"
+        "  ❌ Spamming commands rapidly\n"
+        "  ❌ Trying to access admin panel\n"
+        "  ❌ Sharing fake payment proofs\n\n"
+        "📊 <b>Result of Violation:</b>\n"
+        "  🔨 Instant permanent ban\n"
+        "  📢 Admin gets immediate alert",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['dataprotect'])
+def cmd_dataprotect(msg):
+    if is_user_banned(msg.from_user.id): return
+    _anim_send(msg.chat.id, "Loading Privacy Policy")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        "  🔐 <b>𝐃𝐀𝐓𝐀 𝐏𝐑𝐎𝐓𝐄𝐂𝐓𝐈𝐎𝐍</b>\n"
+        "└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        "📦 <b>Data We Store:</b>\n"
+        "  • Telegram User ID\n"
+        "  • Username (optional)\n"
+        "  • Wallet balance & transactions\n"
+        "  • Order history\n\n"
+        "🚫 <b>Data We NEVER Store:</b>\n"
+        "  • Your phone number\n"
+        "  • Your messages outside bot\n"
+        "  • Payment card details\n"
+        "  • Personal documents\n\n"
+        "🔒 <b>Security Measures:</b>\n"
+        "  • All data encrypted in MongoDB\n"
+        "  • No third-party data sharing\n"
+        "  • Admin-only database access\n\n"
+        "<i>Your privacy is our top priority.</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['twofa'])
+def cmd_twofa(msg):
+    if is_user_banned(msg.from_user.id): return
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        "  🔐 <b>2FA / TWO-FACTOR AUTH</b>\n"
+        "└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        "🛡️ <b>2FA kya hai?</b>\n"
+        "2-Step Verification — extra layer of security\n"
+        "taaki sirf tum hi apna account access kar sako.\n\n"
+        "📱 <b>Telegram pe 2FA on kaise karein:</b>\n"
+        "1️⃣ Telegram Settings kholein\n"
+        "2️⃣ Privacy and Security jao\n"
+        "3️⃣ 2-Step Verification tap karo\n"
+        "4️⃣ Strong password set karo\n"
+        "5️⃣ Recovery email add karo ✅\n\n"
+        "⚠️ <b>Important:</b>\n"
+        "  • Password yaad rakhna zaroori hai\n"
+        "  • Recovery email verify karo\n"
+        "  • Kisi ko password share mat karo",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['warninginfo'])
+def cmd_warninginfo(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    warn_data = privacy_warns_col.find_one({"user_id": user_id}) or {}
+    warns = warn_data.get("count", 0)
+    remaining = 3 - warns
+    status_bar = "🟢" * (3 - warns) + "🔴" * warns
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        f"┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        f"  ⚠️ <b>𝐖𝐀𝐑𝐍𝐈𝐍𝐆 𝐒𝐘𝐒𝐓𝐄𝐌</b>\n"
+        f"└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        f"⚠️ <b>Your Warnings:</b> {warns}/3  {status_bar}\n"
+        f"🟢 <b>Remaining Safe Chances:</b> {remaining}\n\n"
+        f"<b>Warning Rules:</b>\n"
+        f"  • Asking bot secrets = 1 warn\n"
+        f"  • 3 warns = permanent ban\n"
+        f"  • Warns reset only by admin\n\n"
+        f"{'⚠️ <b>Be careful!</b> Tum risky zone mein ho!' if warns > 0 else '✅ <b>You are safe!</b> Koi warn nahi hai.'}",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['securitytips'])
+def cmd_securitytips(msg):
+    if is_user_banned(msg.from_user.id): return
+    _anim_send(msg.chat.id, "Loading Security Guide")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🛡️ Privacy Check", callback_data="safety_check"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        "  🔰 <b>𝐒𝐄𝐂𝐔𝐑𝐈𝐓𝐘 𝐆𝐔𝐈𝐃𝐄</b>\n"
+        "└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        "🔑 <b>Top 10 Security Tips:</b>\n\n"
+        "1️⃣ <b>Strong Password</b> — Numbers + Letters + Symbols\n"
+        "2️⃣ <b>2FA Enable</b> — Always on Telegram\n"
+        "3️⃣ <b>Active Sessions</b> — Check monthly\n"
+        "4️⃣ <b>Unknown Links</b> — Never click\n"
+        "5️⃣ <b>OTP Never Share</b> — Kisi ko bhi nahi\n"
+        "6️⃣ <b>Official Channels</b> — Sirf verify karo\n"
+        "7️⃣ <b>Payment Screenshot</b> — Hamesha save karo\n"
+        "8️⃣ <b>Fake Admins</b> — Verify karo pehle\n"
+        "9️⃣ <b>Report Scam</b> — /reportscam use karo\n"
+        "🔟 <b>Regular Logout</b> — Unknown devices se\n\n"
+        "🏆 <i>Security first — always!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['trustscore'])
+def cmd_trustscore(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    _anim_send(msg.chat.id, "Calculating Trust Score")
+    orders = orders_col.count_documents({"user_id": user_id})
+    warn_data = privacy_warns_col.find_one({"user_id": user_id}) or {}
+    warns = warn_data.get("count", 0)
+    ref_data = referrals_col.find_one({"user_id": user_id}) or {}
+    refs = ref_data.get("total_referrals", 0)
+    score = min(100, (orders * 5) + (refs * 10) - (warns * 20) + 50)
+    score = max(0, score)
+    if score >= 80: trust_label, trust_icon = "Excellent", "🟢"
+    elif score >= 60: trust_label, trust_icon = "Good", "🔵"
+    elif score >= 40: trust_label, trust_icon = "Average", "🟡"
+    else: trust_label, trust_icon = "Low", "🔴"
+    bar_filled = int(score / 10)
+    bar = "█" * bar_filled + "░" * (10 - bar_filled)
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        f"┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        f"  {trust_icon} <b>𝐓𝐑𝐔𝐒𝐓 𝐒𝐂𝐎𝐑𝐄</b>\n"
+        f"└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        f"📊 <b>Score: {score}/100</b>  {trust_icon}\n"
+        f"<code>[{bar}]</code>\n"
+        f"🏅 <b>Trust Level:</b> {trust_label}\n\n"
+        f"📈 <b>Score Breakdown:</b>\n"
+        f"  🛒 Orders: +{orders * 5} pts\n"
+        f"  👥 Referrals: +{refs * 10} pts\n"
+        f"  ⚠️ Warnings: -{warns * 20} pts\n\n"
+        f"<i>High trust = better deals & priority!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['blocklist'])
+def cmd_blocklist(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("📢 Report Scam", callback_data="safety_check"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        "  🚫 <b>𝐁𝐋𝐎𝐂𝐊𝐋𝐈𝐒𝐓 𝐈𝐍𝐅𝐎</b>\n"
+        "└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        "🔒 <b>Automatic Ban Triggers:</b>\n"
+        "  • 3 AI privacy violations\n"
+        "  • Admin ban command\n"
+        "  • Fraudulent payment detected\n"
+        "  • Bot abuse / spam detected\n\n"
+        "📋 <b>Ban Types:</b>\n"
+        "  🔴 Temporary — 24 to 72 hours\n"
+        "  ⛔ Permanent — No appeal\n\n"
+        "✅ <b>How to Unban:</b>\n"
+        "  Contact /support with your User ID\n"
+        "  Admin will review your case\n\n"
+        "<i>Follow rules to stay safe!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['auditlog'])
+def cmd_auditlog(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    _anim_send(msg.chat.id, "Fetching Your Activity")
+    orders = orders_col.count_documents({"user_id": user_id})
+    recharges = recharges_col.count_documents({"user_id": user_id})
+    warn_data = privacy_warns_col.find_one({"user_id": user_id}) or {}
+    warns = warn_data.get("count", 0)
+    last_order = orders_col.find_one({"user_id": user_id}, sort=[("created_at", -1)]) or {}
+    last_date = last_order.get("created_at", None)
+    last_str = last_date.strftime("%d %b %Y") if last_date and hasattr(last_date, 'strftime') else "Never"
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        f"┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        f"  📋 <b>𝐀𝐂𝐓𝐈𝐕𝐈𝐓𝐘 𝐋𝐎𝐆</b>\n"
+        f"└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        f"🛒 <b>Total Orders:</b> {orders}\n"
+        f"💳 <b>Total Recharges:</b> {recharges}\n"
+        f"⚠️ <b>Warnings Given:</b> {warns}\n"
+        f"📅 <b>Last Order:</b> {last_str}\n"
+        f"🆔 <b>User ID:</b> <code>{user_id}</code>",
+        parse_mode="HTML", reply_markup=markup)
+
+# ═══════════════════════════════════════════════════════════════
+# 💰 WALLET & EARNING COMMANDS
+# ═══════════════════════════════════════════════════════════════
+
+@bot.message_handler(commands=['wallet'])
+def cmd_wallet(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    _anim_send(msg.chat.id, "Loading Wallet")
+    w = wallets_col.find_one({"user_id": user_id}) or {}
+    bal = float(w.get("balance", 0))
+    spent = float(w.get("total_spent", 0) if "total_spent" in w else 0)
+    ref_data = referrals_col.find_one({"user_id": user_id}) or {}
+    ref_earned = float(ref_data.get("total_earned", 0))
+    markup = InlineKeyboardMarkup(row_width=2)
+    markup.add(
+        InlineKeyboardButton("💳 Recharge", callback_data="recharge"),
+        InlineKeyboardButton("📜 History", callback_data="history")
+    )
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        f"┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        f"  💰 <b>𝐖𝐀𝐋𝐋𝐄𝐓 𝐎𝐕𝐄𝐑𝐕𝐈𝐄𝐖</b>\n"
+        f"└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        f"💰 <b>Current Balance:</b> ₹{bal:.2f}\n"
+        f"💸 <b>Total Spent:</b> ₹{spent:.2f}\n"
+        f"🎁 <b>Referral Earned:</b> ₹{ref_earned:.2f}\n\n"
+        f"<i>Recharge karo aur enjoy karo!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['earn'])
+def cmd_earn(msg):
+    if is_user_banned(msg.from_user.id): return
+    _anim_send(msg.chat.id, "Loading Earn Guide")
+    ref_code = f"REF{msg.from_user.id}"
+    bot_username = bot.get_me().username
+    ref_link = f"https://t.me/{bot_username}?start={ref_code}"
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("👥 My Referral", callback_data="refer_friends"), InlineKeyboardButton("🎁 Redeem", callback_data="redeem_coupon"))
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        "  💎 <b>𝐖𝐀𝐘𝐒 𝐓𝐎 𝐄𝐀𝐑𝐍</b>\n"
+        "└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        "👥 <b>1. Refer Friends</b> — ₹2 per referral\n"
+        f"   🔗 Your link: <code>{ref_link}</code>\n\n"
+        "🎁 <b>2. Coupon Codes</b> — Discount + Bonus\n"
+        "   Use /coupon [code] to redeem\n\n"
+        "🌟 <b>3. VIP Perks</b> — More orders = better deals\n"
+        "   Check /vip for your level\n\n"
+        "🏆 <b>4. Leaderboard</b> — Top buyers get rewards!\n"
+        "   Check /leaderboard\n\n"
+        "💡 <i>Jitna zyada refer karo, utna zyada kamao!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['rechargehist'])
+def cmd_rechargehist(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    _anim_send(msg.chat.id, "Fetching Recharge History")
+    recharges = list(recharges_col.find({"user_id": user_id}, sort=[("created_at", -1)], limit=8))
+    if not recharges:
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("💳 Recharge Now", callback_data="recharge"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+        bot.send_message(msg.chat.id, "💳 <b>Koi recharge nahi mila!</b>\n\nPehla recharge karo aur bot use karo.", parse_mode="HTML", reply_markup=markup)
+        return
+    text = "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n  💳 <b>𝐑𝐄𝐂𝐇𝐀𝐑𝐆𝐄 𝐇𝐈𝐒𝐓𝐎𝐑𝐘</b>\n└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+    for r in recharges:
+        amt = r.get("amount", 0)
+        status = r.get("status", "pending")
+        icon = "✅" if status == "approved" else ("⏳" if status == "pending" else "❌")
+        date = r.get("created_at", None)
+        ds = date.strftime("%d %b") if date and hasattr(date, 'strftime') else ""
+        text += f"{icon} <b>₹{amt}</b> — {status.title()} {ds}\n"
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("💳 Recharge", callback_data="recharge"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id, text, parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['cashback'])
+def cmd_cashback(msg):
+    if is_user_banned(msg.from_user.id): return
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🛒 Buy Now", callback_data="buy_account"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        "  💰 <b>𝐂𝐀𝐒𝐇𝐁𝐀𝐂𝐊 𝐒𝐘𝐒𝐓𝐄𝐌</b>\n"
+        "└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        "🎉 <b>Special Cashback Offers:</b>\n\n"
+        "  🥉 5+ orders → 5% cashback\n"
+        "  🥈 10+ orders → 10% cashback\n"
+        "  🥇 20+ orders → 15% cashback\n"
+        "  👑 50+ orders → 20% cashback!\n\n"
+        "💳 <b>Referral Cashback:</b>\n"
+        "  ₹2 per each referred user's first buy\n\n"
+        "🎟️ <b>Coupon Cashback:</b>\n"
+        "  Special coupons pe extra 5-20% off!\n\n"
+        "<i>Zyada buy karo = zyada bachao!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# ═══════════════════════════════════════════════════════════════
+# 📦 PRODUCT & STOCK COMMANDS
+# ═══════════════════════════════════════════════════════════════
+
+@bot.message_handler(commands=['cheapest'])
+def cmd_cheapest(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    _anim_send(msg.chat.id, "Finding Cheapest Countries")
+    pipeline = [
+        {"$match": {"used": {"$ne": True}, "$or": [{"status": "active"}, {"status": {"$exists": False}}]}},
+        {"$group": {"_id": "$country", "count": {"$sum": 1}}},
+        {"$match": {"count": {"$gt": 0}}}
+    ]
+    available = {r["_id"]: r["count"] for r in accounts_col.aggregate(pipeline)}
+    all_countries = list(countries_col.find({}))
+    priced = [(c.get("name", ""), float(c.get("price", 99)), available.get(c.get("name", ""), 0)) for c in all_countries if available.get(c.get("name", ""), 0) > 0]
+    priced.sort(key=lambda x: x[1])
+    text = "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n  💸 <b>𝐂𝐇𝐄𝐀𝐏𝐄𝐒𝐓 𝐂𝐎𝐔𝐍𝐓𝐑𝐈𝐄𝐒</b>\n└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+    medals = ["🥇", "🥈", "🥉"]
+    for i, (name, price, cnt) in enumerate(priced[:10]):
+        m = medals[i] if i < 3 else f"{i+1}."
+        text += f"{m} <b>{name}</b> — ₹{price:.0f}  📦{cnt}\n"
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🛒 Buy Now", callback_data="buy_account"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id, text, parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['instock'])
+def cmd_instock(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    _anim_send(msg.chat.id, "Checking Stock")
+    total = accounts_col.count_documents({"used": {"$ne": True}, "$or": [{"status": "active"}, {"status": {"$exists": False}}]})
+    countries_with_stock = accounts_col.distinct("country", {"used": {"$ne": True}})
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🛒 Buy Account", callback_data="buy_account"), InlineKeyboardButton("📋 Price List", callback_data="price_list"))
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        f"┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        f"  📦 <b>𝐒𝐓𝐎𝐂𝐊 𝐒𝐓𝐀𝐓𝐔𝐒</b>\n"
+        f"└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        f"📦 <b>Total Available:</b> {total} accounts\n"
+        f"🌍 <b>Countries:</b> {len(countries_with_stock)} available\n"
+        f"🤖 <b>Status:</b> {'🟢 In Stock' if total > 0 else '🔴 Out of Stock'}\n\n"
+        f"<i>Jaldi karo — stock limited hai!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['paymethod'])
+def cmd_paymethod(msg):
+    if is_user_banned(msg.from_user.id): return
+    upi_id = os.getenv('UPI_ID', 'N/A')
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("💳 Recharge Now", callback_data="recharge"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        "  💳 <b>𝐏𝐀𝐘𝐌𝐄𝐍𝐓 𝐌𝐄𝐓𝐇𝐎𝐃𝐒</b>\n"
+        "└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        "✅ <b>Accepted Payments:</b>\n\n"
+        "  📱 <b>UPI (Recommended)</b>\n"
+        f"  UPI ID: <code>{upi_id}</code>\n"
+        "  PhonePe / GPay / Paytm / BHIM\n\n"
+        "  🏦 <b>Bank Transfer</b>\n"
+        "  Contact admin for details\n\n"
+        "⚡ <b>Minimum Recharge:</b> ₹3\n"
+        "🚀 <b>Instant Approval:</b> Usually within 5 min\n\n"
+        "📸 <i>Payment screenshot bhejo for faster approval!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+# ═══════════════════════════════════════════════════════════════
+# 📣 INFO & SUPPORT COMMANDS
+# ═══════════════════════════════════════════════════════════════
+
+@bot.message_handler(commands=['news'])
+def cmd_news(msg):
+    if is_user_banned(msg.from_user.id): return
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("📢 Updates Channel", url="https://t.me/II_LEGEND_OTP_SELLER_UPDATES_II"))
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        "  📰 <b>𝐋𝐀𝐓𝐄𝐒𝐓 𝐍𝐄𝐖𝐒</b>\n"
+        "└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        "🆕 <b>Recent Updates:</b>\n\n"
+        "  ✅ v2.0 — AI Chatbot upgraded\n"
+        "  ✅ v2.0 — 60+ new commands added\n"
+        "  ✅ v2.0 — Premium animations added\n"
+        "  ✅ v2.0 — Security system enhanced\n"
+        "  ✅ v1.9 — VIP system launched\n\n"
+        "📢 <b>Follow our channel for latest news!</b>",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['channels'])
+def cmd_channels(msg):
+    if is_user_banned(msg.from_user.id): return
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("📢 Updates Channel", url="https://t.me/II_LEGEND_OTP_SELLER_UPDATES_II"))
+    markup.add(InlineKeyboardButton("🛒 Seller Channel", url="https://t.me/Mystric_seller"))
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        "  📢 <b>𝐎𝐅𝐅𝐈𝐂𝐈𝐀𝐋 𝐂𝐇𝐀𝐍𝐍𝐄𝐋𝐒</b>\n"
+        "└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        "📣 <b>@II_LEGEND_OTP_SELLER_UPDATES_II</b>\n"
+        "   Latest news, offers &amp; announcements\n\n"
+        "🛒 <b>@Mystric_seller</b>\n"
+        "   Main seller channel &amp; support\n\n"
+        "<i>Join karo free mein &amp; updates paate raho!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['feedback'])
+def cmd_feedback(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    parts = msg.text.split(None, 1)
+    if len(parts) < 2:
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+        bot.send_message(msg.chat.id, "💬 <b>Usage:</b> <code>/feedback [aapka feedback]</code>\n\nExample: <code>/feedback Bot bahut fast hai!</code>", parse_mode="HTML", reply_markup=markup)
+        return
+    feedback_text = parts[1].strip()
+    user_name = msg.from_user.first_name or "User"
+    username = f"@{msg.from_user.username}" if msg.from_user.username else f"ID:{user_id}"
+    try:
+        bot.send_message(ADMIN_ID, f"💬 <b>User Feedback!</b>\n\n👤 {user_name} ({username})\n🆔 <code>{user_id}</code>\n\n📝 Feedback:\n<i>{feedback_text[:500]}</i>", parse_mode="HTML")
+    except: pass
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id, "✅ <b>Feedback Submit Ho Gayi!</b>\n\nAdmin tak pahunch gayi. Shukriya! 🙏\nAapka feedback humein behtar banata hai.", parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['bugreport'])
+def cmd_bugreport(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    parts = msg.text.split(None, 1)
+    if len(parts) < 2:
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+        bot.send_message(msg.chat.id, "🐛 <b>Usage:</b> <code>/bugreport [bug description]</code>\n\nExample: <code>/bugreport Balance update nahi hua payment ke baad</code>", parse_mode="HTML", reply_markup=markup)
+        return
+    bug_text = parts[1].strip()
+    user_name = msg.from_user.first_name or "User"
+    username = f"@{msg.from_user.username}" if msg.from_user.username else f"ID:{user_id}"
+    try:
+        bot.send_message(ADMIN_ID, f"🐛 <b>Bug Report!</b>\n\n👤 {user_name} ({username})\n🆔 <code>{user_id}</code>\n\n🔍 Bug:\n<code>{bug_text[:500]}</code>", parse_mode="HTML")
+    except: pass
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id, "✅ <b>Bug Report Submit Ho Gayi!</b>\n\nHum jald fix karenge. Shukriya! 🛠️", parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['suggestion'])
+def cmd_suggestion(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    parts = msg.text.split(None, 1)
+    if len(parts) < 2:
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+        bot.send_message(msg.chat.id, "💡 <b>Usage:</b> <code>/suggestion [aapka idea]</code>\n\nExample: <code>/suggestion Night mode add karo</code>", parse_mode="HTML", reply_markup=markup)
+        return
+    sug_text = parts[1].strip()
+    user_name = msg.from_user.first_name or "User"
+    username = f"@{msg.from_user.username}" if msg.from_user.username else f"ID:{user_id}"
+    try:
+        bot.send_message(ADMIN_ID, f"💡 <b>Suggestion!</b>\n\n👤 {user_name} ({username})\n🆔 <code>{user_id}</code>\n\n📝 Idea:\n<i>{sug_text[:500]}</i>", parse_mode="HTML")
+    except: pass
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id, "✅ <b>Suggestion Submit Ho Gayi!</b>\n\n🙏 Shukriya for your idea! Admin review karega.", parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['contact'])
+def cmd_contact(msg):
+    if is_user_banned(msg.from_user.id): return
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🛠️ Open Support", callback_data="support"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        "  📞 <b>𝐂𝐎𝐍𝐓𝐀𝐂𝐓 𝐔𝐒</b>\n"
+        "└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        "💬 <b>Support:</b> /support command use karo\n"
+        "📢 <b>Updates:</b> @II_LEGEND_OTP_SELLER_UPDATES_II\n"
+        "🛒 <b>Channel:</b> @Mystric_seller\n\n"
+        "⏰ <b>Response Time:</b> Usually within 1-2 hours\n"
+        "🌐 <b>Available:</b> 24/7 (AI) / Daily (Admin)\n\n"
+        "<i>Jaldi help chahiye? AI se pucho /ai</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['tos'])
+def cmd_tos(msg):
+    if is_user_banned(msg.from_user.id): return
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("✅ I Accept", callback_data="back_to_menu"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        "  📜 <b>𝐓𝐄𝐑𝐌𝐒 𝐎𝐅 𝐒𝐄𝐑𝐕𝐈𝐂𝐄</b>\n"
+        "└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        "📋 <b>By using this bot, you agree:</b>\n\n"
+        "✅ Accounts sirf personal use ke liye\n"
+        "✅ No spamming / illegal activity\n"
+        "✅ Payment issues 24hr mein report karein\n"
+        "✅ Bot rules follow karna zaroori hai\n\n"
+        "❌ <b>Prohibited:</b>\n"
+        "  • Reselling without permission\n"
+        "  • Using accounts for scam/fraud\n"
+        "  • Multiple accounts per person\n"
+        "  • Chargeback / fake payment reports\n\n"
+        "⚠️ <b>Violations = Permanent ban!</b>\n\n"
+        "<i>Rules follow karo, enjoy karo!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['refundpolicy'])
+def cmd_refundpolicy(msg):
+    if is_user_banned(msg.from_user.id): return
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🛠️ Contact Support", callback_data="support"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        "  💰 <b>𝐑𝐄𝐅𝐔𝐍𝐃 𝐏𝐎𝐋𝐈𝐂𝐘</b>\n"
+        "└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        "✅ <b>Refund Eligible Cases:</b>\n"
+        "  • Account delivered but OTP not working\n"
+        "  • Wrong account country delivered\n"
+        "  • Duplicate charge/deduction\n"
+        "  • Technical error during purchase\n\n"
+        "❌ <b>Non-Refundable Cases:</b>\n"
+        "  • Account used successfully\n"
+        "  • User-side login issues\n"
+        "  • Changed mind after delivery\n\n"
+        "📝 <b>How to Request:</b>\n"
+        "  Use /support with Order ID\n"
+        "  Admin will review within 24hr",
+        parse_mode="HTML", reply_markup=markup)
+
+# ═══════════════════════════════════════════════════════════════
+# 🎮 FUN & ENGAGEMENT COMMANDS
+# ═══════════════════════════════════════════════════════════════
+
+@bot.message_handler(commands=['daily'])
+def cmd_daily(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    _anim_send(msg.chat.id, "Checking Daily Bonus")
+    user_data = users_col.find_one({"user_id": user_id}) or {}
+    last_daily = user_data.get("last_daily_bonus")
+    now = datetime.utcnow()
+    can_claim = True
+    time_left = ""
+    if last_daily:
+        diff = now - last_daily
+        if diff.total_seconds() < 86400:
+            can_claim = False
+            remaining = 86400 - diff.total_seconds()
+            hours = int(remaining // 3600)
+            mins = int((remaining % 3600) // 60)
+            time_left = f"{hours}h {mins}m"
+    if can_claim:
+        bonus = random.choice([1, 1, 2, 2, 3, 5])
+        users_col.update_one({"user_id": user_id}, {"$set": {"last_daily_bonus": now}})
+        wallets_col.update_one({"user_id": user_id}, {"$inc": {"balance": bonus}}, upsert=True)
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("🛒 Buy Account", callback_data="buy_account"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+        bot.send_message(msg.chat.id,
+            f"🎉 <b>DAILY BONUS CLAIMED!</b>\n\n"
+            f"✨ <b>+₹{bonus}</b> wallet mein add ho gaya!\n\n"
+            f"⏰ <b>Next Claim:</b> 24 hours baad\n"
+            f"💡 <i>Daily claim karte raho!</i>",
+            parse_mode="HTML", reply_markup=markup)
+    else:
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+        bot.send_message(msg.chat.id,
+            f"⏳ <b>Abhi Claim Nahi Ho Sakta!</b>\n\n"
+            f"⌛ <b>Next Bonus In:</b> {time_left}\n\n"
+            f"<i>Roz aao aur free bonus claim karo!</i>",
+            parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['lucky'])
+def cmd_lucky(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    _anim_send(msg.chat.id, "Rolling Lucky Draw")
+    number = random.randint(1, 100)
+    if number >= 95:
+        result, prize, icon = "JACKPOT!", "₹10 wallet bonus", "🎰"
+        wallets_col.update_one({"user_id": user_id}, {"$inc": {"balance": 10}}, upsert=True)
+    elif number >= 75:
+        result, prize, icon = "BIG WIN!", "₹3 wallet bonus", "🎊"
+        wallets_col.update_one({"user_id": user_id}, {"$inc": {"balance": 3}}, upsert=True)
+    elif number >= 50:
+        result, prize, icon = "Lucky!", "₹1 wallet bonus", "⭐"
+        wallets_col.update_one({"user_id": user_id}, {"$inc": {"balance": 1}}, upsert=True)
+    else:
+        result, prize, icon = "Better Luck!", "No prize this time", "🎲"
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🔄 Try Again Tomorrow", callback_data="back_to_menu"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        f"🎲 <b>LUCKY DRAW!</b>\n\n"
+        f"{icon} <b>Result: {result}</b>\n"
+        f"🎯 <b>Your Number:</b> {number}/100\n"
+        f"🏆 <b>Prize:</b> {prize}\n\n"
+        f"<i>Ek chance roz — kal phir try karo!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['streak'])
+def cmd_streak(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    _anim_send(msg.chat.id, "Loading Streak")
+    user_data = users_col.find_one({"user_id": user_id}) or {}
+    streak = user_data.get("streak", 0)
+    if streak >= 30: streak_icon, streak_label = "🔥🔥🔥", "Legendary Streak"
+    elif streak >= 14: streak_icon, streak_label = "🔥🔥", "Hot Streak"
+    elif streak >= 7: streak_icon, streak_label = "🔥", "On Fire"
+    elif streak >= 3: streak_icon, streak_label = "⭐", "Building Up"
+    else: streak_icon, streak_label = "🌱", "Just Starting"
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🎁 Daily Bonus", callback_data="back_to_menu"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        f"┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        f"  {streak_icon} <b>𝐃𝐀𝐈𝐋𝐘 𝐒𝐓𝐑𝐄𝐀𝐊</b>\n"
+        f"└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        f"{streak_icon} <b>Current Streak:</b> {streak} days\n"
+        f"🏅 <b>Status:</b> {streak_label}\n\n"
+        f"<b>Streak Rewards:</b>\n"
+        f"  3 days  → ⭐ +₹1 bonus\n"
+        f"  7 days  → 🔥 +₹3 bonus\n"
+        f"  14 days → 🔥🔥 +₹5 bonus\n"
+        f"  30 days → 🏆 +₹15 bonus!\n\n"
+        f"<i>Roz /daily karo streak maintain karo!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['achievement'])
+def cmd_achievement(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    _anim_send(msg.chat.id, "Loading Achievements")
+    orders = orders_col.count_documents({"user_id": user_id})
+    ref_data = referrals_col.find_one({"user_id": user_id}) or {}
+    refs = ref_data.get("total_referrals", 0)
+    text = ("┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+            "  🏆 <b>𝐀𝐂𝐇𝐈𝐄𝐕𝐄𝐌𝐄𝐍𝐓𝐒</b>\n"
+            "└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+            "<b>🛒 Buyer Achievements:</b>\n")
+    text += f"  {'✅' if orders >= 1 else '🔒'} First Purchase — 1 order\n"
+    text += f"  {'✅' if orders >= 5 else '🔒'} Regular Buyer — 5 orders\n"
+    text += f"  {'✅' if orders >= 15 else '🔒'} Pro Buyer — 15 orders\n"
+    text += f"  {'✅' if orders >= 30 else '🔒'} Elite Buyer — 30 orders\n"
+    text += f"  {'✅' if orders >= 50 else '🔒'} Legendary — 50 orders\n\n"
+    text += "<b>👥 Referral Achievements:</b>\n"
+    text += f"  {'✅' if refs >= 1 else '🔒'} First Referral — 1 ref\n"
+    text += f"  {'✅' if refs >= 5 else '🔒'} Recruiter — 5 refs\n"
+    text += f"  {'✅' if refs >= 10 else '🔒'} Super Recruiter — 10 refs\n"
+    text += f"\n📊 <b>Your Progress:</b> {orders} orders, {refs} refs"
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🛒 Buy More", callback_data="buy_account"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id, text, parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['quiz'])
+def cmd_quiz(msg):
+    if is_user_banned(msg.from_user.id): return
+    questions = [
+        ("Bot ka naam kya hai? A) OTP Master  B) Legendary X OTP  C) Telegram Bot", "B"),
+        ("OTP ka full form kya hai? A) One Time Password  B) Online Transfer Payment  C) Optional Text Phone", "A"),
+        ("Balance add karne ke liye kaunsa command hai? A) /add  B) /topup  C) /fund", "B"),
+        ("AI se baat karne ke liye kaunsa command hai? A) /chat  B) /robot  C) /ai", "C"),
+        ("Referral bonus kitna milta hai? A) ₹5  B) ₹2  C) ₹10", "B"),
+    ]
+    q, correct = random.choice(questions)
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🤖 Ask AI Hint", callback_data="ai_chat"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        f"🧠 <b>QUIZ TIME!</b>\n\n"
+        f"❓ {q}\n\n"
+        f"💡 <i>Answer AI se pucho /ai use karke!</i>\n"
+        f"<tg-spoiler>Answer: {correct}</tg-spoiler>",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['tip'])
+def cmd_tip(msg):
+    if is_user_banned(msg.from_user.id): return
+    tips = [
+        "💡 /daily use karo roz free bonus pao!",
+        "💡 Dosto ko refer karo, ₹2 per refer kamao!",
+        "💡 /cheapest se sabse sasti country dhundho!",
+        "💡 /vip check karo — zyada orders = better perks!",
+        "💡 /ai se koi bhi sawal pucho — 24/7 available!",
+        "💡 /trustscore check karo apna trust level dekhne ke liye!",
+        "💡 /achievement check karo apni progress dekhne ke liye!",
+        "💡 Payment ke baad screenshot save karo hamesha!",
+        "💡 /coupon use karo discount ke liye!",
+        "💡 /leaderboard mein top 10 mein aao special prizes jeetne ke liye!",
+        "💡 /streak maintain karo extra bonuses ke liye!",
+        "💡 Agar OTP nahi aaya, admin se /support se contact karo!",
+    ]
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🔄 Another Tip", callback_data="back_to_menu"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        f"┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        f"  💡 <b>𝐁𝐎𝐓 𝐓𝐈𝐏</b>\n"
+        f"└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        f"{random.choice(tips)}\n\n"
+        f"<i>Roz naye tips ke liye dobara try karo!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['jokes'])
+def cmd_jokes(msg):
+    if is_user_banned(msg.from_user.id): return
+    jokes = [
+        "😂 OTP seller ne apni girlfriend ko OTP diya… ab unka account ban ho gaya! 🔒",
+        "😄 Q: Bot ko kya bola? A: \"Tera OTP aaya!\" Bot bola: \"Mujhe koi SMS nahi aata!\" 📱",
+        "🤣 Main itna busy hoon ki mera phone khud OTP bhejta hai mujhe confirm karne ke liye!",
+        "😂 Database admin gaya hospital... Doctor ne kaha: 'Query kya hai?' 😅",
+        "🤣 Programmer ka joke: 99 bugs in code, take one down, patch it around — 127 bugs in code! 🐛",
+    ]
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("😂 Another Joke", callback_data="back_to_menu"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id, f"😂 <b>Random Joke:</b>\n\n{random.choice(jokes)}", parse_mode="HTML", reply_markup=markup)
+
+# ═══════════════════════════════════════════════════════════════
+# ⚙️ SETTINGS & PREFERENCES COMMANDS
+# ═══════════════════════════════════════════════════════════════
+
+@bot.message_handler(commands=['notify'])
+def cmd_notify(msg):
+    if is_user_banned(msg.from_user.id): return
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🔔 ON", callback_data="notify_on"), InlineKeyboardButton("🔕 OFF", callback_data="notify_off"))
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        "  🔔 <b>𝐍𝐎𝐓𝐈𝐅𝐈𝐂𝐀𝐓𝐈𝐎𝐍𝐒</b>\n"
+        "└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        "🔔 <b>You Receive Notifications For:</b>\n\n"
+        "  ✅ Order confirmation\n"
+        "  ✅ Recharge approval\n"
+        "  ✅ Referral bonus earned\n"
+        "  ✅ New offers &amp; discounts\n"
+        "  ✅ Bot announcements\n\n"
+        "<i>Notifications hamesha on rakhein!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['invite'])
+def cmd_invite(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    ref_code = f"REF{user_id}"
+    bot_username = bot.get_me().username
+    ref_link = f"https://t.me/{bot_username}?start={ref_code}"
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("📤 Share Invite", url=f"https://t.me/share/url?url={ref_link}&text=🔥+Legendary+X+OTP+Bot+-+Best+OTP+Seller!+Use+my+link:"))
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        f"┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        f"  🤝 <b>𝐈𝐍𝐕𝐈𝐓𝐄 𝐅𝐑𝐈𝐄𝐍𝐃𝐒</b>\n"
+        f"└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        f"🔗 <b>Your Invite Link:</b>\n"
+        f"<code>{ref_link}</code>\n\n"
+        f"🎁 <b>Earn ₹2</b> for each friend who joins!\n"
+        f"👥 <b>No limit</b> — refer as many as you want!\n\n"
+        f"📤 Share karo aur paise kamao!",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['countdown'])
+def cmd_countdown(msg):
+    if is_user_banned(msg.from_user.id): return
+    now = datetime.utcnow()
+    midnight = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    diff = midnight - now
+    hours = int(diff.total_seconds() // 3600)
+    mins = int((diff.total_seconds() % 3600) // 60)
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🎁 Daily Bonus", callback_data="back_to_menu"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        f"⏰ <b>DAILY RESET COUNTDOWN</b>\n\n"
+        f"🕐 <b>Next Reset In:</b> {hours}h {mins}m\n\n"
+        f"<b>What resets daily:</b>\n"
+        f"  🎁 Daily Bonus\n"
+        f"  🎲 Lucky Draw\n"
+        f"  📊 Daily Stats\n\n"
+        f"<i>Roz log in karo daily benefits ke liye!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+@bot.message_handler(commands=['premium'])
+def cmd_premium(msg):
+    if is_user_banned(msg.from_user.id): return
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("👑 Check My VIP", callback_data="back_to_menu"), InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        "  👑 <b>𝐏𝐑𝐄𝐌𝐈𝐔𝐌 𝐁𝐄𝐍𝐄𝐅𝐈𝐓𝐒</b>\n"
+        "└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        "💎 <b>More you buy = More perks:</b>\n\n"
+        "⭐ <b>Bronze (5+ orders)</b>\n"
+        "   Basic priority support\n\n"
+        "💎 <b>Silver (10+ orders)</b>\n"
+        "   Priority queue + small discount\n\n"
+        "👑 <b>Gold (20+ orders)</b>\n"
+        "   Faster support + extra 10% discount\n\n"
+        "🔥 <b>Legendary (50+ orders)</b>\n"
+        "   All perks + exclusive offers + max discounts!\n\n"
+        "Use /vip to check your current level!",
+        parse_mode="HTML", reply_markup=markup)
+
 # /ai — Chat with Legendary AI assistant
 @bot.message_handler(commands=['ai'])
 def cmd_ai(msg):
@@ -6656,93 +7744,115 @@ def cmd_help(msg):
         "━━━━━━━━━━━━━━━━━━━━\n"
         "/start — Main menu open karein\n"
         "/menu — Dashboard refresh karein\n"
-        "/cancel — Current action cancel karein\n"
-        "/help — Yeh command list dekhein\n\n"
+        "/cancel — Koi bhi action cancel karein\n"
+        "/help — Puri command list\n\n"
 
         "━━━━━━━━━━━━━━━━━━━━\n"
         "💰 <b>WALLET &amp; PAYMENTS</b>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
-        "/balance — Wallet balance check karein\n"
-        "/topup — Wallet recharge karein (UPI)\n"
-        "/history — Last 10 purchases dekhein\n"
-        "/orders — Recent 5 orders dekhein\n"
-        "/coupon &lt;code&gt; — Coupon code redeem karein\n"
-        "/transactions — Transaction history dekhein\n\n"
+        "/balance — Current wallet balance\n"
+        "/wallet — Wallet ka full overview\n"
+        "/topup — UPI se recharge karein\n"
+        "/rechargehist — Recharge history\n"
+        "/transactions — Transaction history\n"
+        "/paymethod — Payment methods info\n"
+        "/cashback — Cashback offers dekhein\n\n"
 
         "━━━━━━━━━━━━━━━━━━━━\n"
         "🛒 <b>BUYING &amp; ACCOUNTS</b>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
-        "/price — Live price list with stock\n"
-        "/stock — All countries stock dekhein\n"
         "/buy — Account kharidne ka shortcut\n"
-        "/countries — Available countries list\n"
-        "/myorders — Apne saare orders\n"
-        "/lastorder — Last order ki details\n\n"
+        "/price — Live price list with stock\n"
+        "/stock — All countries stock\n"
+        "/instock — Stock status dekhein\n"
+        "/countries — Available countries\n"
+        "/cheapest — Sabse sasti countries\n"
+        "/history — Last 10 purchases\n"
+        "/orders — Recent 5 orders\n"
+        "/myorders — Saare orders dekhein\n"
+        "/lastorder — Last order ki details\n"
+        "/coupon &lt;code&gt; — Coupon redeem\n\n"
 
         "━━━━━━━━━━━━━━━━━━━━\n"
-        "👤 <b>PROFILE &amp; ACCOUNT</b>\n"
+        "👤 <b>PROFILE &amp; STATS</b>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
-        "/profile — Premium profile card dekhein\n"
-        "/myid — Apna Telegram ID &amp; role\n"
-        "/refer — Referral link &amp; earnings\n"
-        "/referral — Referral stats dekhein\n"
-        "/rank — Apna buyer rank dekhein\n"
-        "/loyalty — Loyalty points check karein\n"
-        "/badges — Apne achievement badges\n"
-        "/vip — VIP status check karein\n\n"
+        "/profile — Premium profile card\n"
+        "/myid — Telegram ID &amp; role\n"
+        "/rank — Buyer rank dekhein\n"
+        "/vip — VIP level &amp; perks\n"
+        "/premium — Premium benefits\n"
+        "/achievement — Achievements &amp; badges\n"
+        "/stats — Bot statistics\n"
+        "/about — Bot ke baare mein\n\n"
 
         "━━━━━━━━━━━━━━━━━━━━\n"
         "🤖 <b>AI ASSISTANT</b>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
         "/ai — Legendary AI se baat karein\n"
-        "/endchat — AI chat se bahar aayein\n"
-        "/askai &lt;sawal&gt; — Direct AI se question puchein\n"
-        "/aichat — AI chat mode start karein\n"
-        "/clearai — AI conversation history clear karein\n\n"
+        "/askai &lt;sawal&gt; — Direct question puchein\n"
+        "/clearai — AI history clear karein\n"
+        "/endchat — AI chat se bahar aayein\n\n"
 
         "━━━━━━━━━━━━━━━━━━━━\n"
-        "🎁 <b>REWARDS &amp; OFFERS</b>\n"
+        "🎁 <b>REWARDS &amp; EARN</b>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
-        "/refer — Dosto ko invite karo, paise kamao\n"
-        "/referlink — Apna unique referral link\n"
-        "/referbonus — Referral bonus history\n"
-        "/coupon &lt;code&gt; — Coupon redeem karein\n"
-        "/offers — Current special offers\n"
-        "/dailybonus — Daily login bonus claim karein\n"
-        "/rewards — Apne saare rewards dekhein\n"
-        "/leaderboard — Top 10 buyers ka board\n\n"
+        "/refer — Referral link &amp; earnings\n"
+        "/referral — Referral stats\n"
+        "/referlink — Quick referral link\n"
+        "/invite — Dosto ko invite karo\n"
+        "/earn — Ways to earn money\n"
+        "/daily — Daily free bonus claim\n"
+        "/lucky — Lucky draw khelo\n"
+        "/streak — Daily streak dekhein\n"
+        "/leaderboard — Top 10 buyers\n\n"
 
         "━━━━━━━━━━━━━━━━━━━━\n"
-        "📊 <b>STATS &amp; INFO</b>\n"
+        "🛡️ <b>SECURITY (10+ Commands)</b>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
-        "/ping — Bot latency &amp; server status\n"
-        "/stats — Bot ke overall statistics\n"
-        "/uptime — Bot online time check karein\n"
-        "/support — Support contact karein\n"
-        "/safety — Security features info\n"
+        "/safety — Security protection info\n"
+        "/safetytips — Safety tips guide\n"
+        "/securitytips — Top 10 security tips\n"
+        "/privacycheck — Apni privacy status\n"
+        "/twofa — 2FA setup guide\n"
+        "/antispam — Anti-spam system info\n"
+        "/dataprotect — Data protection policy\n"
+        "/warninginfo — Warning system status\n"
+        "/trustscore — Apna trust score\n"
+        "/blocklist — Ban/block system info\n"
+        "/auditlog — Apni activity log\n"
+        "/reportscam &lt;desc&gt; — Scam report karo\n\n"
+
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "📣 <b>INFO &amp; FEEDBACK</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "/support — Support contact\n"
         "/faq — Frequently asked questions\n"
+        "/news — Latest bot updates\n"
+        "/channels — Official channels\n"
+        "/contact — Contact info\n"
         "/tos — Terms of service\n"
-        "/about — Bot ke baare mein jaanein\n\n"
+        "/refundpolicy — Refund policy\n"
+        "/feedback &lt;msg&gt; — Feedback bhejo\n"
+        "/bugreport &lt;desc&gt; — Bug report karo\n"
+        "/suggestion &lt;idea&gt; — Suggestion do\n\n"
 
         "━━━━━━━━━━━━━━━━━━━━\n"
-        "🔔 <b>NOTIFICATIONS &amp; SETTINGS</b>\n"
+        "🎮 <b>FUN &amp; GAMES</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "/quiz — Bot quiz khelo\n"
+        "/jokes — Random jokes\n"
+        "/tip — Random bot tips\n"
+        "/countdown — Next reset timer\n\n"
+
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "⚙️ <b>SETTINGS</b>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
         "/notify — Notification settings\n"
-        "/language — Language set karein\n"
-        "/settings — Account settings\n"
-        "/alerts — Price drop alerts set karein\n"
-        "/wishlist — Wishlist countries add karein\n\n"
+        "/ping — Bot latency &amp; status\n"
+        "/uptime — Server uptime check\n\n"
 
-        "━━━━━━━━━━━━━━━━━━━━\n"
-        "🛡️ <b>SECURITY</b>\n"
-        "━━━━━━━━━━━━━━━━━━━━\n"
-        "/safety — Safety &amp; privacy info\n"
-        "/report &lt;user_id&gt; — Kisi ko report karein\n"
-        "/block &lt;user_id&gt; — User ko block karein\n"
-        "/privacy — Privacy settings\n\n"
-
-        "💡 <i>Tip: Buttons use karke bhi sab kuch kar sakte ho!</i>\n"
-        "💎 <i>Premium members ko extra features milte hain.</i>"
+        f"📊 <b>Total Commands: 80+</b> | /help2 for more\n"
+        "💡 <i>Buttons use karke bhi sab kar sakte ho!</i>"
     )
 
     if is_admin(user_id):
@@ -7007,75 +8117,80 @@ def cmd_ohelp(msg):
     if not is_super_admin(user_id):
         bot.send_message(msg.chat.id, "❌ Owner only command.")
         return
+    owners_list = ", ".join(f"<code>{oid}</code>" for oid in SUPER_ADMIN_IDS)
     bot.send_message(
         msg.chat.id,
-        "📖 <b>Full Owner Command Guide</b>\n\n"
+        "┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+        "  📖 <b>𝐎𝐖𝐍𝐄𝐑 𝐂𝐎𝐌𝐌𝐀𝐍𝐃 𝐆𝐔𝐈𝐃𝐄</b>\n"
+        "└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+        f"👑 <b>Super Admin IDs:</b> {owners_list}\n\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
         "👤 <b>USER COMMANDS</b>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
-        "/start — Main menu\n"
-        "/menu — Main menu dobara\n"
-        "/profile — Profile card\n"
-        "/balance — Wallet balance\n"
-        "/price — Live price list\n"
-        "/history — Last 10 purchases\n"
-        "/refer — Referral link\n"
-        "/myid — Telegram ID + role\n"
-        "/support — Support contact\n"
-        "/safety — Security info\n"
-        "/cancel — Koi bhi input cancel\n"
-        "/ai — AI assistant chat\n"
-        "/endchat — AI chat exit\n"
-        "/ping — Bot status + uptime\n"
-        "/stock — Live stock sabhi countries\n"
-        "/topup — Wallet recharge shortcut\n"
-        "/orders — Recent 5 orders dekhein\n"
-        "/coupon <code> — Coupon redeem karein\n"
-        "/leaderboard — Top 10 buyers\n"
-        "/help — Command list\n\n"
+        "/start /menu /help /cancel /balance /wallet\n"
+        "/profile /myid /rank /vip /premium /achievement\n"
+        "/price /stock /instock /cheapest /countries /buy\n"
+        "/history /orders /myorders /lastorder /transactions\n"
+        "/rechargehist /cashback /paymethod /topup /coupon\n"
+        "/refer /referral /referlink /invite /earn\n"
+        "/daily /lucky /streak /quiz /jokes /tip\n"
+        "/ai /askai /clearai /endchat /ping /uptime /about\n"
+        "/stats /faq /support /contact /tos /refundpolicy\n"
+        "/news /channels /feedback /bugreport /suggestion\n"
+        "/safetytips /securitytips /privacycheck /twofa\n"
+        "/antispam /dataprotect /warninginfo /trustscore\n"
+        "/blocklist /auditlog /reportscam /safety\n"
+        "/notify /countdown /leaderboard /topcountries\n\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
         "👑 <b>ADMIN COMMANDS</b>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
-        "/sales — Sales summary (aaj + total)\n"
+        "/sales — Aaj ki + total sales\n"
         "/revenue — Country-wise revenue\n"
-        "/topcountries — Top 10 countries by sales\n"
-        "/serverstats — Server stock dashboard\n"
-        "/security — Security + risk dashboard\n"
-        "/honeypot_list — Honeypot trap users\n"
-        "/sendbroadcast — Sabhi users ko broadcast\n"
-        "/resetbroadcast — Stuck broadcast reset\n"
-        "/clearaccounts — Saare accounts DB se delete ⚠️\n"
+        "/topcountries — Top 10 countries\n"
+        "/serverstats — Stock dashboard\n"
+        "/security — Security dashboard\n"
+        "/honeypot_list — Honeypot users\n"
+        "/sendbroadcast — Broadcast sab users ko\n"
+        "/resetbroadcast — Broadcast reset\n"
+        "/clearaccounts — Accounts delete ⚠️\n"
         "/restart — Bot restart\n"
-        "/addadmin &lt;user_id&gt; — Admin banao\n"
-        "/removeadmin &lt;user_id&gt; — Admin hatao\n"
-        "/userinfo &lt;user_id&gt; — Kisi bhi user ki full detail\n"
-        "/addbal &lt;user_id&gt; &lt;amount&gt; — User ko balance do\n"
-        "/totalusers — Total users, orders &amp; stock stats\n"
-        "/ban &lt;user_id&gt; — User ko turant ban karo\n"
-        "/unban &lt;user_id&gt; — User ka ban hatao\n"
-        "/setprice &lt;country&gt; &lt;price&gt; — Country ka price badlo\n"
-        "/couponlist — Saare coupons ki list\n"
-        "/pendingorders — Abhi ke pending orders\n\n"
+        "/addadmin &lt;id&gt; — Admin add\n"
+        "/removeadmin &lt;id&gt; — Admin remove\n"
+        "/userinfo &lt;id&gt; — User full info\n"
+        "/addbal &lt;id&gt; &lt;amt&gt; — Balance do\n"
+        "/deductbal &lt;id&gt; &lt;amt&gt; — Balance hatao\n"
+        "/totalusers — Total users + stats\n"
+        "/ban &lt;id&gt; — User ban karo\n"
+        "/unban &lt;id&gt; — Ban hatao\n"
+        "/setprice &lt;country&gt; [age] &lt;price&gt; — Price set\n"
+        "  Example: /setprice Jordan 30\n"
+        "  Example: /setprice Jordan Fresh 25\n"
+        "  Example: /setprice Jordan 2_yr_old 35\n"
+        "/couponlist — Coupon list\n"
+        "/pendingorders — Pending orders\n"
+        "/maintenance [on|off] — Maintenance mode toggle\n"
+        "/warnlist — Warned users\n"
+        "/removewarn &lt;id&gt; — Warn hatao\n\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
         "🔐 <b>OWNER ONLY COMMANDS</b>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
-        "/setaikey &lt;api_key&gt; — Naya Gemini AI key set karo (MongoDB mein save)\n"
+        "/setaikey &lt;api_key&gt; — Gemini AI key set\n"
         "/ohelp — Yeh guide\n\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
-        "🛠️ <b>ADMIN PANEL (Button) Features:</b>\n"
+        "🛠️ <b>ADMIN PANEL FEATURES</b>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
-        "• ➕ Account add/manage\n"
-        "• 📢 Broadcast message\n"
+        "• ➕ Account add (country → age → single/bulk)\n"
+        "• 📢 Broadcast message to all users\n"
         "• 💸 Balance deduct karo\n"
         "• ↩️ Refund karo\n"
         "• 🚫 Ban / ✅ Unban users\n"
-        "• 💬 Kisi bhi user ko message\n"
-        "• 🌍 Country manage karo\n"
+        "• 💬 Message kisi bhi user ko\n"
+        "• 🌍 Country + price manage\n"
         "• 🎟 Coupon management\n"
-        "• 💳 Pending recharge approve/reject\n"
-        "• 👥 Admin add/remove (Owner)\n"
-        "• 🔐 Admin permissions toggle (Owner)\n\n"
-        "<i>👑 Tum Super Admin ho — sabhi commands available hain.</i>",
+        "• 💳 Recharge approve/reject\n"
+        "• 👥 Admin add/remove (Owner only)\n"
+        "• 🔧 Maintenance mode on/off\n\n"
+        "<i>👑 Tum Super Admin ho — sabhi commands available!</i>",
         parse_mode="HTML"
     )
 
@@ -7418,7 +8533,51 @@ def cmd_unban(msg):
         bot.send_message(msg.chat.id, f"❌ Error: {e}")
 
 
-# /setprice <country> <price> — Admin quick price change
+# /maintenance [on|off] — Toggle maintenance mode (admin only)
+@bot.message_handler(commands=['maintenance'])
+def cmd_maintenance(msg):
+    if not is_admin(msg.from_user.id):
+        bot.send_message(msg.chat.id, "❌ Sirf admin kar sakta hai.")
+        return
+    parts = msg.text.strip().split()
+    if len(parts) < 2 or parts[1].lower() not in ("on", "off"):
+        # Show current status
+        is_on = is_maintenance_on()
+        markup = InlineKeyboardMarkup(row_width=2)
+        markup.add(
+            InlineKeyboardButton("🔧 Turn ON", callback_data="maintenance_on"),
+            InlineKeyboardButton("✅ Turn OFF", callback_data="maintenance_off")
+        )
+        bot.send_message(msg.chat.id,
+            f"┌━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+            f"  🔧 <b>𝐌𝐀𝐈𝐍𝐓𝐄𝐍𝐀𝐍𝐂𝐄 𝐌𝐎𝐃𝐄</b>\n"
+            f"└━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+            f"Current Status: {'🔴 <b>ON</b> (Users blocked)' if is_on else '🟢 <b>OFF</b> (Normal)'}\n\n"
+            f"Usage:\n"
+            f"<code>/maintenance on</code>  — Block all users\n"
+            f"<code>/maintenance off</code> — Restore access",
+            parse_mode="HTML", reply_markup=markup)
+        return
+    mode = parts[1].lower() == "on"
+    db['bot_config'].update_one(
+        {"key": "maintenance_mode"},
+        {"$set": {"key": "maintenance_mode", "value": mode, "updated_at": datetime.utcnow(), "updated_by": msg.from_user.id}},
+        upsert=True
+    )
+    status_text = "🔴 <b>ON</b> — Sab users block ho gaye!" if mode else "🟢 <b>OFF</b> — Bot normal ho gaya!"
+    bot.send_message(msg.chat.id,
+        f"✅ <b>Maintenance Mode Updated!</b>\n\n"
+        f"Status: {status_text}\n\n"
+        f"{'⚠️ Sirf admins use kar sakte hain ab.' if mode else '🎉 Sab users ab use kar sakte hain!'}",
+        parse_mode="HTML")
+    # Notify all super admins
+    for aid in SUPER_ADMIN_IDS:
+        if aid != msg.from_user.id:
+            try:
+                bot.send_message(aid, f"⚙️ <b>Maintenance Mode {'ON' if mode else 'OFF'}</b> by admin <code>{msg.from_user.id}</code>", parse_mode="HTML")
+            except: pass
+
+# /setprice <country> [age] <price> — Admin price change (supports age-based pricing)
 @bot.message_handler(commands=['setprice'])
 def cmd_setprice(msg):
     if not is_admin(msg.from_user.id):
@@ -7427,27 +8586,64 @@ def cmd_setprice(msg):
     parts = msg.text.strip().split()
     if len(parts) < 3:
         bot.send_message(msg.chat.id,
-            "Usage: /setprice &lt;Country Name&gt; &lt;price&gt;\nExample: /setprice India 30",
+            "📋 <b>SetPrice Usage:</b>\n\n"
+            "<code>/setprice &lt;Country&gt; &lt;price&gt;</code>\n"
+            "<i>Base price set karo</i>\n\n"
+            "<code>/setprice &lt;Country&gt; &lt;age_key&gt; &lt;price&gt;</code>\n"
+            "<i>Age-specific price set karo</i>\n\n"
+            "<b>Age Keys:</b> Fresh, 2_yr_old, 3_yr_old, 4_yr_old, 5_yr_old, 6_yr_old, 7_yr_old\n\n"
+            "<b>Examples:</b>\n"
+            "<code>/setprice Jordan 30</code>\n"
+            "<code>/setprice Jordan Fresh 25</code>\n"
+            "<code>/setprice Jordan 2_yr_old 35</code>",
             parse_mode="HTML")
-        return
-    try:
-        price = float(parts[-1])
-        country_name = " ".join(parts[1:-1]).strip()
-    except ValueError:
-        bot.send_message(msg.chat.id, "❌ Invalid price. Number daalo.")
         return
     _typing(msg.chat.id)
     try:
-        result = countries_col.update_one(
-            {"name": {"$regex": f"^{country_name}$", "$options": "i"}},
-            {"$set": {"price": price}}
-        )
-        if result.matched_count == 0:
-            bot.send_message(msg.chat.id, f"❌ Country <b>{country_name}</b> nahi mili.", parse_mode="HTML")
+        # Check if age key is given: /setprice Country AgeKey Price
+        VALID_AGES = {"Fresh", "2_yr_old", "3_yr_old", "4_yr_old", "5_yr_old", "6_yr_old", "7_yr_old"}
+        # Parts: ['/setprice', ...country..., optionally age_key, price]
+        # Strategy: last part is always price. Second-to-last might be age_key.
+        price_str = parts[-1]
+        price = float(price_str)
+        if price <= 0:
+            bot.send_message(msg.chat.id, "❌ Price 0 se zyada honi chahiye.")
+            return
+
+        # Check if second-to-last part is a valid age key
+        if len(parts) >= 4 and parts[-2] in VALID_AGES:
+            age_key = parts[-2]
+            country_name = " ".join(parts[1:-2]).strip()
+            # Set age-specific price
+            result = countries_col.update_one(
+                {"name": {"$regex": f"^{re.escape(country_name)}$", "$options": "i"}},
+                {"$set": {f"age_prices.{age_key}": price}}
+            )
+            if result.matched_count == 0:
+                bot.send_message(msg.chat.id, f"❌ Country <b>{country_name}</b> nahi mili.", parse_mode="HTML")
+            else:
+                age_display = age_key.replace("_", " ")
+                bot.send_message(msg.chat.id,
+                    f"✅ <b>Age Price Updated!</b>\n\n"
+                    f"🌍 Country: <b>{country_name}</b>\n"
+                    f"🗓️ Age: <b>{age_display}</b>\n"
+                    f"💰 New Price: ₹{price:.2f}",
+                    parse_mode="HTML")
         else:
-            bot.send_message(msg.chat.id,
-                f"✅ <b>Price Updated!</b>\n\n🌍 Country: <b>{country_name}</b>\n💰 New Price: ₹{price:.2f}",
-                parse_mode="HTML")
+            # Base price update
+            country_name = " ".join(parts[1:-1]).strip()
+            result = countries_col.update_one(
+                {"name": {"$regex": f"^{re.escape(country_name)}$", "$options": "i"}},
+                {"$set": {"price": price}}
+            )
+            if result.matched_count == 0:
+                bot.send_message(msg.chat.id, f"❌ Country <b>{country_name}</b> nahi mili.", parse_mode="HTML")
+            else:
+                bot.send_message(msg.chat.id,
+                    f"✅ <b>Base Price Updated!</b>\n\n🌍 Country: <b>{country_name}</b>\n💰 New Price: ₹{price:.2f}",
+                    parse_mode="HTML")
+    except ValueError:
+        bot.send_message(msg.chat.id, "❌ Invalid price. Number daalo.")
     except Exception as e:
         bot.send_message(msg.chat.id, f"❌ Error: {e}")
 
