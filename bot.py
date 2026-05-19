@@ -7843,6 +7843,23 @@ def cmd_help(msg):
         "/endchat — AI chat se bahar aayein\n\n"
 
         "━━━━━━━━━━━━━━━━━━━━\n"
+        "💸 <b>TRANSFER &amp; GIFT</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "/gift &lt;uid&gt; &lt;amt&gt; — Balance gift karo\n"
+        "/transfer &lt;uid&gt; &lt;amt&gt; — Balance transfer\n\n"
+
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "📊 <b>MY ANALYTICS</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "/mystats — Personal analytics dashboard\n"
+        "/mywallet — Detailed wallet breakdown\n"
+        "/level — XP level &amp; progress bar\n"
+        "/cooldown — All reward cooldowns check\n"
+        "/ordertrack &lt;id&gt; — Order track karo\n"
+        "/pricecheck &lt;country&gt; — Quick price check\n"
+        "/stockalert — Live stock status sab countries\n\n"
+
+        "━━━━━━━━━━━━━━━━━━━━\n"
         "🎁 <b>REWARDS &amp; EARN</b>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
         "/refer — Referral link &amp; earnings\n"
@@ -7853,6 +7870,7 @@ def cmd_help(msg):
         "/daily — Daily free bonus claim\n"
         "/lucky — Lucky draw khelo\n"
         "/streak — Daily streak dekhein\n"
+        "/spin — Daily spin wheel (bonus rewards)\n"
         "/leaderboard — Top 10 buyers\n\n"
 
         "━━━━━━━━━━━━━━━━━━━━\n"
@@ -7944,7 +7962,7 @@ def cmd_help(msg):
         "/ping — Bot latency &amp; status\n"
         "/uptime — Server uptime check\n\n"
 
-        "📊 <b>Total Commands: 138+</b>\n"
+        "📊 <b>Total Commands: 158+</b>\n"
         "💡 <i>Buttons use karke bhi sab kar sakte ho!</i>"
     )
 
@@ -7973,10 +7991,12 @@ def cmd_help(msg):
             "/unban &lt;id&gt; — Ban hatao\n"
             "/setprice &lt;country&gt; &lt;price&gt; — Price set karo\n"
             "/couponlist — Saare coupons ki list\n"
+            "/coupondelete &lt;code&gt; — Coupon disable/delete\n"
             "/pendingorders — Pending orders dekhein\n"
             "/addcoupon &lt;code&gt; &lt;disc&gt; — Naya coupon banao\n"
             "/delcoupon &lt;code&gt; — Coupon delete karo\n"
             "/broadcast &lt;msg&gt; — Sirf message broadcast\n"
+            "/broadcastimg — Image ke saath broadcast\n"
             "/warnlist — Warning wale users\n"
             "/removewarn &lt;id&gt; — User ki warn hatao\n"
             "/stockadd — Bulk account add karo\n"
@@ -7984,8 +8004,12 @@ def cmd_help(msg):
             "/forceban &lt;id&gt; — Immediate ban\n"
             "/announce — Channel announcement\n"
             "/maintenance — Maintenance mode on/off\n"
-            "/resetuser &lt;id&gt; — User reset karo\n"
-            "/exportusers — Users CSV export\n"
+            "/exportusers — Users text export (500 users)\n"
+            "/botstat — Full bot analytics dashboard\n"
+            "/userhistory &lt;id&gt; — User ki full history\n"
+            "/resetdaily &lt;id&gt; — User ka daily cooldown reset\n"
+            "/massunban — Sab banned users unban karo\n"
+            "/rechargeall &lt;amt&gt; — Sab users ko bonus balance\n"
             "/reportsummary — Reports summary\n"
         )
     if is_super_admin(user_id):
@@ -7994,6 +8018,10 @@ def cmd_help(msg):
             "🔐 <b>OWNER ONLY COMMANDS</b>\n"
             "━━━━━━━━━━━━━━━━━━━━\n"
             "/setaikey &lt;key&gt; — Naya Gemini AI key set karo\n"
+            "/setdiscount &lt;%&gt; — Global discount set karo\n"
+            "/rechargeall &lt;amt&gt; — Sab users ko balance do\n"
+            "/massunban — Sab users unban karo\n"
+            "/clearsessions — Pyrogram sessions clear\n"
             "/ohelp — Full owner command guide\n"
             "/dbbackup — Database backup lo\n"
             "/dbrestore — Database restore karo\n"
@@ -8001,7 +8029,6 @@ def cmd_help(msg):
             "/featureflag &lt;name&gt; — Feature on/off toggle\n"
             "/systeminfo — Full server info\n"
             "/wipesessions — Saari AI sessions clear\n"
-            "/setdiscount &lt;%&gt; — Global discount set karo\n"
             "/superban &lt;id&gt; — Permanent ban (all bots)\n"
         )
 
@@ -8233,7 +8260,9 @@ def cmd_ohelp(msg):
         "/safetytips /securitytips /privacycheck /twofa\n"
         "/antispam /dataprotect /warninginfo /trustscore\n"
         "/blocklist /auditlog /reportscam /safety\n"
-        "/notify /countdown /leaderboard /topcountries\n\n"
+        "/notify /countdown /leaderboard /topcountries\n"
+        "/gift /transfer /mystats /mywallet /level\n"
+        "/cooldown /spin /ordertrack /pricecheck /stockalert\n\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
         "🔐 <b>40 PROTECTION COMMANDS</b>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
@@ -8277,11 +8306,21 @@ def cmd_ohelp(msg):
         "/maintenance [on|off] — Maintenance mode toggle\n"
         "/clearloop — Event loop reset + crash log clear ⚡\n"
         "/warnlist — Warned users\n"
-        "/removewarn &lt;id&gt; — Warn hatao\n\n"
+        "/removewarn &lt;id&gt; — Warn hatao\n"
+        "/broadcastimg — Image ke saath broadcast (photo reply)\n"
+        "/exportusers — 500 users ka text export\n"
+        "/botstat — Full analytics dashboard\n"
+        "/userhistory &lt;id&gt; — User ki full transaction history\n"
+        "/resetdaily &lt;id&gt; — User ka daily/lucky/spin cooldown reset\n\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
         "🔐 <b>OWNER ONLY COMMANDS</b>\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
         "/setaikey &lt;api_key&gt; — Gemini AI key set\n"
+        "/setdiscount &lt;%&gt; — Global discount set (0-90%)\n"
+        "/rechargeall &lt;amt&gt; — Sab users ko bonus balance do\n"
+        "/massunban — Sab banned users ek click mein unban\n"
+        "/coupondelete &lt;code&gt; — Coupon disable karo\n"
+        "/clearsessions — Pyrogram + OTP + AI sessions clear\n"
         "/ohelp — Yeh guide\n\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
         "🛠️ <b>ADMIN PANEL FEATURES</b>\n"
@@ -10546,6 +10585,1054 @@ def _global_excepthook(exc_type, exc_value, exc_tb):
     logger.error(f"Uncaught global exception: {exc_type.__name__}: {exc_value}")
 
 _sys.excepthook = _global_excepthook
+
+# =====================================================================
+# 🌟 20 NEW PREMIUM COMMANDS — User (10) + Admin (10)
+# =====================================================================
+
+# ─────────────────────────────────────────────────────────────────────
+# USER PREMIUM COMMANDS (1–10)
+# ─────────────────────────────────────────────────────────────────────
+
+# 1. /gift <user_id> <amount> — Gift balance to another user
+@bot.message_handler(commands=['gift'])
+def cmd_gift(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
+    parts = msg.text.strip().split()
+    if len(parts) < 3:
+        bot.send_message(msg.chat.id,
+            "🎁 <b>Gift Balance</b>\n\n"
+            "Usage: <code>/gift &lt;user_id&gt; &lt;amount&gt;</code>\n"
+            "Example: <code>/gift 123456789 50</code>\n\n"
+            "💡 <i>Apne dost ko balance gift karo!</i>",
+            parse_mode="HTML")
+        return
+    try:
+        target_id = int(parts[1])
+        amount = float(parts[2])
+    except ValueError:
+        bot.send_message(msg.chat.id, "❌ Invalid user ID ya amount.")
+        return
+    if amount <= 0:
+        bot.send_message(msg.chat.id, "❌ Amount 0 se zyada hona chahiye.")
+        return
+    if target_id == user_id:
+        bot.send_message(msg.chat.id, "❌ Khud ko gift nahi kar sakte!")
+        return
+    MIN_GIFT = 5.0
+    if amount < MIN_GIFT:
+        bot.send_message(msg.chat.id, f"❌ Minimum gift amount ₹{MIN_GIFT:.0f} hai.")
+        return
+    sender_bal = get_balance(user_id)
+    if sender_bal < amount:
+        bot.send_message(msg.chat.id,
+            f"❌ <b>Insufficient Balance!</b>\n\nAapka balance: ₹{sender_bal:.2f}\nGift amount: ₹{amount:.2f}",
+            parse_mode="HTML")
+        return
+    target_user = users_col.find_one({"user_id": target_id})
+    if not target_user:
+        bot.send_message(msg.chat.id, f"❌ User <code>{target_id}</code> is bot mein registered nahi hai.", parse_mode="HTML")
+        return
+    _typing(msg.chat.id)
+    try:
+        deduct_balance(user_id, amount)
+        add_balance(target_id, amount)
+        sender_new_bal = get_balance(user_id)
+        target_new_bal = get_balance(target_id)
+        target_name = target_user.get("name", "User")
+        safe_insert_one(transactions_col, {
+            "user_id": user_id,
+            "type": "gift_sent",
+            "amount": -amount,
+            "to_user": target_id,
+            "description": f"Gift to {target_id}",
+            "timestamp": datetime.utcnow()
+        }, "gift_sent")
+        safe_insert_one(transactions_col, {
+            "user_id": target_id,
+            "type": "gift_received",
+            "amount": amount,
+            "from_user": user_id,
+            "description": f"Gift from {user_id}",
+            "timestamp": datetime.utcnow()
+        }, "gift_received")
+        sender_name = msg.from_user.first_name or "User"
+        bot.send_message(msg.chat.id,
+            f"🎁 <b>Gift Sent Successfully!</b>\n\n"
+            f"👤 To: <b>{target_name}</b> (<code>{target_id}</code>)\n"
+            f"💰 Amount: <b>₹{amount:.2f}</b>\n"
+            f"📊 Your Balance: ₹{sender_new_bal:.2f}",
+            parse_mode="HTML")
+        try:
+            bot.send_message(target_id,
+                f"🎁 <b>Aapko Gift Mila!</b>\n\n"
+                f"👤 From: <b>{sender_name}</b>\n"
+                f"💰 Amount: <b>₹{amount:.2f}</b>\n"
+                f"💳 New Balance: ₹{target_new_bal:.2f}\n\n"
+                f"🎉 <i>Kharidne ke liye use karo!</i>",
+                parse_mode="HTML")
+        except Exception:
+            pass
+    except Exception as e:
+        logger.error(f"/gift error: {e}")
+        bot.send_message(msg.chat.id, f"❌ Gift failed: {e}")
+
+
+# 2. /mystats — Detailed personal analytics dashboard
+@bot.message_handler(commands=['mystats'])
+def cmd_mystats(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
+    _typing(msg.chat.id)
+    try:
+        total_orders = orders_col.count_documents({"user_id": user_id})
+        completed_orders = orders_col.count_documents({"user_id": user_id, "status": "completed"})
+        wallet = wallets_col.find_one({"user_id": user_id}) or {}
+        total_spent = float(wallet.get("total_spent", 0))
+        total_recharged = float(wallet.get("total_recharged", 0))
+        current_bal = get_balance(user_id)
+        ref_doc = referrals_col.find_one({"user_id": user_id}) or {}
+        ref_count = len(ref_doc.get("referred_users", []))
+        ref_earnings = float(ref_doc.get("total_earnings", 0))
+        gift_sent = transactions_col.count_documents({"user_id": user_id, "type": "gift_sent"})
+        gift_recv = transactions_col.count_documents({"user_id": user_id, "type": "gift_received"})
+        coupon_count = transactions_col.count_documents({"user_id": user_id, "type": "coupon_redeem"})
+        streak_doc = db.get('user_streaks', db['user_streaks']).find_one({"user_id": user_id}) or {} if 'user_streaks' in db.list_collection_names() else {}
+        current_streak = streak_doc.get("current_streak", 0) if streak_doc else 0
+        user_doc = users_col.find_one({"user_id": user_id}) or {}
+        joined_at = user_doc.get("created_at", None)
+        days_since = ""
+        if joined_at:
+            diff = datetime.utcnow() - joined_at
+            days_since = f"{diff.days} days ago"
+        success_rate = int((completed_orders / total_orders * 100)) if total_orders > 0 else 0
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("💳 Wallet", callback_data="wallet_info"),
+                   InlineKeyboardButton("📦 Orders", callback_data="my_orders"))
+        markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+        bot.send_message(msg.chat.id,
+            f"┌━━━━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+            f"  📊 <b>𝐌𝐘 𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋 𝐒𝐓𝐀𝐓𝐒</b>\n"
+            f"└━━━━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+            f"👤 <b>User ID:</b> <code>{user_id}</code>\n"
+            f"📅 <b>Joined:</b> {days_since or 'N/A'}\n\n"
+            f"━━━━━ 💰 WALLET ━━━━━\n"
+            f"💳 Balance: <b>₹{current_bal:.2f}</b>\n"
+            f"📥 Total Recharged: <b>₹{total_recharged:.2f}</b>\n"
+            f"📤 Total Spent: <b>₹{total_spent:.2f}</b>\n\n"
+            f"━━━━━ 🛒 ORDERS ━━━━━\n"
+            f"📦 Total Orders: <b>{total_orders}</b>\n"
+            f"✅ Completed: <b>{completed_orders}</b>\n"
+            f"📈 Success Rate: <b>{success_rate}%</b>\n\n"
+            f"━━━━━ 🎁 SOCIAL ━━━━━\n"
+            f"👥 Referrals: <b>{ref_count}</b>\n"
+            f"💸 Ref Earnings: <b>₹{ref_earnings:.2f}</b>\n"
+            f"🎁 Gifts Sent: <b>{gift_sent}</b>\n"
+            f"🎁 Gifts Received: <b>{gift_recv}</b>\n"
+            f"🎟 Coupons Used: <b>{coupon_count}</b>\n"
+            f"🔥 Current Streak: <b>{current_streak} days</b>",
+            parse_mode="HTML", reply_markup=markup)
+    except Exception as e:
+        logger.error(f"/mystats error: {e}")
+        bot.send_message(msg.chat.id, "❌ Stats load nahi ho sake. Dobara try karo.")
+
+
+# 3. /cooldown — Check all daily/lucky/streak cooldowns
+@bot.message_handler(commands=['cooldown'])
+def cmd_cooldown(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    _typing(msg.chat.id)
+    now = datetime.utcnow()
+    lines = []
+    def _check_cd(col_name, key_field, reset_hours, label, emoji):
+        try:
+            doc = db[col_name].find_one({"user_id": user_id}) if col_name in db.list_collection_names() else None
+            if not doc or not doc.get(key_field):
+                lines.append(f"{emoji} <b>{label}:</b> ✅ Ready to claim!")
+                return
+            last = doc[key_field]
+            diff = now - last
+            remaining = reset_hours * 3600 - diff.total_seconds()
+            if remaining <= 0:
+                lines.append(f"{emoji} <b>{label}:</b> ✅ Ready to claim!")
+            else:
+                h = int(remaining // 3600)
+                m = int((remaining % 3600) // 60)
+                lines.append(f"{emoji} <b>{label}:</b> ⏳ {h}h {m}m remaining")
+        except Exception:
+            lines.append(f"{emoji} <b>{label}:</b> ❓ N/A")
+    _check_cd("daily_rewards", "last_claim", 24, "Daily Bonus", "🎁")
+    _check_cd("lucky_draws", "last_draw", 12, "Lucky Draw", "🍀")
+    _check_cd("user_streaks", "last_streak", 24, "Streak Claim", "🔥")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("🎁 Daily", callback_data="daily_reward"),
+               InlineKeyboardButton("🍀 Lucky", callback_data="lucky_draw"))
+    markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+    bot.send_message(msg.chat.id,
+        f"⏱️ <b>Cooldown Status</b>\n\n"
+        + "\n".join(lines) +
+        f"\n\n💡 <i>Jab ready ho tab claim karo!</i>",
+        parse_mode="HTML", reply_markup=markup)
+
+
+# 4. /spin — Daily spin wheel for bonus rewards
+_spin_rewards = [
+    ("₹2 Balance", 2.0, "💰"),
+    ("₹5 Balance", 5.0, "💵"),
+    ("₹1 Balance", 1.0, "🪙"),
+    ("₹10 Balance", 10.0, "💎"),
+    ("Better Luck!", 0.0, "😅"),
+    ("₹3 Balance", 3.0, "🎯"),
+    ("₹7 Balance", 7.0, "🌟"),
+    ("Better Luck!", 0.0, "🍂"),
+]
+@bot.message_handler(commands=['spin'])
+def cmd_spin(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
+    now = datetime.utcnow()
+    SPIN_CD = 24
+    try:
+        spin_doc = db['spin_wheel'].find_one({"user_id": user_id}) if 'spin_wheel' in db.list_collection_names() else None
+        if spin_doc and spin_doc.get("last_spin"):
+            diff = now - spin_doc["last_spin"]
+            remaining = SPIN_CD * 3600 - diff.total_seconds()
+            if remaining > 0:
+                h = int(remaining // 3600)
+                m = int((remaining % 3600) // 60)
+                bot.send_message(msg.chat.id,
+                    f"🎡 <b>Spin Wheel</b>\n\n"
+                    f"⏳ Aapka spin kal milega!\n"
+                    f"🕐 Remaining: <b>{h}h {m}m</b>\n\n"
+                    f"💡 <i>Roz ek spin milta hai — free rewards!</i>",
+                    parse_mode="HTML")
+                return
+        import random
+        anim = bot.send_message(msg.chat.id, "🎡 <b>Spinning...</b>\n<code>🟥🟧🟨🟩🟦🟪⬜⬛</code>", parse_mode="HTML")
+        time.sleep(0.5)
+        try: bot.edit_message_text("🎡 <b>Spinning...</b>\n<code>⬛🟥🟧🟨🟩🟦🟪⬜</code>", msg.chat.id, anim.message_id, parse_mode="HTML")
+        except: pass
+        time.sleep(0.4)
+        try: bot.edit_message_text("🎡 <b>Spinning...</b>\n<code>⬜⬛🟥🟧🟨🟩🟦🟪</code>", msg.chat.id, anim.message_id, parse_mode="HTML")
+        except: pass
+        time.sleep(0.3)
+        try: bot.delete_message(msg.chat.id, anim.message_id)
+        except: pass
+        prize_label, prize_amount, prize_emoji = random.choice(_spin_rewards)
+        db['spin_wheel'].update_one(
+            {"user_id": user_id},
+            {"$set": {"user_id": user_id, "last_spin": now}},
+            upsert=True
+        )
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("🛒 Buy Now", callback_data="buy_account"),
+                   InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+        if prize_amount > 0:
+            add_balance(user_id, prize_amount)
+            new_bal = get_balance(user_id)
+            bot.send_message(msg.chat.id,
+                f"🎡 <b>Spin Result!</b>\n\n"
+                f"{prize_emoji} <b>You Won: {prize_label}!</b>\n\n"
+                f"💳 New Balance: <b>₹{new_bal:.2f}</b>\n"
+                f"⏰ Next Spin: 24 hours mein",
+                parse_mode="HTML", reply_markup=markup)
+        else:
+            bot.send_message(msg.chat.id,
+                f"🎡 <b>Spin Result!</b>\n\n"
+                f"{prize_emoji} <b>{prize_label}</b>\n\n"
+                f"😔 Is baar kuch nahi mila. Kal phir try karo!\n"
+                f"⏰ Next Spin: 24 hours mein",
+                parse_mode="HTML", reply_markup=markup)
+    except Exception as e:
+        logger.error(f"/spin error: {e}")
+        bot.send_message(msg.chat.id, "❌ Spin nahi ho saka. Dobara try karo.")
+
+
+# 5. /ordertrack <id> — Track specific order by ID
+@bot.message_handler(commands=['ordertrack'])
+def cmd_ordertrack(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    parts = msg.text.strip().split(maxsplit=1)
+    if len(parts) < 2:
+        orders = list(orders_col.find({"user_id": user_id}).sort("created_at", -1).limit(5))
+        if not orders:
+            bot.send_message(msg.chat.id, "📦 Koi order nahi hai.\n\nUsage: <code>/ordertrack &lt;order_id&gt;</code>", parse_mode="HTML")
+            return
+        ids = "\n".join([f"• <code>{o.get('order_id', str(o['_id']))}</code>" for o in orders])
+        bot.send_message(msg.chat.id,
+            f"📦 <b>Order Track</b>\n\nUsage: <code>/ordertrack &lt;order_id&gt;</code>\n\n"
+            f"<b>Aapke recent Order IDs:</b>\n{ids}",
+            parse_mode="HTML")
+        return
+    order_id = parts[1].strip()
+    _typing(msg.chat.id)
+    try:
+        order = orders_col.find_one({"order_id": order_id, "user_id": user_id})
+        if not order:
+            order = orders_col.find_one({"order_id": order_id})
+            if order and order.get("user_id") != user_id and not is_admin(user_id):
+                bot.send_message(msg.chat.id, "❌ Yeh order aapka nahi hai.")
+                return
+        if not order:
+            bot.send_message(msg.chat.id, f"❌ Order <code>{order_id}</code> nahi mila.", parse_mode="HTML")
+            return
+        status = order.get("status", "unknown")
+        status_map = {
+            "completed": "✅ Completed",
+            "waiting_otp": "⏳ Waiting for OTP",
+            "pending": "🔄 Pending",
+            "cancelled": "❌ Cancelled",
+            "refunded": "↩️ Refunded",
+        }
+        status_display = status_map.get(status, f"❓ {status.title()}")
+        created = order.get("created_at")
+        created_str = created.strftime("%d %b %Y, %H:%M") if created else "N/A"
+        country = order.get("country", "N/A")
+        phone = order.get("phone_number", "Hidden")
+        price = order.get("price", 0)
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("📦 All Orders", callback_data="my_orders"),
+                   InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+        bot.send_message(msg.chat.id,
+            f"📦 <b>Order Details</b>\n\n"
+            f"🆔 Order ID: <code>{order_id}</code>\n"
+            f"📊 Status: <b>{status_display}</b>\n"
+            f"🌍 Country: <b>{country}</b>\n"
+            f"📱 Phone: <code>{phone}</code>\n"
+            f"💰 Price: <b>₹{price:.2f}</b>\n"
+            f"🕐 Date: <b>{created_str}</b>",
+            parse_mode="HTML", reply_markup=markup)
+    except Exception as e:
+        logger.error(f"/ordertrack error: {e}")
+        bot.send_message(msg.chat.id, "❌ Order track nahi ho saka.")
+
+
+# 6. /pricecheck <country> — Quick price check for any country
+@bot.message_handler(commands=['pricecheck'])
+def cmd_pricecheck(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    parts = msg.text.strip().split(None, 1)
+    if len(parts) < 2 or not parts[1].strip():
+        bot.send_message(msg.chat.id,
+            "💰 <b>Price Check</b>\n\nUsage: <code>/pricecheck &lt;country&gt;</code>\n"
+            "Example: <code>/pricecheck Jordan</code>\n\n"
+            "💡 <i>Kisi bhi country ka price check karo!</i>",
+            parse_mode="HTML")
+        return
+    query = parts[1].strip()
+    _typing(msg.chat.id)
+    try:
+        country = countries_col.find_one({"name": {"$regex": query, "$options": "i"}, "status": "active"})
+        if not country:
+            bot.send_message(msg.chat.id,
+                f"❌ <b>{query}</b> nahi mili ya available nahi hai.\n\n"
+                f"Use /price to see all available countries.",
+                parse_mode="HTML")
+            return
+        name = country.get("name", query)
+        flag = country.get("flag", "🌍")
+        base_price = country.get("price", 0)
+        age_prices = country.get("age_prices", {})
+        stock_count = accounts_col.count_documents({
+            "$or": [
+                {"country": name, "status": "active", "used": False},
+                {"country": name, "used": {"$exists": False}}
+            ]
+        })
+        stock_icon = "✅" if stock_count > 0 else "❌"
+        price_lines = [f"  📌 Base: <b>₹{base_price:.2f}</b>"]
+        for age_key, age_price in age_prices.items():
+            age_display = age_key.replace("_", " ").title()
+            price_lines.append(f"  🗓 {age_display}: <b>₹{age_price:.2f}</b>")
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("🛒 Buy Now", callback_data="buy_account"),
+                   InlineKeyboardButton("📊 All Prices", callback_data="price_list"))
+        markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+        bot.send_message(msg.chat.id,
+            f"💰 <b>Price Check</b>\n\n"
+            f"{flag} <b>{name}</b>\n"
+            f"{stock_icon} Stock: <b>{stock_count} available</b>\n\n"
+            f"<b>Prices:</b>\n" + "\n".join(price_lines),
+            parse_mode="HTML", reply_markup=markup)
+    except Exception as e:
+        logger.error(f"/pricecheck error: {e}")
+        bot.send_message(msg.chat.id, "❌ Price check nahi ho saka.")
+
+
+# 7. /level — User XP level and progress
+_LEVELS = [
+    (0, "🥉 Beginner"),
+    (3, "🥈 Regular"),
+    (10, "🥇 Active Buyer"),
+    (25, "💎 VIP Member"),
+    (50, "🔥 Elite"),
+    (100, "👑 Legendary"),
+]
+@bot.message_handler(commands=['level'])
+def cmd_level(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
+    _typing(msg.chat.id)
+    try:
+        orders_count = orders_col.count_documents({"user_id": user_id, "status": "completed"})
+        current_level_name = _LEVELS[0][1]
+        next_threshold = None
+        for i, (threshold, level_name) in enumerate(_LEVELS):
+            if orders_count >= threshold:
+                current_level_name = level_name
+                if i + 1 < len(_LEVELS):
+                    next_threshold = _LEVELS[i + 1][0]
+        if next_threshold:
+            progress = orders_count / next_threshold
+            bar_filled = int(progress * 10)
+            bar = "▰" * bar_filled + "▱" * (10 - bar_filled)
+            progress_text = f"<code>[{bar}]</code> {orders_count}/{next_threshold} orders"
+        else:
+            progress_text = "<b>MAX LEVEL ACHIEVED!</b> 👑"
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("🛒 Buy Now", callback_data="buy_account"),
+                   InlineKeyboardButton("🏆 Leaderboard", callback_data="leaderboard"))
+        markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+        bot.send_message(msg.chat.id,
+            f"⭐ <b>Your Level</b>\n\n"
+            f"🎖 Current Level: <b>{current_level_name}</b>\n"
+            f"📦 Completed Orders: <b>{orders_count}</b>\n\n"
+            f"📈 <b>Progress to next level:</b>\n"
+            f"{progress_text}\n\n"
+            f"━━━━━━━━━━━━━━━━━━━━\n"
+            f"<b>All Levels:</b>\n"
+            + "\n".join([f"  {name} — {t}+ orders" for t, name in _LEVELS]),
+            parse_mode="HTML", reply_markup=markup)
+    except Exception as e:
+        logger.error(f"/level error: {e}")
+        bot.send_message(msg.chat.id, "❌ Level load nahi ho saka.")
+
+
+# 8. /mywallet — Detailed wallet breakdown
+@bot.message_handler(commands=['mywallet'])
+def cmd_mywallet(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
+    _typing(msg.chat.id)
+    try:
+        wallet = wallets_col.find_one({"user_id": user_id}) or {}
+        current_bal = get_balance(user_id)
+        total_recharged = float(wallet.get("total_recharged", 0))
+        total_spent = float(wallet.get("total_spent", 0))
+        last_5_txn = list(transactions_col.find(
+            {"user_id": user_id}
+        ).sort("timestamp", -1).limit(5))
+        txn_lines = []
+        for t in last_5_txn:
+            ttype = t.get("type", "txn")
+            amt = float(t.get("amount", 0))
+            ts = t.get("timestamp")
+            date_str = ts.strftime("%d %b") if ts else ""
+            sign = "+" if amt >= 0 else ""
+            icon = "📥" if amt >= 0 else "📤"
+            txn_lines.append(f"  {icon} {ttype.replace('_',' ').title()} {sign}₹{amt:.2f} — {date_str}")
+        txn_text = "\n".join(txn_lines) if txn_lines else "  <i>Koi transactions nahi hain</i>"
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("💳 Recharge", callback_data="add_funds"),
+                   InlineKeyboardButton("📊 Full History", callback_data="transaction_history"))
+        markup.add(InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+        bot.send_message(msg.chat.id,
+            f"💳 <b>My Wallet</b>\n\n"
+            f"━━━━━ 📊 SUMMARY ━━━━━\n"
+            f"💰 Current Balance: <b>₹{current_bal:.2f}</b>\n"
+            f"📥 Total Recharged: <b>₹{total_recharged:.2f}</b>\n"
+            f"📤 Total Spent: <b>₹{total_spent:.2f}</b>\n"
+            f"📈 Net Savings: <b>₹{total_recharged - total_spent:.2f}</b>\n\n"
+            f"━━━━━ 🕐 RECENT ━━━━━\n"
+            f"{txn_text}",
+            parse_mode="HTML", reply_markup=markup)
+    except Exception as e:
+        logger.error(f"/mywallet error: {e}")
+        bot.send_message(msg.chat.id, "❌ Wallet info load nahi ho saka.")
+
+
+# 9. /transfer <user_id> <amount> — Transfer balance (alias of gift with diff message)
+@bot.message_handler(commands=['transfer'])
+def cmd_transfer(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    ensure_user_exists(user_id, msg.from_user.first_name or "Unknown", msg.from_user.username)
+    parts = msg.text.strip().split()
+    if len(parts) < 3:
+        bot.send_message(msg.chat.id,
+            "💸 <b>Transfer Balance</b>\n\n"
+            "Usage: <code>/transfer &lt;user_id&gt; &lt;amount&gt;</code>\n"
+            "Example: <code>/transfer 123456789 100</code>\n\n"
+            "💡 <i>Dusre user ko apna balance transfer karo.</i>",
+            parse_mode="HTML")
+        return
+    try:
+        target_id = int(parts[1])
+        amount = float(parts[2])
+    except ValueError:
+        bot.send_message(msg.chat.id, "❌ Invalid user ID ya amount.")
+        return
+    if target_id == user_id:
+        bot.send_message(msg.chat.id, "❌ Khud ko transfer nahi kar sakte!")
+        return
+    if amount <= 0:
+        bot.send_message(msg.chat.id, "❌ Amount 0 se zyada hona chahiye.")
+        return
+    MIN_TRANSFER = 10.0
+    if amount < MIN_TRANSFER:
+        bot.send_message(msg.chat.id, f"❌ Minimum transfer amount ₹{MIN_TRANSFER:.0f} hai.")
+        return
+    sender_bal = get_balance(user_id)
+    if sender_bal < amount:
+        bot.send_message(msg.chat.id,
+            f"❌ <b>Insufficient Balance!</b>\n\nAapka balance: ₹{sender_bal:.2f}\nTransfer: ₹{amount:.2f}",
+            parse_mode="HTML")
+        return
+    target_user = users_col.find_one({"user_id": target_id})
+    if not target_user:
+        bot.send_message(msg.chat.id, f"❌ User <code>{target_id}</code> registered nahi hai.", parse_mode="HTML")
+        return
+    _typing(msg.chat.id)
+    try:
+        deduct_balance(user_id, amount)
+        add_balance(target_id, amount)
+        sender_new_bal = get_balance(user_id)
+        target_new_bal = get_balance(target_id)
+        target_name = target_user.get("name", "User")
+        safe_insert_one(transactions_col, {
+            "user_id": user_id, "type": "transfer_sent",
+            "amount": -amount, "to_user": target_id,
+            "description": f"Transfer to {target_id}",
+            "timestamp": datetime.utcnow()
+        }, "transfer_sent")
+        safe_insert_one(transactions_col, {
+            "user_id": target_id, "type": "transfer_received",
+            "amount": amount, "from_user": user_id,
+            "description": f"Transfer from {user_id}",
+            "timestamp": datetime.utcnow()
+        }, "transfer_received")
+        sender_name = msg.from_user.first_name or "User"
+        bot.send_message(msg.chat.id,
+            f"💸 <b>Transfer Successful!</b>\n\n"
+            f"👤 To: <b>{target_name}</b> (<code>{target_id}</code>)\n"
+            f"💰 Amount: <b>₹{amount:.2f}</b>\n"
+            f"📊 Your New Balance: ₹{sender_new_bal:.2f}",
+            parse_mode="HTML")
+        try:
+            bot.send_message(target_id,
+                f"💸 <b>Balance Transfer Mila!</b>\n\n"
+                f"👤 From: <b>{sender_name}</b>\n"
+                f"💰 Amount: <b>₹{amount:.2f}</b>\n"
+                f"💳 New Balance: ₹{target_new_bal:.2f}",
+                parse_mode="HTML")
+        except Exception:
+            pass
+    except Exception as e:
+        logger.error(f"/transfer error: {e}")
+        bot.send_message(msg.chat.id, f"❌ Transfer failed: {e}")
+
+
+# 10. /stockalert — Show real-time stock status for all countries
+@bot.message_handler(commands=['stockalert'])
+def cmd_stockalert(msg):
+    user_id = msg.from_user.id
+    if is_user_banned(user_id): return
+    _typing(msg.chat.id)
+    try:
+        countries = list(countries_col.find({"status": "active"}).sort("name", 1))
+        if not countries:
+            bot.send_message(msg.chat.id, "❌ Koi active country nahi hai.")
+            return
+        in_stock = []
+        out_of_stock = []
+        for c in countries:
+            name = c.get("name", "?")
+            flag = c.get("flag", "🌍")
+            price = c.get("price", 0)
+            cnt = accounts_col.count_documents({
+                "$or": [
+                    {"country": name, "status": "active", "used": False},
+                    {"country": name, "used": {"$exists": False}}
+                ]
+            })
+            if cnt > 0:
+                in_stock.append(f"✅ {flag} <b>{name}</b> — ₹{price} | <code>{cnt}</code> pcs")
+            else:
+                out_of_stock.append(f"❌ {flag} {name} — ₹{price}")
+        text = (
+            "📡 <b>Stock Alert — Live Status</b>\n\n"
+            f"✅ <b>IN STOCK ({len(in_stock)}):</b>\n" +
+            ("\n".join(in_stock) if in_stock else "  <i>Koi bhi in-stock nahi</i>") +
+            f"\n\n❌ <b>OUT OF STOCK ({len(out_of_stock)}):</b>\n" +
+            ("\n".join(out_of_stock[:10]) if out_of_stock else "  <i>Sab in-stock!</i>") +
+            "\n\n<i>🔄 Bot se real-time update milti hai!</i>"
+        )
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("🛒 Buy Now", callback_data="buy_account"),
+                   InlineKeyboardButton("🏠 Menu", callback_data="back_to_menu"))
+        bot.send_message(msg.chat.id, text, parse_mode="HTML", reply_markup=markup)
+    except Exception as e:
+        logger.error(f"/stockalert error: {e}")
+        bot.send_message(msg.chat.id, "❌ Stock alert load nahi ho saka.")
+
+
+# ─────────────────────────────────────────────────────────────────────
+# ADMIN PREMIUM COMMANDS (11–20)
+# ─────────────────────────────────────────────────────────────────────
+
+# 11. /broadcastimg — Broadcast with image (reply to a photo)
+@bot.message_handler(commands=['broadcastimg'])
+def cmd_broadcastimg(msg):
+    if not is_admin(msg.from_user.id):
+        bot.send_message(msg.chat.id, "❌ Sirf admin kar sakta hai.")
+        return
+    if not msg.reply_to_message or not msg.reply_to_message.photo:
+        bot.send_message(msg.chat.id,
+            "📸 <b>Broadcast with Image</b>\n\n"
+            "Kisi photo ko reply karo aur caption likhne ke liye:\n"
+            "<code>/broadcastimg</code> (reply to a photo)\n\n"
+            "<i>Photo ka caption automatically broadcast mein jayega.</i>",
+            parse_mode="HTML")
+        return
+    photo = msg.reply_to_message.photo[-1].file_id
+    caption = msg.reply_to_message.caption or ""
+    _typing(msg.chat.id)
+    all_users = list(users_col.find({}, {"user_id": 1}))
+    sent = 0
+    failed = 0
+    progress_msg = bot.send_message(msg.chat.id, f"📸 Broadcasting image to {len(all_users)} users...")
+    for u in all_users:
+        uid = u.get("user_id")
+        if not uid:
+            continue
+        try:
+            bot.send_photo(uid, photo, caption=caption, parse_mode="HTML")
+            sent += 1
+        except Exception:
+            failed += 1
+        time.sleep(0.04)
+    try:
+        bot.edit_message_text(
+            f"✅ <b>Image Broadcast Complete!</b>\n\n"
+            f"📤 Sent: <b>{sent}</b>\n"
+            f"❌ Failed: <b>{failed}</b>\n"
+            f"👥 Total: <b>{len(all_users)}</b>",
+            msg.chat.id, progress_msg.message_id, parse_mode="HTML")
+    except Exception:
+        bot.send_message(msg.chat.id, f"✅ Done! Sent: {sent}, Failed: {failed}")
+
+
+# 12. /exportusers — Export all registered users as a text list
+@bot.message_handler(commands=['exportusers'])
+def cmd_exportusers(msg):
+    if not is_admin(msg.from_user.id):
+        bot.send_message(msg.chat.id, "❌ Sirf admin kar sakta hai.")
+        return
+    _typing(msg.chat.id)
+    try:
+        all_users = list(users_col.find({}).sort("created_at", -1).limit(500))
+        if not all_users:
+            bot.send_message(msg.chat.id, "❌ Koi user nahi hai.")
+            return
+        lines = ["ID | Name | Username | Balance | Orders | Joined"]
+        lines.append("-" * 60)
+        for u in all_users:
+            uid = u.get("user_id", "?")
+            name = u.get("name", "Unknown")[:20]
+            uname = u.get("username", "N/A") or "N/A"
+            bal = get_balance(uid)
+            orders = orders_col.count_documents({"user_id": uid})
+            joined = u.get("created_at")
+            joined_str = joined.strftime("%d/%m/%y") if joined else "N/A"
+            lines.append(f"{uid} | {name} | @{uname} | ₹{bal:.1f} | {orders} | {joined_str}")
+        export_text = "\n".join(lines)
+        import io
+        file_obj = io.BytesIO(export_text.encode("utf-8"))
+        file_obj.name = "users_export.txt"
+        bot.send_document(msg.chat.id, file_obj,
+            caption=f"📊 <b>Users Export</b>\n👥 Total: {len(all_users)} users\n🕐 Generated: Now",
+            parse_mode="HTML")
+    except Exception as e:
+        logger.error(f"/exportusers error: {e}")
+        bot.send_message(msg.chat.id, f"❌ Export failed: {e}")
+
+
+# 13. /setdiscount <percent> — Set global discount percentage
+@bot.message_handler(commands=['setdiscount'])
+def cmd_setdiscount(msg):
+    if not is_super_admin(msg.from_user.id):
+        bot.send_message(msg.chat.id, "❌ Sirf owner kar sakta hai.")
+        return
+    parts = msg.text.strip().split()
+    if len(parts) < 2:
+        current = db['bot_config'].find_one({"key": "global_discount"})
+        disc = current.get("value", 0) if current else 0
+        bot.send_message(msg.chat.id,
+            f"🏷️ <b>Global Discount</b>\n\n"
+            f"Current Discount: <b>{disc}%</b>\n\n"
+            f"Usage: <code>/setdiscount &lt;percent&gt;</code>\n"
+            f"Example: <code>/setdiscount 10</code> (10% off)\n"
+            f"To disable: <code>/setdiscount 0</code>",
+            parse_mode="HTML")
+        return
+    try:
+        percent = float(parts[1])
+        if percent < 0 or percent > 90:
+            bot.send_message(msg.chat.id, "❌ Discount 0% to 90% ke beech honi chahiye.")
+            return
+        db['bot_config'].update_one(
+            {"key": "global_discount"},
+            {"$set": {"key": "global_discount", "value": percent, "updated_by": msg.from_user.id, "updated_at": datetime.utcnow()}},
+            upsert=True
+        )
+        status = f"✅ <b>Global Discount Set: {percent}%</b>\n\nSab prices par {percent}% discount lagega!" if percent > 0 else "✅ <b>Global Discount Disabled!</b>\n\nNormal prices restored."
+        bot.send_message(msg.chat.id, status, parse_mode="HTML")
+        for aid in SUPER_ADMIN_IDS:
+            if aid != msg.from_user.id:
+                try:
+                    bot.send_message(aid, f"🏷️ Global Discount {percent}% set by <code>{msg.from_user.id}</code>", parse_mode="HTML")
+                except: pass
+    except ValueError:
+        bot.send_message(msg.chat.id, "❌ Valid number daalo. Example: /setdiscount 10")
+
+
+# 14. /rechargeall <amount> — Add bonus balance to ALL users
+@bot.message_handler(commands=['rechargeall'])
+def cmd_rechargeall(msg):
+    if not is_super_admin(msg.from_user.id):
+        bot.send_message(msg.chat.id, "❌ Sirf owner kar sakta hai.")
+        return
+    parts = msg.text.strip().split()
+    if len(parts) < 2:
+        bot.send_message(msg.chat.id,
+            "💸 <b>Recharge All Users</b>\n\n"
+            "Usage: <code>/rechargeall &lt;amount&gt;</code>\n"
+            "Example: <code>/rechargeall 5</code>\n\n"
+            "⚠️ <i>Yeh sab registered users ko balance dega!</i>",
+            parse_mode="HTML")
+        return
+    try:
+        amount = float(parts[1])
+        if amount <= 0 or amount > 1000:
+            bot.send_message(msg.chat.id, "❌ Amount 1-1000 ke beech honi chahiye.")
+            return
+    except ValueError:
+        bot.send_message(msg.chat.id, "❌ Valid amount daalo.")
+        return
+    all_users = list(users_col.find({}, {"user_id": 1}))
+    total = len(all_users)
+    progress_msg = bot.send_message(msg.chat.id, f"⏳ Adding ₹{amount} to {total} users...")
+    done = 0
+    for u in all_users:
+        uid = u.get("user_id")
+        if uid:
+            try:
+                add_balance(uid, amount)
+                done += 1
+            except Exception:
+                pass
+    try:
+        bot.edit_message_text(
+            f"✅ <b>Recharge All Complete!</b>\n\n"
+            f"💰 Amount: <b>₹{amount:.2f}</b> per user\n"
+            f"👥 Users Credited: <b>{done}/{total}</b>\n"
+            f"💸 Total Spent: <b>₹{amount * done:.2f}</b>",
+            msg.chat.id, progress_msg.message_id, parse_mode="HTML")
+    except Exception:
+        bot.send_message(msg.chat.id, f"✅ Done! ₹{amount} added to {done}/{total} users.")
+    for uid in all_users[:200]:
+        try:
+            bot.send_message(uid.get("user_id"),
+                f"🎁 <b>Free Balance Mila!</b>\n\n"
+                f"💰 ₹{amount:.2f} aapke wallet mein add kar diye gaye!\n"
+                f"🎉 Admin ki taraf se special gift!\n\n"
+                f"💡 /balance check karo!",
+                parse_mode="HTML")
+        except Exception:
+            pass
+        time.sleep(0.03)
+
+
+# 15. /coupondelete <code> — Delete/disable a specific coupon
+@bot.message_handler(commands=['coupondelete'])
+def cmd_coupondelete(msg):
+    if not is_admin(msg.from_user.id):
+        bot.send_message(msg.chat.id, "❌ Sirf admin kar sakta hai.")
+        return
+    parts = msg.text.strip().split(maxsplit=1)
+    if len(parts) < 2:
+        bot.send_message(msg.chat.id,
+            "🗑️ <b>Delete Coupon</b>\n\nUsage: <code>/coupondelete &lt;CODE&gt;</code>\n"
+            "Example: <code>/coupondelete SAVE50</code>",
+            parse_mode="HTML")
+        return
+    code = parts[1].strip().upper()
+    _typing(msg.chat.id)
+    try:
+        coupon = coupons_col.find_one({"coupon_code": code})
+        if not coupon:
+            bot.send_message(msg.chat.id, f"❌ Coupon <code>{code}</code> nahi mila.", parse_mode="HTML")
+            return
+        coupons_col.update_one(
+            {"coupon_code": code},
+            {"$set": {"status": "inactive", "deleted_by": msg.from_user.id, "deleted_at": datetime.utcnow()}}
+        )
+        claimed = len(coupon.get("claimed_users", []))
+        amount = coupon.get("amount", 0)
+        bot.send_message(msg.chat.id,
+            f"✅ <b>Coupon Deleted!</b>\n\n"
+            f"🎟 Code: <code>{code}</code>\n"
+            f"💰 Value: ₹{amount}\n"
+            f"👥 Times Claimed: {claimed}\n\n"
+            f"<i>Coupon ab inactive ho gaya.</i>",
+            parse_mode="HTML")
+    except Exception as e:
+        logger.error(f"/coupondelete error: {e}")
+        bot.send_message(msg.chat.id, f"❌ Error: {e}")
+
+
+# 16. /clearsessions — Clear all Pyrogram sessions from DB
+@bot.message_handler(commands=['clearsessions'])
+def cmd_clearsessions(msg):
+    if not is_super_admin(msg.from_user.id):
+        bot.send_message(msg.chat.id, "❌ Sirf owner kar sakta hai.")
+        return
+    _typing(msg.chat.id)
+    try:
+        otp_count = otp_sessions_col.count_documents({})
+        otp_sessions_col.delete_many({})
+        acc_session_count = accounts_col.count_documents({"session_string": {"$exists": True}})
+        accounts_col.update_many(
+            {"session_string": {"$exists": True}},
+            {"$unset": {"session_string": ""}}
+        )
+        gemini_chat_sessions.clear()
+        bot.send_message(msg.chat.id,
+            f"🧹 <b>Sessions Cleared!</b>\n\n"
+            f"🔄 OTP Sessions: <b>{otp_count}</b> cleared\n"
+            f"📱 Account Sessions: <b>{acc_session_count}</b> cleared\n"
+            f"🤖 AI Chat Sessions: All cleared\n\n"
+            f"✅ Bot fresh start ke liye ready!",
+            parse_mode="HTML")
+    except Exception as e:
+        logger.error(f"/clearsessions error: {e}")
+        bot.send_message(msg.chat.id, f"❌ Error: {e}")
+
+
+# 17. /massunban — Unban all currently banned users
+@bot.message_handler(commands=['massunban'])
+def cmd_massunban(msg):
+    if not is_super_admin(msg.from_user.id):
+        bot.send_message(msg.chat.id, "❌ Sirf owner kar sakta hai.")
+        return
+    _typing(msg.chat.id)
+    try:
+        total_banned = banned_users_col.count_documents({"status": "active"})
+        if total_banned == 0:
+            bot.send_message(msg.chat.id, "ℹ️ Koi banned user nahi hai abhi.")
+            return
+        result = banned_users_col.update_many(
+            {"status": "active"},
+            {"$set": {"status": "unbanned", "unbanned_by": msg.from_user.id, "mass_unbanned": True, "unbanned_at": datetime.utcnow()}}
+        )
+        bot.send_message(msg.chat.id,
+            f"✅ <b>Mass Unban Complete!</b>\n\n"
+            f"🔓 Unbanned: <b>{result.modified_count}</b> users\n\n"
+            f"<i>Sab users ab bot use kar sakte hain!</i>",
+            parse_mode="HTML")
+    except Exception as e:
+        logger.error(f"/massunban error: {e}")
+        bot.send_message(msg.chat.id, f"❌ Error: {e}")
+
+
+# 18. /botstat — Comprehensive bot analytics dashboard
+@bot.message_handler(commands=['botstat'])
+def cmd_botstat(msg):
+    if not is_admin(msg.from_user.id):
+        bot.send_message(msg.chat.id, "❌ Sirf admin dekh sakta hai.")
+        return
+    _typing(msg.chat.id)
+    try:
+        now = datetime.utcnow()
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        week_start = today_start - __import__('datetime').timedelta(days=7)
+        total_users = users_col.count_documents({})
+        new_today = users_col.count_documents({"created_at": {"$gte": today_start}})
+        new_week = users_col.count_documents({"created_at": {"$gte": week_start}})
+        total_orders = orders_col.count_documents({})
+        orders_today = orders_col.count_documents({"created_at": {"$gte": today_start}})
+        orders_week = orders_col.count_documents({"created_at": {"$gte": week_start}})
+        completed = orders_col.count_documents({"status": "completed"})
+        revenue_pipe = [{"$group": {"_id": None, "total": {"$sum": "$price"}}}]
+        rev_today_pipe = [{"$match": {"created_at": {"$gte": today_start}, "status": "completed"}}, {"$group": {"_id": None, "total": {"$sum": "$price"}}}]
+        rev_all = list(orders_col.aggregate(revenue_pipe))
+        rev_today = list(orders_col.aggregate(rev_today_pipe))
+        total_revenue = float(rev_all[0]["total"]) if rev_all else 0
+        today_revenue = float(rev_today[0]["total"]) if rev_today else 0
+        total_accounts = accounts_col.count_documents({})
+        available = accounts_col.count_documents({
+            "$or": [{"status": "active", "used": False}, {"used": {"$exists": False}}]
+        })
+        banned_count = banned_users_col.count_documents({"status": "active"})
+        active_countries = countries_col.count_documents({"status": "active"})
+        total_recharges = recharges_col.count_documents({}) if recharges_col else 0
+        pending_recharges = recharges_col.count_documents({"status": "pending"}) if recharges_col else 0
+        success_rate = int(completed / total_orders * 100) if total_orders > 0 else 0
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("📊 Sales", callback_data="admin_sales"),
+                   InlineKeyboardButton("👥 Users", callback_data="admin_users"))
+        markup.add(InlineKeyboardButton("⬅️ Admin", callback_data="admin_panel"))
+        bot.send_message(msg.chat.id,
+            f"┌━━━━━━━━━━━━━━━━━━━━━━━━━━━━┐\n"
+            f"  📊 <b>𝐁𝐎𝐓 𝐒𝐓𝐀𝐓𝐈𝐒𝐓𝐈𝐂𝐒</b>\n"
+            f"└━━━━━━━━━━━━━━━━━━━━━━━━━━━━┘\n\n"
+            f"━━━━━ 👥 USERS ━━━━━\n"
+            f"📊 Total: <b>{total_users}</b>\n"
+            f"🆕 Today: <b>{new_today}</b>\n"
+            f"📅 This Week: <b>{new_week}</b>\n"
+            f"🚫 Banned: <b>{banned_count}</b>\n\n"
+            f"━━━━━ 📦 ORDERS ━━━━━\n"
+            f"📦 Total: <b>{total_orders}</b>\n"
+            f"✅ Completed: <b>{completed}</b>\n"
+            f"📈 Success Rate: <b>{success_rate}%</b>\n"
+            f"🕐 Today: <b>{orders_today}</b>\n"
+            f"📅 This Week: <b>{orders_week}</b>\n\n"
+            f"━━━━━ 💰 REVENUE ━━━━━\n"
+            f"💸 Total Revenue: <b>₹{total_revenue:.2f}</b>\n"
+            f"📅 Today: <b>₹{today_revenue:.2f}</b>\n\n"
+            f"━━━━━ 📱 STOCK ━━━━━\n"
+            f"📱 Total Accounts: <b>{total_accounts}</b>\n"
+            f"🟢 Available: <b>{available}</b>\n"
+            f"🌍 Active Countries: <b>{active_countries}</b>\n\n"
+            f"━━━━━ 💳 RECHARGES ━━━━━\n"
+            f"💳 Total: <b>{total_recharges}</b>\n"
+            f"⏳ Pending: <b>{pending_recharges}</b>",
+            parse_mode="HTML", reply_markup=markup)
+    except Exception as e:
+        logger.error(f"/botstat error: {e}")
+        bot.send_message(msg.chat.id, f"❌ Stats load nahi ho sake: {e}")
+
+
+# 19. /resetdaily <user_id> — Reset a user's daily/lucky cooldown
+@bot.message_handler(commands=['resetdaily'])
+def cmd_resetdaily(msg):
+    if not is_admin(msg.from_user.id):
+        bot.send_message(msg.chat.id, "❌ Sirf admin kar sakta hai.")
+        return
+    parts = msg.text.strip().split()
+    if len(parts) < 2:
+        bot.send_message(msg.chat.id,
+            "🔄 <b>Reset Daily Cooldown</b>\n\nUsage: <code>/resetdaily &lt;user_id&gt;</code>\n"
+            "Example: <code>/resetdaily 123456789</code>",
+            parse_mode="HTML")
+        return
+    try:
+        target_id = int(parts[1])
+    except ValueError:
+        bot.send_message(msg.chat.id, "❌ Valid user ID daalo.")
+        return
+    _typing(msg.chat.id)
+    try:
+        r1 = db['daily_rewards'].delete_one({"user_id": target_id}) if 'daily_rewards' in db.list_collection_names() else type('R', (), {'deleted_count': 0})()
+        r2 = db['lucky_draws'].delete_one({"user_id": target_id}) if 'lucky_draws' in db.list_collection_names() else type('R', (), {'deleted_count': 0})()
+        r3 = db['spin_wheel'].delete_one({"user_id": target_id}) if 'spin_wheel' in db.list_collection_names() else type('R', (), {'deleted_count': 0})()
+        cleared = []
+        if r1.deleted_count: cleared.append("Daily Reward")
+        if r2.deleted_count: cleared.append("Lucky Draw")
+        if r3.deleted_count: cleared.append("Spin Wheel")
+        cleared_text = ", ".join(cleared) if cleared else "Nothing to reset"
+        bot.send_message(msg.chat.id,
+            f"🔄 <b>Cooldowns Reset!</b>\n\n"
+            f"👤 User: <code>{target_id}</code>\n"
+            f"✅ Cleared: <b>{cleared_text}</b>\n\n"
+            f"<i>User ab dobara claim kar sakta hai!</i>",
+            parse_mode="HTML")
+        try:
+            bot.send_message(target_id,
+                f"🎁 <b>Cooldown Reset Ho Gaya!</b>\n\nAdmin ne aapka daily/lucky reward reset kar diya!\n"
+                f"Ab /daily, /lucky, /spin claim karo!",
+                parse_mode="HTML")
+        except Exception:
+            pass
+    except Exception as e:
+        logger.error(f"/resetdaily error: {e}")
+        bot.send_message(msg.chat.id, f"❌ Reset failed: {e}")
+
+
+# 20. /userhistory <user_id> — Full transaction history for any user
+@bot.message_handler(commands=['userhistory'])
+def cmd_userhistory(msg):
+    if not is_admin(msg.from_user.id):
+        bot.send_message(msg.chat.id, "❌ Sirf admin dekh sakta hai.")
+        return
+    parts = msg.text.strip().split()
+    if len(parts) < 2:
+        bot.send_message(msg.chat.id,
+            "📋 <b>User History</b>\n\nUsage: <code>/userhistory &lt;user_id&gt;</code>\n"
+            "Example: <code>/userhistory 123456789</code>",
+            parse_mode="HTML")
+        return
+    try:
+        target_id = int(parts[1])
+    except ValueError:
+        bot.send_message(msg.chat.id, "❌ Valid user ID daalo.")
+        return
+    _typing(msg.chat.id)
+    try:
+        user_doc = users_col.find_one({"user_id": target_id})
+        if not user_doc:
+            bot.send_message(msg.chat.id, f"❌ User <code>{target_id}</code> nahi mila.", parse_mode="HTML")
+            return
+        name = user_doc.get("name", "Unknown")
+        current_bal = get_balance(target_id)
+        wallet = wallets_col.find_one({"user_id": target_id}) or {}
+        total_spent = float(wallet.get("total_spent", 0))
+        total_recharged = float(wallet.get("total_recharged", 0))
+        orders = list(orders_col.find({"user_id": target_id}).sort("created_at", -1).limit(10))
+        txns = list(transactions_col.find({"user_id": target_id}).sort("timestamp", -1).limit(10))
+        order_lines = []
+        for o in orders:
+            oid = o.get("order_id", str(o["_id"])[:8])
+            country = o.get("country", "?")
+            price = o.get("price", 0)
+            status = o.get("status", "?")[:10]
+            date = o.get("created_at")
+            date_str = date.strftime("%d/%m %H:%M") if date else "N/A"
+            order_lines.append(f"  📦 {country} ₹{price} [{status}] {date_str}")
+        txn_lines = []
+        for t in txns:
+            ttype = t.get("type", "txn")[:15]
+            amt = float(t.get("amount", 0))
+            date = t.get("timestamp")
+            date_str = date.strftime("%d/%m") if date else "N/A"
+            sign = "+" if amt >= 0 else ""
+            txn_lines.append(f"  💸 {ttype} {sign}₹{amt:.1f} — {date_str}")
+        orders_text = "\n".join(order_lines) if order_lines else "  <i>Koi orders nahi</i>"
+        txns_text = "\n".join(txn_lines) if txn_lines else "  <i>Koi transactions nahi</i>"
+        bot.send_message(msg.chat.id,
+            f"📋 <b>User History</b>\n\n"
+            f"👤 <b>{name}</b> (<code>{target_id}</code>)\n"
+            f"💳 Balance: <b>₹{current_bal:.2f}</b>\n"
+            f"📥 Recharged: <b>₹{total_recharged:.2f}</b>\n"
+            f"📤 Spent: <b>₹{total_spent:.2f}</b>\n\n"
+            f"━━━━━ 📦 LAST 10 ORDERS ━━━━━\n"
+            f"{orders_text}\n\n"
+            f"━━━━━ 💸 LAST 10 TRANSACTIONS ━━━━━\n"
+            f"{txns_text}",
+            parse_mode="HTML")
+    except Exception as e:
+        logger.error(f"/userhistory error: {e}")
+        bot.send_message(msg.chat.id, f"❌ Error: {e}")
+
 
 if __name__ == "__main__":
     logger.info(f"🤖 ˹ 𝐋ᴇɢᴇɴᴅᴀʀʏ ꭙ 𝐎ᴛᴘ 𝐒ᴇʟʟᴇʀ [ 𝐁ᴏᴛ ] ❤️‍🔥 Starting (Webhook Mode)...")
